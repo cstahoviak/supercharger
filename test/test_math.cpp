@@ -26,6 +26,6 @@ TEST(TestMath, TestGreatCircleDistance) {
 
   // Expected result comes from evaluating the nested Matlab function call:
   // deg2km(distance(43.63385,-95.595647,44.964892,-92.961249), 6356.752)
-  const double expected = 256.0344;
-  EXPECT_NEAR(dist, expected, 0.0001);
+  const double expected = 256.0343746070473;
+  EXPECT_DOUBLE_EQ(dist, expected);
 }
