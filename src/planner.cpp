@@ -78,7 +78,8 @@ namespace supercharger
     Stop origin{origin_, 0, max_range_, nullptr};
     std::optional<Stop> final_stop = BruteForce_(origin, cost_type);
 
-    // Clean up the route by removing empty Stops
+    // Clean up the route by removing empty Stops (caused by brute force 
+    // recursion method)
     while (! route_.back().has_value() ) {
       route_.pop_back();
     }
@@ -96,26 +97,47 @@ namespace supercharger
     return route_;
   }
 
-  double RoutePlanner::BruteForceCost_(const Charger* const current, const Charger* const cadidate, CostType type) const {
+  double RoutePlanner::BruteForceCost_(const Charger* const current, const Charger* const candidate, CostType type) const {
+    // Define the cost
     double cost{0};
     
     switch ( type )
     {
-    case CostType::MINIMIZE_DIST_REMAINING:
-      // The "cost" is the distance from the candidate charger to the destination
-      cost = great_circle_distance(
-        cadidate->lat,
-        cadidate->lon,
-        destination_->lat,
-        destination_->lon
-      );
-      break;
-    
-    case CostType::MINIMIZE_TIME_REMAINING:
-      break;
-    
-    default:
-      break;
+      case CostType::MINIMIZE_DIST_REMAINING:
+      {
+        // The "cost" is the distance from the candidate charger to the
+        // destination charger.
+        cost = great_circle_distance(
+          candidate->lat, candidate->lon, destination_->lat, destination_->lon
+        );
+        break;
+      }
+      
+      case CostType::MINIMIZE_TIME_REMAINING:
+      {
+        // Compute distances
+        double candidate_to_destination = great_circle_distance(
+          candidate->lat, candidate->lon, destination_->lat, destination_->lon
+        );
+        double current_to_candidate = great_circle_distance(
+          current->lat, current->lon, candidate->lat, candidate->lon
+        );
+
+        // Compute times
+        double time_to_destination = candidate_to_destination / speed_;
+        double time_to_charge = current_to_candidate / candidate->rate;
+
+        // The cost is the total time to drive the remaining distance between
+        // the candidate charger and the destination + the time to fully charge
+        // at the candidate charger.
+        cost = time_to_destination + time_to_charge;
+        break;
+      }
+      
+      default:
+      {
+        break;
+      }
     }
     return cost;
   }
