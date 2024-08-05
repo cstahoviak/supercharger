@@ -43,9 +43,15 @@ namespace supercharger
   class RoutePlanner
   {
     public:
+      enum class CostType {
+        MINIMIZE_DIST_REMAINING,
+        MINIMIZE_TIME_REMAINING
+      };
+    
+    public:
       RoutePlanner(std::string&, std::string&);
 
-      std::vector<std::optional<Stop>> PlanRoute();
+      std::vector<std::optional<Stop>> PlanRoute(CostType);
 
       // Getters
       const std::unordered_map<std::string, Charger*>& network() const {
@@ -66,10 +72,14 @@ namespace supercharger
       // Store each stop along the final route
       std::vector<std::optional<Stop>> route_;
 
-      // The route-planning algorithms
-      std::optional<Stop> BruteForce_(Stop&);
+      // Route-planning algorithms
+      std::optional<Stop> BruteForce_(Stop&, CostType cost_type);
       void Dijkstra_();
       void AStar_();
+
+      // Cost functions (const pointers to const Chargers)
+      double BruteForceCost_(
+        const Charger* const current, const Charger* const cadidate, CostType type) const;
   };
 
 // Overload the string stream operator to output the route

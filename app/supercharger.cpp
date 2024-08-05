@@ -31,8 +31,9 @@ int main(int argc, char** argv)
   // Test to make sure the network getter works.
   auto& network = planner.network();
 
-  // Plan the route
-  std::vector<std::optional<Stop>> route = planner.PlanRoute();
+  // Plan the route with the provided cost function for the "brute force" algo
+  std::vector<std::optional<Stop>> route =
+    planner.PlanRoute(RoutePlanner::CostType::MINIMIZE_DIST_REMAINING);
   std::cout << "\nFinal Route:" << std::endl;
   std::cout << route << std::endl;
 }

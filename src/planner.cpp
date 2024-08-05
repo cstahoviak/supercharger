@@ -70,13 +70,13 @@ namespace supercharger
     };
   }
 
-  std::vector<std::optional<Stop>> RoutePlanner::PlanRoute() {
+  std::vector<std::optional<Stop>> RoutePlanner::PlanRoute(CostType cost_type) {
     std::cout << "Planning route between '" << origin_->name << "' and '" <<
       destination_->name << "'" <<std::endl;
 
     // Plan the route
     Stop origin{origin_, 0, max_range_, nullptr};
-    std::optional<Stop> final_stop = BruteForce_(origin);
+    std::optional<Stop> final_stop = BruteForce_(origin, cost_type);
 
     // Clean up the route by removing empty Stops
     while (! route_.back().has_value() ) {
@@ -96,13 +96,37 @@ namespace supercharger
     return route_;
   }
 
+  double RoutePlanner::BruteForceCost_(const Charger* const current, const Charger* const cadidate, CostType type) const {
+    double cost{0};
+    
+    switch ( type )
+    {
+    case CostType::MINIMIZE_DIST_REMAINING:
+      // The "cost" is the distance from the candidate charger to the destination
+      cost = great_circle_distance(
+        cadidate->lat,
+        cadidate->lon,
+        destination_->lat,
+        destination_->lon
+      );
+      break;
+    
+    case CostType::MINIMIZE_TIME_REMAINING:
+      break;
+    
+    default:
+      break;
+    }
+    return cost;
+  }
+
   /**
    * @brief The "brute force route planner."
    * 
    * @param current_stop 
    * @return Stop 
    */
-  std::optional<Stop> RoutePlanner::BruteForce_(Stop& current_stop) {
+  std::optional<Stop> RoutePlanner::BruteForce_(Stop& current_stop, CostType cost_type) {
     // Add the current stop to the route
     route_.push_back(current_stop);
     std::cout << "Current route: " << route_ << std::endl;
@@ -118,7 +142,7 @@ namespace supercharger
     // For now, use an unordered map to store the candidate chargers, i.e. the
     // next possible chargers on the route
     std::unordered_map<std::string, Charger*> candidates_by_name;
-    std::map<double, Charger*> candidates_by_dist;
+    std::map<double, Charger*> candidates_by_cost;
     bool is_reachable{false};
     bool is_closer{false};
 
@@ -170,10 +194,13 @@ namespace supercharger
       // If the charger is reachable, and it's closer to the destination than
       // the current charger, add it to map of candidate chargers
       if ( is_reachable && is_closer ) {
-        // expect pair.second to be true
+        // Add charger to candidate set
         const auto& pair1 = candidates_by_name.try_emplace(name, charger);
+
+        // Compute the cost for the candidate charger
+        double cost = BruteForceCost_(current_stop.charger, charger, cost_type);
         const auto& pair2 = 
-          candidates_by_dist.try_emplace(candidate_to_dest, charger);
+          candidates_by_cost.try_emplace(cost, charger);
       }
     }
 
@@ -202,8 +229,8 @@ namespace supercharger
 
     // Choose as the next charger, the charger location that minimizes the
     // remaining distance to the destination
-    double key = candidates_by_dist.begin()->first;
-    Charger* next_charger = candidates_by_dist.at(key);
+    double key = candidates_by_cost.begin()->first;
+    Charger* next_charger = candidates_by_cost.at(key);
 
     // Compute the charge time to return to max charge (Assume for now that 
     // the vehicle leaves the current stop with a full charge)
@@ -219,7 +246,7 @@ namespace supercharger
 
     // Continue iteration with next stop
     Stop next{next_charger, charge_duration, max_range_, parent};
-    route_.emplace_back(BruteForce_(next));
+    route_.emplace_back(BruteForce_(next, cost_type));
     
     // If the destination is not in the reachable set, for each Charger in the
     // reachable set, compute its reachable set. Repeat until the destination
