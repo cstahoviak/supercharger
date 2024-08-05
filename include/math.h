@@ -14,7 +14,7 @@
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
-#define M_EARTH_RADIUS 6356.752       // [km]
+#define M_EARTH_RADIUS_KM 6356.752       // [km]
 
 namespace supercharger
 {
@@ -49,6 +49,6 @@ namespace supercharger
     const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 
     // Return value in km
-    return M_EARTH_RADIUS * c;
+    return M_EARTH_RADIUS_KM * c;
   }
 } //end namespace supercharger
