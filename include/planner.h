@@ -46,8 +46,7 @@ namespace supercharger
       RoutePlanner(std::string&, std::string&);
 
       std::vector<std::optional<Stop>> PlanRoute();
-      std::string GenerateOutput(const std::vector<std::optional<Stop>>&) const ;
-      
+
       // Getters
       const std::unordered_map<std::string, Charger>& network() const {
         return network_;
@@ -58,9 +57,8 @@ namespace supercharger
       Charger* destination_;
 
       // Store some constants
-      const double max_range_{320};
-      const double earth_radius_ = 6356.752;
-      const double pi_ = 3.14159265358979323846;
+      const double max_range_{320};   // [km]
+      const double speed_{105};       // [km/hr]
 
       // Store the network
       std::unordered_map<std::string, Charger> network_;
@@ -72,10 +70,10 @@ namespace supercharger
       std::optional<Stop> BruteForce_(Stop&);
       void Dijkstra_();
       void AStar_();
-
   };
 
 // Overload the string stream operator to output the route
-std::ostream& operator<<(std::ostream& stream, const std::vector<std::optional<Stop>>& route);
+std::ostream& operator<<(
+  std::ostream& stream, const std::vector<std::optional<Stop>>& route);
 
 } // end namespace supercharger

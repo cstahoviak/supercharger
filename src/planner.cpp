@@ -100,12 +100,6 @@ namespace supercharger
     return route_;
   }
 
-  std::string RoutePlanner::GenerateOutput(const std::vector<std::optional<Stop>>& route) const {
-    std::ostringstream output;
-    output << origin_->name << ", " << route << ", " << destination_->name;
-    return output.str();
-  }
-
   /**
    * @brief The "brute force route planner."
    * 
@@ -205,7 +199,8 @@ namespace supercharger
       );
 
       // Return the final Stop
-      Stop final{&network_.at(destination_->name), 0, range_remaining, &current_stop};
+      Stop final = 
+        {&network_.at(destination_->name), 0, range_remaining, &current_stop};
       return final;
     }
 
@@ -222,7 +217,7 @@ namespace supercharger
       next_charger->lat,
       next_charger->lon
     );
-    double charge_duration = (max_range_ - dist) / next_charger->rate;
+    double charge_duration = dist / next_charger->rate;
 
     Stop* parent = &current_stop;
 

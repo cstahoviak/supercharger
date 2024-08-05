@@ -24,7 +24,7 @@ TEST(TestMath, TestGreatCircleDistance) {
   double dist = supercharger::great_circle_distance(
     worthington_mn_lat, worthington_mn_lon, oakdale_mn_lat, oakdale_mn_lon);
 
-  // Expected result comes from evaluating the nested Matlab functions:
+  // Expected result comes from evaluating the nested Matlab function call:
   // deg2km(distance(43.63385,-95.595647,44.964892,-92.961249), 6356.752)
   const double expected = 256.0344;
   EXPECT_NEAR(dist, expected, 0.0001);
