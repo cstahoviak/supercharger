@@ -248,8 +248,7 @@ namespace supercharger
       return final;
     }
 
-    // Choose as the next charger, the charger location that minimizes the
-    // remaining distance to the destination
+    // Choose the next charger such that it minimizes the cost
     double key = candidates_by_cost.begin()->first;
     Charger* next_charger = candidates_by_cost.at(key);
 
