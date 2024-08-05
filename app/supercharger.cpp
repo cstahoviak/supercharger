@@ -33,11 +33,6 @@ int main(int argc, char** argv)
 
   // Plan the route
   std::vector<std::optional<Stop>> route = planner.PlanRoute();
-  std::cout << "Final Route:\n";
+  std::cout << "\nFinal Route:" << std::endl;
   std::cout << route << std::endl;
-
-  // Output the result
-  // std::string output = planner.GenerateOutput(route);
-  // std::cout << output << std::endl;
-  return 0;
 }

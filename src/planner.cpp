@@ -40,20 +40,15 @@ namespace supercharger
   }
 
   RoutePlanner::RoutePlanner(std::string& origin, std::string& destination) {
-    std::cout << "RoutePlanner::RoutePlanner" << std::endl;
     // Create the network map
     for ( Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
       const auto& pair = 
         network_.try_emplace(charger.name, charger);
         network_[charger.name] = charger;
-      if ( pair.second ) {
-        std::cout << "Added Charger '" << charger.name << "' to network_." 
-          << std::endl;
-      }
-      else {
+      if ( !pair.second ) {
         std::cout << "Charger '" << charger.name << "' already exists in " <<
-          "the network." << std::endl;
+          "the network. Skipping." << std::endl;
       }
     }
 
@@ -72,30 +67,33 @@ namespace supercharger
     }
     catch( const std::out_of_range& e) {
       std::ostringstream os;
-      os << "Initial charger '" << destination << "' not in network.";
+      os << "Destination charger '" << destination << "' not in network.";
       throw std::out_of_range(os.str());
     };
   }
 
   std::vector<std::optional<Stop>> RoutePlanner::PlanRoute() {
-    std::cout << "RoutePlanner::PlanRoute" << std::endl;
+    std::cout << "Planning route between '" << origin_->name << "' and '" <<
+      destination_->name << "'" <<std::endl;
 
     // Plan the route
     Stop origin{origin_, 0, max_range_, nullptr};
     std::optional<Stop> final_stop = BruteForce_(origin);
-    if ( final_stop.has_value() ) {
-      std::cout << "Solution found!" << std::endl;
-    }
-    else {
-      std::cout << "Search terminated. Solution not found." << std::endl;
+
+    // Clean up the route by removing empty Stops
+    while (! route_.back().has_value() ) {
+      route_.pop_back();
     }
 
-    // TODO: Backtrace to determine the route
-    // Stop* previous = final_stop.parent;
-    // while ( previous->parent != nullptr ) {
-    //   Stop* previous = previous->parent;
-      
-    // }
+    if ( route_.back().value().charger->name == destination_->name ) {
+      std::cout << "\nSolution found!" << std::endl;
+    }
+    else {
+      std::cout << "\nSearch terminated. Solution not found." << std::endl;
+    }
+
+    // TODO: Backtrace to determine the route (doesn't apply to current
+    // sulution method)
     
     return route_;
   }
