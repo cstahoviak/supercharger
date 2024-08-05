@@ -77,7 +77,7 @@ namespace supercharger
       void Dijkstra_();
       void AStar_();
 
-      // Cost functions (const pointers to const Chargers)
+      // Cost functions (args are const pointers to const Chargers)
       double BruteForceCost_(
         const Charger* const current, const Charger* const cadidate, CostType type) const;
   };
