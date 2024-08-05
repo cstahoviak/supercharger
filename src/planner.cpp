@@ -144,6 +144,14 @@ namespace supercharger
   /**
    * @brief The "brute force route planner."
    * 
+   * TODO: Consider using std::unordered_set to store the "reachable" (chargers 
+   * that are within the current range of the vehicle post-charging) and 
+   * "closer to" (chargers that are closer to the destination station than the 
+   * current charger) sets of candidate chargers. Then, the actual set of
+   * candidate chargers will be the intersection (std::set_intersection) of the
+   * "reachable" and "closer to" sets. I beleive this will require defining
+   * both operator== and a hash function for the supercharger::Charger class.
+   * 
    * @param current_stop 
    * @return Stop 
    */
@@ -152,18 +160,10 @@ namespace supercharger
     route_.push_back(current_stop);
     LOG("Current route: " << route_);
 
-    // TODO: Create two sets - a "reachable" set that contains chargers that
-    // are within the current range of the vehicle post-charging, and a "closer
-    // to" set that contains chargers that are closer to the destination station
-    // than the current charger. The "candidate" set of chargers is then the
-    // intersection of the "reachable" and "closer to" sets.
-    // std::unordered_set<Charger> reachable;
-    // std::unordered_set<Charger> closer_to;
-
-    // For now, use an unordered map to store the candidate chargers, i.e. the
-    // next possible chargers on the route
-    std::unordered_map<std::string, Charger*> candidates_by_name;
-    std::map<double, Charger*> candidates_by_cost;
+    // Use a map to store the candidate chargers, i.e. the next possible
+    // chargers on the route, sorted by distance to the destination
+    std::map<double, Charger*> candidates;
+    std::vector<std::string> candidate_names;
     bool is_reachable{false};
     bool is_closer{false};
 
@@ -199,41 +199,36 @@ namespace supercharger
       // If candidate charger is within the current range of the vehicle, add
       // the candidate charger to "reachable" set
       if ( current_to_candidate <= current_stop.range ) {
-        // expect pair.second to be true
-        // const auto& pair = reachable.insert(*charger);
         is_reachable = true;
       }
 
       // If the candidate charger is closer to the destination than the current
       // charger, add the candidate charger to the "closer to" set
       if ( candidate_to_dest < current_to_dest ) {
-        // expect pair.second to be true
-        // const auto& pair = closer_to.insert(*charger);
         is_closer = true;
       }
 
       // If the charger is reachable, and it's closer to the destination than
       // the current charger, add it to map of candidate chargers
       if ( is_reachable && is_closer ) {
-        // Add charger to candidate set
-        const auto& pair1 = candidates_by_name.try_emplace(name, charger);
-
         // Compute the cost for the candidate charger
         double cost = BruteForceCost_(current_stop.charger, charger, cost_type);
-        const auto& pair2 = 
-          candidates_by_cost.try_emplace(cost, charger);
+
+        // Add the charger to the map of candidate chargers
+        const auto& pair2 = candidates.try_emplace(cost, charger);
+        candidate_names.push_back(charger->name);
       }
     }
 
-    // Compute the intersection of the "reachable" and "closer to" sets
+    // TODO: Compute the intersection of the "reachable" and "closer to" sets
     // std::unordered_set<Charger> candidate_chargers;
     // std::set_intersection(reachable.begin(), reachable.end(),
     //   closer_to.begin(), closer_to.end(),
     //              std::inserter(candidate_chargers, candidate_chargers.begin()));
 
-    // If the destination is in this set, we can go to the destination on our
-    // remaining charge and we're done!
-    if ( candidates_by_name.find(destination_->name) != candidates_by_name.end() ) {
+    // If the destination is in the set of candidate chargers, we can go to the
+    // destination on our remaining charge and we're done!
+    if ( std::find(candidate_names.begin(), candidate_names.end(), destination_->name) != candidate_names.end() ) {
       // Compute the remaining range after arriving at the destination
       double range_remaining = great_circle_distance(
         current_stop.charger->lat,
@@ -249,8 +244,8 @@ namespace supercharger
     }
 
     // Choose the next charger such that it minimizes the cost
-    double key = candidates_by_cost.begin()->first;
-    Charger* next_charger = candidates_by_cost.at(key);
+    double key = candidates.begin()->first;
+    Charger* next_charger = candidates.at(key);
 
     // Compute the charge time to return to max charge (Assume for now that 
     // the vehicle leaves the current stop with a full charge)
@@ -267,6 +262,12 @@ namespace supercharger
     // Continue iteration with next stop
     Stop next{next_charger, charge_duration, max_range_, parent};
     route_.emplace_back(BruteForce_(next, cost_type));
+
+    // NOTE: My initial thought was to not choose a single "next charger", but
+    // recursively call BruteForce_ on ALL candidate chargers. Thus allowing the
+    // search space to grow beyond a single charger at each iteration. I have no
+    // idea if this is even feasible, or if it can be accomplished via
+    // recursion. Below is the code I wrote to attempt that (it didn't work).
     
     // If the destination is not in the reachable set, for each Charger in the
     // reachable set, compute its reachable set. Repeat until the destination

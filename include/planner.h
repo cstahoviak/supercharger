@@ -30,7 +30,7 @@ namespace supercharger
     Stop(Charger* charger, double duration, double range, Stop* parent) :
       charger(charger), duration(duration), range(range), parent(parent) {};
 
-    // Store the current stop
+    // Store the current charger
     Charger* charger;
     // The length of time charging (hrs)
     double duration{0};
