@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-
+#include "logging.h"
 #include "network.h"
 
 #include <chrono>

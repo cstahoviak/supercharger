@@ -8,7 +8,6 @@
  * @copyright Copyright (c) 2024
  * 
  */
-
 #include "math.h"
 #include "planner.h"
 
@@ -45,8 +44,8 @@ namespace supercharger
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
       const auto& pair = network_.try_emplace(charger.name, &charger);
       if ( !pair.second ) {
-        std::cout << "Charger '" << charger.name << "' already exists in " <<
-          "the network. Skipping." << std::endl;
+        LOG("Charger '" << charger.name << "' already exists in the network. "
+          << "Skipping.");
       }
     }
 
@@ -71,8 +70,8 @@ namespace supercharger
   }
 
   std::vector<std::optional<Stop>> RoutePlanner::PlanRoute(CostType cost_type) {
-    std::cout << "Planning route between '" << origin_->name << "' and '" <<
-      destination_->name << "'" <<std::endl;
+    LOG("Planning route between '" << origin_->name << "' and '" <<
+      destination_->name << "'");
 
     // Plan the route
     Stop origin{origin_, 0, max_range_, nullptr};
@@ -85,10 +84,10 @@ namespace supercharger
     }
 
     if ( route_.back().value().charger->name == destination_->name ) {
-      std::cout << "\nSolution found!" << std::endl;
+      LOG("\nSolution found!");
     }
     else {
-      std::cout << "\nSearch terminated. Solution not found." << std::endl;
+      LOG("\nSearch terminated. Solution not found.");
     }
 
     // TODO: Backtrace to determine the route (doesn't apply to current
@@ -151,7 +150,7 @@ namespace supercharger
   std::optional<Stop> RoutePlanner::BruteForce_(Stop& current_stop, CostType cost_type) {
     // Add the current stop to the route
     route_.push_back(current_stop);
-    std::cout << "Current route: " << route_ << std::endl;
+    LOG("Current route: " << route_);
 
     // TODO: Create two sets - a "reachable" set that contains chargers that
     // are within the current range of the vehicle post-charging, and a "closer

@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-
+#include "logging.h"
 #include "planner.h"
 
 #include <iostream>
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
   // Plan the route with the provided cost function for the "brute force" algo
   std::vector<std::optional<Stop>> route =
-    planner.PlanRoute(RoutePlanner::CostType::MINIMIZE_DIST_REMAINING);
-  std::cout << "\nFinal Route:" << std::endl;
+    planner.PlanRoute(RoutePlanner::CostType::MINIMIZE_TIME_REMAINING);
+  LOG("\nFinal Route:");
   std::cout << route << std::endl;
 }
