@@ -18,3 +18,18 @@ add_executable(${PROJECT_NAME} ${APP_SOURCES})
 
 # Link our library against the app
 target_link_libraries(${PROJECT_NAME} superchargerlib)
+
+# Add googletest
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+
+FetchContent_MakeAvailable(googletest)
+
+# Tell CMake that we'll have unit tests 
+enable_testing()
+
+# Add the tests
+add_subdirectory(test)

@@ -9,6 +9,7 @@
  * 
  */
 
+#include "math.h"
 #include "planner.h"
 
 #include <algorithm>
@@ -42,19 +43,38 @@ namespace supercharger
     std::cout << "RoutePlanner::RoutePlanner" << std::endl;
     // Create the network map
     for ( Charger& charger : supercharger::network ) {
-      std::cout << "Adding Charger '" << charger.name << "' to network_" << std::endl;
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
       const auto& pair = 
         network_.try_emplace(charger.name, charger);
         network_[charger.name] = charger;
+      if ( pair.second ) {
+        std::cout << "Added Charger '" << charger.name << "' to network_." 
+          << std::endl;
+      }
+      else {
+        std::cout << "Charger '" << charger.name << "' already exists in " <<
+          "the network." << std::endl;
+      }
     }
 
     // Store the origin and destination chargers
-    std::cout << "HERE 0\n";
-    origin_ = &network_.at(origin);
-    std::cout << "HERE 1\n";
-    destination_ = &network_.at(destination);
-    std::cout << "HERE 2\n";
+    try {
+      origin_ = &network_.at(origin); 
+    }
+    catch( const std::out_of_range& e) {
+      std::ostringstream os;
+      os << "Initial charger '" << origin << "' not in network.";
+      throw std::out_of_range(os.str());
+    };
+
+    try {
+      destination_ = &network_.at(destination); 
+    }
+    catch( const std::out_of_range& e) {
+      std::ostringstream os;
+      os << "Initial charger '" << destination << "' not in network.";
+      throw std::out_of_range(os.str());
+    };
   }
 
   std::vector<std::optional<Stop>> RoutePlanner::PlanRoute() {
@@ -84,32 +104,6 @@ namespace supercharger
     std::ostringstream output;
     output << origin_->name << ", " << route << ", " << destination_->name;
     return output.str();
-  }
-
-  /**
-   * @brief Uses the "Haversine" formula to oompute the "great circle" distance
-   * between two chargers.
-   * 
-   * https://www.movable-type.co.uk/scripts/latlong.html
-   * 
-   * @param charger1 
-   * @param charger2 
-   * @return double 
-   */
-  double RoutePlanner::ComputeDistance(const Charger& charger1, const Charger& charger2) const {
-    // Convert lat/long to radians
-    const double phi1 = charger1.lat * pi_ / 180;
-    const double phi2 = charger2.lat * pi_ / 180;
-    const double delta_phi = (charger2.lat - charger1.lat) * pi_ / 180;
-    const double delta_lambda = (charger2.lon - charger1.lon) * pi_ / 180;
-
-    const double a = std::sin(delta_phi / 2) * std::sin(delta_phi / 2) +
-      std::cos(phi1) * std::cos(phi2) * std::sin(delta_lambda / 2) * std::sin(delta_lambda / 2);
-
-    const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
-
-    // Return value in km
-    return earth_radius_ * c;
   }
 
   /**
@@ -148,9 +142,24 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances
-      current_to_candidate = ComputeDistance(*(current_stop.charger), charger);
-      current_to_dest = ComputeDistance(*(current_stop.charger), *destination_);
-      candidate_to_dest = ComputeDistance(charger, *destination_);
+      current_to_candidate = great_circle_distance(
+        current_stop.charger->lat,
+        current_stop.charger->lon,
+        charger.lat,
+        charger.lon
+      );
+      current_to_dest = great_circle_distance(
+        current_stop.charger->lat,
+        current_stop.charger->lon,
+        destination_->lat,
+        destination_->lon
+      );
+      candidate_to_dest = great_circle_distance(
+        charger.lat,
+        charger.lon,
+        destination_->lat,
+        destination_->lon
+      );
 
       // If candidate charger is within the current range of the vehicle, add
       // the candidate charger to "reachable" set
@@ -188,8 +197,12 @@ namespace supercharger
     // remaining charge and we're done!
     if ( candidates_by_name.find(destination_->name) != candidates_by_name.end() ) {
       // Compute the remaining range after arriving at the destination
-      double range_remaining = 
-        ComputeDistance(*(current_stop.charger), *destination_);
+      double range_remaining = great_circle_distance(
+        current_stop.charger->lat,
+        current_stop.charger->lon,
+        destination_->lat,
+        destination_->lon
+      );
 
       // Return the final Stop
       Stop final{&network_.at(destination_->name), 0, range_remaining, &current_stop};
@@ -203,7 +216,12 @@ namespace supercharger
 
     // Compute the charge time to return to max charge (Assume for now that 
     // the vehicle leaves the current stop with a full charge)
-    double dist = ComputeDistance(*(current_stop.charger), *next_charger);
+    double dist = great_circle_distance(
+      current_stop.charger->lat,
+      current_stop.charger->lon,
+      next_charger->lat,
+      next_charger->lon
+    );
     double charge_duration = (max_range_ - dist) / next_charger->rate;
 
     Stop* parent = &current_stop;

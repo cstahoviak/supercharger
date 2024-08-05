@@ -47,8 +47,7 @@ namespace supercharger
 
       std::vector<std::optional<Stop>> PlanRoute();
       std::string GenerateOutput(const std::vector<std::optional<Stop>>&) const ;
-      double ComputeDistance(const Charger& charger1, const Charger& charger2) const;
-
+      
       // Getters
       const std::unordered_map<std::string, Charger>& network() const {
         return network_;
