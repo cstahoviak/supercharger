@@ -142,7 +142,7 @@ namespace supercharger
   }
 
   /**
-   * @brief The "brute force route planner."
+   * @brief The "brute force" route planner.
    * 
    * TODO: Consider using std::unordered_set to store the "reachable" (chargers 
    * that are within the current range of the vehicle post-charging) and 
