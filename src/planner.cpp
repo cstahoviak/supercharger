@@ -79,7 +79,7 @@ namespace supercharger
 
     // Clean up the route by removing empty Stops (caused by brute force 
     // recursion method)
-    while (! route_.back().has_value() ) {
+    while ( !route_.back().has_value() ) {
       route_.pop_back();
     }
 
