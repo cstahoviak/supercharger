@@ -43,9 +43,7 @@ namespace supercharger
     // Create the network map
     for ( Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
-      const auto& pair = 
-        network_.try_emplace(charger.name, charger);
-        network_[charger.name] = charger;
+      const auto& pair = network_.try_emplace(charger.name, &charger);
       if ( !pair.second ) {
         std::cout << "Charger '" << charger.name << "' already exists in " <<
           "the network. Skipping." << std::endl;
@@ -54,7 +52,7 @@ namespace supercharger
 
     // Store the origin and destination chargers
     try {
-      origin_ = &network_.at(origin); 
+      origin_ = network_.at(origin); 
     }
     catch( const std::out_of_range& e) {
       std::ostringstream os;
@@ -63,7 +61,7 @@ namespace supercharger
     };
 
     try {
-      destination_ = &network_.at(destination); 
+      destination_ = network_.at(destination); 
     }
     catch( const std::out_of_range& e) {
       std::ostringstream os;
@@ -137,8 +135,8 @@ namespace supercharger
       current_to_candidate = great_circle_distance(
         current_stop.charger->lat,
         current_stop.charger->lon,
-        charger.lat,
-        charger.lon
+        charger->lat,
+        charger->lon
       );
       current_to_dest = great_circle_distance(
         current_stop.charger->lat,
@@ -147,8 +145,8 @@ namespace supercharger
         destination_->lon
       );
       candidate_to_dest = great_circle_distance(
-        charger.lat,
-        charger.lon,
+        charger->lat,
+        charger->lon,
         destination_->lat,
         destination_->lon
       );
@@ -173,9 +171,9 @@ namespace supercharger
       // the current charger, add it to map of candidate chargers
       if ( is_reachable && is_closer ) {
         // expect pair.second to be true
-        const auto& pair1 = candidates_by_name.try_emplace(name, &charger);
+        const auto& pair1 = candidates_by_name.try_emplace(name, charger);
         const auto& pair2 = 
-          candidates_by_dist.try_emplace(candidate_to_dest, &charger);
+          candidates_by_dist.try_emplace(candidate_to_dest, charger);
       }
     }
 
@@ -198,7 +196,7 @@ namespace supercharger
 
       // Return the final Stop
       Stop final = 
-        {&network_.at(destination_->name), 0, range_remaining, &current_stop};
+        {network_.at(destination_->name), 0, range_remaining, &current_stop};
       return final;
     }
 

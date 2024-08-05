@@ -48,7 +48,7 @@ namespace supercharger
       std::vector<std::optional<Stop>> PlanRoute();
 
       // Getters
-      const std::unordered_map<std::string, Charger>& network() const {
+      const std::unordered_map<std::string, Charger*>& network() const {
         return network_;
       } 
 
@@ -61,7 +61,7 @@ namespace supercharger
       const double speed_{105};       // [km/hr]
 
       // Store the network
-      std::unordered_map<std::string, Charger> network_;
+      std::unordered_map<std::string, Charger*> network_;
 
       // Store each stop along the final route
       std::vector<std::optional<Stop>> route_;
