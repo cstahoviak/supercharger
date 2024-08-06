@@ -32,7 +32,7 @@ int main(int argc, char** argv)
   auto& network = planner.network();
 
   // Plan the route with the provided cost function for the "brute force" algo
-  std::vector<std::optional<Stop>> route =
+  std::vector<Stop> route =
     planner.PlanRoute(RoutePlanner::CostType::MINIMIZE_TIME_REMAINING);
   LOG("\nFinal Route:");
   std::cout << route << std::endl;

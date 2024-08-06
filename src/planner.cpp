@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -20,18 +21,16 @@
 
 namespace supercharger
 {
-  std::ostream& operator<<(std::ostream& stream, const std::vector<std::optional<Stop>>& route) {
+  std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route) {
     size_t sz = route.size();
     size_t idx = 0;
-    for ( auto& stop : route ) {
-      if ( stop.has_value() ) {
-        stream << stop.value().charger->name;
-        if ( stop.value().duration > 0 ) {
-          stream << ", " << stop.value().duration;
-        }
-        if ( idx < sz - 1 ) {
-          stream << ", ";
-        }
+    for ( const Stop& stop : route ) {
+      stream << stop.charger->name;
+      if ( stop.duration > 0 ) {
+        stream << ", " << std::setprecision(5) << stop.duration;
+      }
+      if ( idx < sz - 1 ) {
+        stream << ", ";
       }
       idx++;
     }
@@ -69,21 +68,17 @@ namespace supercharger
     };
   }
 
-  std::vector<std::optional<Stop>> RoutePlanner::PlanRoute(CostType cost_type) {
+  std::vector<Stop> RoutePlanner::PlanRoute(CostType cost_type) {
     LOG("Planning route between '" << origin_->name << "' and '" <<
       destination_->name << "'");
 
+    // Add the origin to the route
+    route_.emplace_back(origin_, 0, max_range_, nullptr);
+
     // Plan the route
-    Stop origin{origin_, 0, max_range_, nullptr};
-    std::optional<Stop> final_stop = BruteForce_(origin, cost_type);
+    BruteForce_(cost_type);
 
-    // Clean up the route by removing empty Stops (caused by brute force 
-    // recursion method)
-    while ( !route_.back().has_value() ) {
-      route_.pop_back();
-    }
-
-    if ( route_.back().value().charger->name == destination_->name ) {
+    if ( route_.back().charger->name == destination_->name ) {
       LOG("\nSolution found!");
     }
     else {
@@ -96,7 +91,17 @@ namespace supercharger
     return route_;
   }
 
-  double RoutePlanner::BruteForceCost_(const Charger* const current, const Charger* const candidate, CostType type) const {
+  double RoutePlanner::ComputeChargeTime_(const Charger* const current, const Charger* const next) const {
+    // Compute the distance to the next charger
+    double current_to_next = great_circle_distance(
+      current->lat, current->lon, next->lat, next->lon);
+
+    // Compute the charge time required to make it to the next charger.
+    // NOTE that we're charging the car only enough to make it to the next stop.
+    return current_to_next / current->rate;
+  }
+
+  double RoutePlanner::ComputeCost_(const Charger* const current, const Charger* const candidate, CostType type) const {
     // Define the cost
     double cost{0};
     
@@ -129,14 +134,13 @@ namespace supercharger
         // The cost is the total time to drive the remaining distance between
         // the candidate charger and the destination + the time to fully charge
         // at the candidate charger.
-        cost = time_to_destination + time_to_charge;
+        cost = weight_time_to_destination_ * time_to_destination + 
+          weight_time_to_charge_ * time_to_charge;
         break;
       }
       
       default:
-      {
         break;
-      }
     }
     return cost;
   }
@@ -155,9 +159,9 @@ namespace supercharger
    * @param current_stop 
    * @return Stop 
    */
-  std::optional<Stop> RoutePlanner::BruteForce_(Stop& current_stop, CostType cost_type) {
-    // Add the current stop to the route
-    route_.push_back(current_stop);
+  void RoutePlanner::BruteForce_(CostType cost_type) {
+    // Get the current stop
+    Stop& current_stop = route_.back();
     LOG("Current route: " << route_);
 
     // Use a map to store the candidate chargers, i.e. the next possible
@@ -196,9 +200,9 @@ namespace supercharger
         destination_->lon
       );
 
-      // If candidate charger is within the current range of the vehicle, add
+      // If candidate charger is within the maximum range of the vehicle, add
       // the candidate charger to "reachable" set
-      if ( current_to_candidate <= current_stop.range ) {
+      if ( current_to_candidate <= max_range_ ) {
         is_reachable = true;
       }
 
@@ -212,7 +216,7 @@ namespace supercharger
       // the current charger, add it to map of candidate chargers
       if ( is_reachable && is_closer ) {
         // Compute the cost for the candidate charger
-        double cost = BruteForceCost_(current_stop.charger, charger, cost_type);
+        double cost = ComputeCost_(current_stop.charger, charger, cost_type);
 
         // Add the charger to the map of candidate chargers
         const auto& pair2 = candidates.try_emplace(cost, charger);
@@ -237,31 +241,39 @@ namespace supercharger
         destination_->lon
       );
 
-      // Return the final Stop
-      Stop final = 
-        {network_.at(destination_->name), 0, range_remaining, &current_stop};
-      return final;
+      // Compute the charge time to make it to the final destination
+      current_stop.duration = 
+        ComputeChargeTime_(current_stop.charger, destination_);
+
+      // Add the destination as the final stop on the route
+      route_.emplace_back(
+        network_.at(destination_->name), 0, range_remaining, &current_stop);
+
+      return;
     }
 
     // Choose the next charger such that it minimizes the cost
     double key = candidates.begin()->first;
     Charger* next_charger = candidates.at(key);
 
-    // Compute the charge time to return to max charge (Assume for now that 
-    // the vehicle leaves the current stop with a full charge)
-    double dist = great_circle_distance(
-      current_stop.charger->lat,
-      current_stop.charger->lon,
-      next_charger->lat,
-      next_charger->lon
-    );
-    double charge_duration = dist / next_charger->rate;
+    // If we've arrived at the current stop with less than the maximum range
+    // (which should be true for every stop that's not the origin), determine
+    // charge time to make it to the next stop
+    if ( current_stop.range < max_range_ ) {
+      current_stop.duration = 
+        ComputeChargeTime_(current_stop.charger, next_charger);
+    }
 
-    Stop* parent = &current_stop;
+    // Add the next stop to the route_ and continue iteration. Note that the
+    // charge duration at the next stop will be computed on the next iteration.
+    route_.emplace_back(
+      next_charger, static_cast<double>(NULL), 0, &current_stop);
+    BruteForce_(cost_type);
 
     // Continue iteration with next stop
-    Stop next{next_charger, charge_duration, max_range_, parent};
-    route_.emplace_back(BruteForce_(next, cost_type));
+    // Stop next{next_charger, static_cast<double>(NULL), 0, &current_stop};
+    // route_.push_back(BruteForce_(next, cost_type));
+    // route_.push_back(std::move(BruteForce_(next, cost_type)));
 
     // NOTE: My initial thought was to not choose a single "next charger", but
     // recursively call BruteForce_ on ALL candidate chargers. Thus allowing the
@@ -285,8 +297,7 @@ namespace supercharger
     //   BruteForce_(next_stop);
     // }
 
-    // If no solution is found, return empty
-    return {};
+    return;
   }
 
   /**
