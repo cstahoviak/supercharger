@@ -17,7 +17,6 @@
 #include <iostream>
 #include <map>
 #include <sstream>
-#include <unordered_set>
 
 namespace supercharger
 {

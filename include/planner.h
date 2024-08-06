@@ -12,7 +12,6 @@
 #include "logging.h"
 #include "network.h"
 
-#include <chrono>
 #include <ostream>
 #include <unordered_map>
 #include <vector>
