@@ -83,7 +83,7 @@ namespace supercharger
       void AStar_();
 
       // Cost functions (args are const pointers to const Chargers)
-      double ComputeChargeTime_(const Charger* const, const Charger* const next) const;
+      double ComputeChargeTime_(const Charger* const, const Charger* const) const;
       double ComputeCost_(const Charger* const, const Charger* const, CostType) const;
   };
 
