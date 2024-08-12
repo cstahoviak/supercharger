@@ -3,8 +3,8 @@
 ## Future Work
 
 1. Add [Dijkstra's algorithm](https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/) for route planning.
-2. Add A* algorithm for route planning.
-3. Create python bindings for the `RoutePlanner` class.
+2. Add [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
+3. Create python bindings ([`pybind11`](https://pybind11.readthedocs.io/en/stable/)) for the `RoutePlanner` class.
 4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Brute Force" algorithm cost function.
 
 ## Problem Statment
