@@ -1,5 +1,12 @@
 # Tesla Coding Challenge
 
+## Future Work
+
+1. Add [Dijkstra's algorithm](https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/) for route planning.
+2. Add A* algorithm for route planning.
+3. Create python bindings for the `RoutePlanner` class.
+4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Brute Force" algorithm cost function.
+
 ## Problem Statment
 Your objective is to construct a search algorithm to find the minimum time path through the tesla network of supercharging stations. Each supercharger will refuel the vehicle at a different rate given in km/hr of charge time. Your route does not have to fully charge at every visited charger, so long as it never runs out of charge between two chargers. You should expect to need __no more than 4-6 hours__ to solve this problem. We suggest implementing a quick brute force method before attempting to find an optimal routine.
 
@@ -77,5 +84,18 @@ The solution needs to be self-contained with just the use of STL algorithms
 ## Solution
 
 ### Building
+Build the `supercharger` application by following the standard CMake build process:
+
+```
+cd supercharger
+mkdir build && cd build
+cmake ..
+make
+```
 
 ### Running the `supercharger` Application
+Run the `supercharger` application by passing any two valid Supercharger locations to the executable, e.g.
+
+```
+./supercharger Council_Bluffs_IA Cadillac_MI
+```

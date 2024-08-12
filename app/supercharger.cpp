@@ -1,7 +1,7 @@
 /**
  * @file supercharger.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief The top-level Tesla Supercharger route planning application.
  * @version 0.1
  * @date 2024-08-03
  * 
@@ -22,10 +22,12 @@ int main(int argc, char** argv)
       << std::endl;        
     return -1;
   }
-    
+  
+  // Parse the initial and goal charger names
   std::string initial_charger_name = argv[1];
   std::string goal_charger_name = argv[2];
 
+  // Create the Route Planner
   RoutePlanner planner(initial_charger_name, goal_charger_name);
 
   // Test to make sure the network getter works.
