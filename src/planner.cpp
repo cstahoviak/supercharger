@@ -36,7 +36,7 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(std::string& origin, std::string& destination) {
+  RoutePlanner::RoutePlanner() {
     // Create the network map
     for ( Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
@@ -46,7 +46,32 @@ namespace supercharger
           << "Skipping.");
       }
     }
+  }
 
+  std::vector<Stop> RoutePlanner::PlanRoute(const std::string& origin, const std::string& destination, CostType cost_type) {
+    // Initialize the route
+    std::vector<Stop> route = InitializeRoute_(origin, destination);
+
+    LOG("Planning route between '" << origin_->name << "' and '" <<
+      destination_->name << "'");
+
+    // Plan the route
+    BruteForce_(route, cost_type);
+
+    if ( route.back().charger->name == destination_->name ) {
+      LOG("\nSolution found!");
+    }
+    else {
+      LOG("\nSearch terminated. Solution not found.");
+    }
+
+    // TODO: Backtrace to determine the route (doesn't apply to current
+    // solution method).
+    
+    return route;
+  }
+
+  std::vector<Stop> RoutePlanner::InitializeRoute_(const std::string& origin, const std::string& destination) {
     // Store the origin and destination chargers
     try {
       origin_ = network_.at(origin); 
@@ -65,29 +90,11 @@ namespace supercharger
       os << "Destination charger '" << destination << "' not in network.";
       throw std::out_of_range(os.str());
     };
-  }
 
-  std::vector<Stop> RoutePlanner::PlanRoute(CostType cost_type) {
-    LOG("Planning route between '" << origin_->name << "' and '" <<
-      destination_->name << "'");
-
-    // Add the origin to the route
-    route_.emplace_back(origin_, 0, max_range_, nullptr);
-
-    // Plan the route
-    BruteForce_(cost_type);
-
-    if ( route_.back().charger->name == destination_->name ) {
-      LOG("\nSolution found!");
-    }
-    else {
-      LOG("\nSearch terminated. Solution not found.");
-    }
-
-    // TODO: Backtrace to determine the route (doesn't apply to current
-    // solution method)
-    
-    return route_;
+    // Initialize the route and add the origin to the route
+    std::vector<Stop> route;
+    route.emplace_back(origin_, 0, max_range_, nullptr);
+    return route;
   }
 
   double RoutePlanner::ComputeChargeTime_(const Charger* const current, const Charger* const next) const {
@@ -158,10 +165,10 @@ namespace supercharger
    * @param current_stop 
    * @return Stop 
    */
-  void RoutePlanner::BruteForce_(CostType cost_type) {
+  void RoutePlanner::BruteForce_(std::vector<Stop>& route, CostType cost_type) const {
     // Get the current stop
-    Stop& current_stop = route_.back();
-    LOG("Current route: " << route_);
+    Stop& current_stop = route.back();
+    LOG("Current route: " << route);
 
     // Use a map to store the candidate chargers, i.e. the next possible
     // chargers on the route, sorted by distance to the destination
@@ -245,7 +252,7 @@ namespace supercharger
         ComputeChargeTime_(current_stop.charger, destination_);
 
       // Add the destination as the final stop on the route
-      route_.emplace_back(
+      route.emplace_back(
         network_.at(destination_->name), 0, range_remaining, &current_stop);
 
       return;
@@ -263,16 +270,16 @@ namespace supercharger
         ComputeChargeTime_(current_stop.charger, next_charger);
     }
 
-    // Add the next stop to the route_ and continue iteration. Note that the
+    // Add the next stop to the route and continue iteration. Note that the
     // charge duration at the next stop will be computed on the next iteration.
-    route_.emplace_back(
+    route.emplace_back(
       next_charger, static_cast<double>(NULL), 0, &current_stop);
-    BruteForce_(cost_type);
+    BruteForce_(route, cost_type);
 
     // Continue iteration with next stop
     // Stop next{next_charger, static_cast<double>(NULL), 0, &current_stop};
-    // route_.push_back(BruteForce_(next, cost_type));
-    // route_.push_back(std::move(BruteForce_(next, cost_type)));
+    // route.push_back(BruteForce_(next, cost_type));
+    // route.push_back(std::move(BruteForce_(next, cost_type)));
 
     // NOTE: My initial thought was to not choose a single "next charger", but
     // recursively call BruteForce_ on ALL candidate chargers. Thus allowing the
@@ -302,7 +309,7 @@ namespace supercharger
   /**
    * @brief Implements Dijkstra's algorithm.
    */
-  void RoutePlanner::Dijkstra_() {
+  void RoutePlanner::Dijkstra_(std::vector<Stop>& route) const {
     return;
   }
 
@@ -313,7 +320,7 @@ namespace supercharger
    * well as a heuristic that, in our case, should be a function of the charge
    * rate.
    */
-  void RoutePlanner::AStar_() {
+  void RoutePlanner::AStar_(std::vector<Stop>& route) const {
     return;
   }
 } // end namespace supercharger

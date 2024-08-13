@@ -47,9 +47,9 @@ namespace supercharger
       };
     
     public:
-      RoutePlanner(std::string&, std::string&);
+      RoutePlanner();
 
-      std::vector<Stop> PlanRoute(CostType);
+      std::vector<Stop> PlanRoute(const std::string&, const std::string&, CostType);
 
       // Getters
       const std::unordered_map<std::string, Charger*>& network() const {
@@ -57,6 +57,7 @@ namespace supercharger
       } 
 
     private:
+      // TODO: Switch to unique_ptr?
       Charger* origin_;
       Charger* destination_;
 
@@ -68,19 +69,18 @@ namespace supercharger
       // travel time more heavily than charge time) NOTE: These weights were
       // arrived at after a bit of tuning, but more work could be done here to
       // further refine these values.
-      double weight_time_to_destination_ = 0.75;
-      double weight_time_to_charge_ = 0.25;
+      const double weight_time_to_destination_ = 0.75;
+      const double weight_time_to_charge_ = 0.25;
 
       // Store the network
       std::unordered_map<std::string, Charger*> network_;
 
-      // Store each stop along the final route
-      std::vector<Stop> route_;
+      std::vector<Stop> InitializeRoute_(const std::string&, const std::string&);
 
       // Route-planning algorithms
-      void BruteForce_(CostType);
-      void Dijkstra_();
-      void AStar_();
+      void BruteForce_(std::vector<Stop>&, CostType) const;
+      void Dijkstra_(std::vector<Stop>&) const;
+      void AStar_(std::vector<Stop>&) const;
 
       // Cost functions (args are const pointers to const Chargers)
       double ComputeChargeTime_(const Charger* const, const Charger* const) const;
@@ -88,7 +88,6 @@ namespace supercharger
   };
 
 // Overload the string stream operator to output the route
-std::ostream& operator<<(
-  std::ostream& stream, const std::vector<Stop>& route);
+std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route);
 
 } // end namespace supercharger

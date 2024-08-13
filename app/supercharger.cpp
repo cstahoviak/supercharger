@@ -24,18 +24,21 @@ int main(int argc, char** argv)
   }
   
   // Parse the initial and goal charger names
-  std::string initial_charger_name = argv[1];
-  std::string goal_charger_name = argv[2];
+  const std::string initial_charger_name = argv[1];
+  const std::string goal_charger_name = argv[2];
 
   // Create the Route Planner
-  RoutePlanner planner(initial_charger_name, goal_charger_name);
+  RoutePlanner planner;
 
   // Test to make sure the network getter works.
   auto& network = planner.network();
 
   // Plan the route with the provided cost function for the "brute force" algo
-  std::vector<Stop> route =
-    planner.PlanRoute(RoutePlanner::CostType::MINIMIZE_TIME_REMAINING);
+  std::vector<Stop> route = planner.PlanRoute(
+    initial_charger_name,
+    goal_charger_name,
+    RoutePlanner::CostType::MINIMIZE_TIME_REMAINING
+  );
   LOG("\nFinal Route:");
   std::cout << route << std::endl;
 }
