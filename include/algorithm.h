@@ -41,14 +41,12 @@ namespace supercharger
         NONE
       };
 
-      // PlanningAlgorithm(RoutePlanner* planner) : planner_(planner) {};
-
-      static std::unique_ptr<PlanningAlgorithm> GetPlanner(AlgorithmType, CostFunctionType);
+      static std::unique_ptr<PlanningAlgorithm> GetPlanner(AlgorithmType&&, CostFunctionType&&);
       virtual void PlanRoute(std::vector<Stop>&) const = 0;
 
       // RoutePlanner setter and getter
       void SetRoutePlanner(RoutePlanner* planner) { route_planner_ = planner; }
-      // const RoutePlanner* const planner() const { return planner_; }
+      // const RoutePlanner* const route_planner() const { return route_planner_; }
 
     protected:
       // Store a reference to top-level RoutePlanner instance
@@ -58,7 +56,7 @@ namespace supercharger
   /**
    * @brief My "brute force" path planner.
    */
-  class BruteForce : protected PlanningAlgorithm
+  class BruteForce : public PlanningAlgorithm
   {
     public:
       BruteForce(CostFunctionType type) : type_(type) {};
@@ -83,11 +81,11 @@ namespace supercharger
   /**
    * @brief Implements Dijkstra's algorithm.
    */
-  // class Dijstras : public PlanningAlgorithm
-  // {
-  //   public:
-  //     void PlanRoute(std::vector<Stop>&) const override;
-  // };
+  class Dijkstras : public PlanningAlgorithm
+  {
+    public:
+      void PlanRoute(std::vector<Stop>&) const override;
+  };
 
   /**
    * @brief Implements the A* search algorithm. A* makes sense in this scenario
@@ -96,10 +94,10 @@ namespace supercharger
    * well as a heuristic that, in our case, should be a function of the charge
    * rate.
    */
-  // class AStar : public PlanningAlgorithm
-  // {
-  //   public:
-  //     void PlanRoute(std::vector<Stop>&) const override;
-  // };
+  class AStar : public PlanningAlgorithm
+  {
+    public:
+      void PlanRoute(std::vector<Stop>&) const override;
+  };
   
 } // end namespace supercharger

@@ -28,7 +28,7 @@ namespace supercharger
   {
     public:
       // TODO: Change to accepting r-value reference?
-      RoutePlanner(AlgoType, CostFcnType);
+      RoutePlanner(AlgoType&&, CostFcnType&&);
 
       // TODO: Add ctor that also takes max range and speed
 

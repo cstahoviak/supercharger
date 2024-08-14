@@ -28,9 +28,7 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Create the Route Planner
-  AlgoType algo_type = AlgoType::BRUTE_FORCE;
-  CostFcnType cost_type = CostFcnType::MINIMIZE_TIME_REMAINING;
-  RoutePlanner planner(algo_type, cost_type);
+  RoutePlanner planner(AlgoType::BRUTE_FORCE, CostFcnType::MINIMIZE_TIME_REMAINING);
 
   // Test to make sure the network getter works.
   auto& network = planner.network();
@@ -38,7 +36,7 @@ int main(int argc, char** argv)
   // Plan the route with the provided cost function for the "brute force" algo
   std::vector<Stop> route = planner.PlanRoute(
     initial_charger_name,
-    goal_charger_name,
+    goal_charger_name
   );
   LOG("\nFinal Route:");
   std::cout << route << std::endl;

@@ -22,16 +22,21 @@
 namespace supercharger
 {
   // NOTE: Do NOT repeat the 'static keyword at the cpp file level
-  // NOTE: I think this must be define at the cpp file level because otherwise
+  // NOTE: I think this must be defined at the cpp file level because otherwise
   // I get a "not declared in this scope error" related to the derived planning
   // algorithm types (BruteForce, Dijkstra's, etc.). 
   std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanner(
-    AlgorithmType algo_type,
-    CostFunctionType cost_type)
+    AlgorithmType&& algo_type,
+    CostFunctionType&& cost_type = CostFunctionType::NONE)
   {
     switch ( algo_type )
     {
       case AlgorithmType::BRUTE_FORCE:
+        // NOTE: There is an important difference between public and protected
+        // inheritance when it comes to the compiler "being aware" that a
+        // unique_ptr of the base class (the return type of this function) can
+        // be initialized from unique_ptr of the derived class: public
+        // inheritance allows this, but protected inheritance does not. But why?
         return std::make_unique<BruteForce>(cost_type);
 
       case AlgorithmType::DIJKSTRAS:
@@ -263,6 +268,14 @@ namespace supercharger
     //   BruteForce_(next_stop);
     // }
 
+    return;
+  }
+
+  void Dijkstras::PlanRoute(std::vector<Stop>& route) const {
+    return;
+  }
+
+  void AStar::PlanRoute(std::vector<Stop>& route) const {
     return;
   }
 
