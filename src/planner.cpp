@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
-#include <iostream>
 #include <map>
 #include <sstream>
 
@@ -26,8 +25,9 @@ namespace supercharger
     size_t idx = 0;
     for ( const Stop& stop : route ) {
       stream << stop.charger->name;
+      // stream << &stop;
       if ( stop.duration > 0 ) {
-        stream << ", " << std::setprecision(5) << stop.duration;
+        stream << ", " << std::setprecision(6) << stop.duration;
       }
       if ( idx < sz - 1 ) {
         stream << ", ";

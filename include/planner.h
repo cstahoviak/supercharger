@@ -40,6 +40,9 @@ namespace supercharger
       const double max_range() const { return max_range_; }
       const double speed() const { return speed_; }
 
+      // Return the total cost (time) of the planned route
+      const double cost() const { return planning_algo_->cost(); }
+
     private:
       // TODO: Switch to unique_ptr?
       Charger* origin_;
@@ -59,6 +62,6 @@ namespace supercharger
   };
 
   // Overload the string stream operator to output the route
-  std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route);
+  std::ostream& operator<<(std::ostream&, const std::vector<Stop>&);
 
 } // end namespace supercharger

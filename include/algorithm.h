@@ -42,15 +42,20 @@ namespace supercharger
       };
 
       static std::unique_ptr<PlanningAlgorithm> GetPlanner(AlgorithmType&&, CostFunctionType&&);
-      virtual void PlanRoute(std::vector<Stop>&) const = 0;
+      virtual void PlanRoute(std::vector<Stop>&) = 0;
 
       // RoutePlanner setter and getter
       void SetRoutePlanner(RoutePlanner* planner) { route_planner_ = planner; }
       // const RoutePlanner* const route_planner() const { return route_planner_; }
 
+      const double cost() const { return total_cost_; }
+
     protected:
       // Store a reference to top-level RoutePlanner instance
       RoutePlanner* route_planner_{nullptr};
+
+      // Store the total cost of the route
+      double total_cost_{0};
   };
 
   /**
@@ -61,10 +66,10 @@ namespace supercharger
     public:
       BruteForce(CostFunctionType type) : type_(type) {};
 
-      void PlanRoute(std::vector<Stop>&) const override;
+      void PlanRoute(std::vector<Stop>&) override;
 
       // Cost functions (args are const pointers to const Chargers)
-      double ComputeChargeTime(const Charger* const, const Charger* const) const;
+      double ComputeChargeTime(const Stop&, const Charger* const) const;
       double ComputeCost(const Charger* const, const Charger* const) const;
 
     private:
@@ -84,7 +89,7 @@ namespace supercharger
   class Dijkstras : public PlanningAlgorithm
   {
     public:
-      void PlanRoute(std::vector<Stop>&) const override;
+      void PlanRoute(std::vector<Stop>&) override;
   };
 
   /**
@@ -97,7 +102,7 @@ namespace supercharger
   class AStar : public PlanningAlgorithm
   {
     public:
-      void PlanRoute(std::vector<Stop>&) const override;
+      void PlanRoute(std::vector<Stop>&) override;
   };
   
 } // end namespace supercharger

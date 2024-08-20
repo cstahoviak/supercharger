@@ -34,13 +34,13 @@ int main(int argc, char** argv)
   );
 
   // Test to make sure the network getter works.
-  auto& network = planner.network();
+  const auto& network = planner.network();
 
   // Plan the route with chosen algorithm and cost function
   std::vector<Stop> route = planner.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );
-  LOG("\nFinal Route:");
+  LOG("\nFinal Route: (Cost=" << planner.cost() << " hrs)");
   std::cout << route << std::endl;
 }
