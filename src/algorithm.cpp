@@ -52,17 +52,48 @@ namespace supercharger
     }
   }
 
-  double BruteForce::ComputeChargeTime(const Charger* const current, const Charger* const next) const {
-    // Compute the distance to the next charger
-    double current_to_next = great_circle_distance(
-      current->lat, current->lon, next->lat, next->lon);
-
-    // Compute the charge time required to make it to the next charger.
-    // NOTE that we're charging the car only enough to make it to the next stop.
-    return current_to_next / current->rate;
+  /**
+   * @brief Effectively a wrapper around the great_circle_distance() function.
+   * 
+   * @param charger1
+   * @param charger2
+   * @return double 
+   */
+  double PlanningAlgorithm::ComputeDistance(
+    const Charger* const charger1, const Charger* const charger2) const
+  {
+    return great_circle_distance(
+      charger1->lat, charger1->lon, charger2->lat, charger2->lon);
   }
 
-  double BruteForce::ComputeCost(const Charger* const current, const Charger* const candidate) const {
+  double BruteForce::ComputeChargeTime_(
+    const Stop& current_stop, const Charger* const next_charger) const
+  {
+    // Compute the distance to the next charger
+    double current_to_next = 
+      ComputeDistance(current_stop.charger, next_charger);
+
+    // Compute the charge time required to make it to the next charger.
+    // NOTE: we're charging the car only enough to make it to the next stop.
+    return (current_to_next - current_stop.range) / current_stop.charger->rate;
+  }
+
+  void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
+    // Get the current and previous stops
+    const Stop& current = route.back();
+    const Stop& previous = route.rbegin()[1];
+
+    // Add the travel time between the previous and current stops
+    total_cost_ += ComputeDistance(previous.charger, current.charger) /
+      route_planner_->speed();
+
+    // Add the time to charge at the current stop
+    total_cost_ += current.duration;
+  }
+
+  double BruteForce::ComputeCost_(
+    const Charger* const current, const Charger* const candidate) const 
+  {
     // Define the cost
     double cost{0};
     
@@ -72,27 +103,16 @@ namespace supercharger
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
-        cost = great_circle_distance(
-          candidate->lat,
-          candidate->lon,
-          route_planner_->destination()->lat,
-          route_planner_->destination()->lon
-        );
+        cost = ComputeDistance(candidate, route_planner_->destination());
         break;
       }
       
       case CostFcnType::MINIMIZE_TIME_REMAINING:
       {
         // Compute distances
-        double candidate_to_destination = great_circle_distance(
-          candidate->lat,
-          candidate->lon,
-          route_planner_->destination()->lat,
-          route_planner_->destination()->lon
-        );
-        double current_to_candidate = great_circle_distance(
-          current->lat, current->lon, candidate->lat, candidate->lon
-        );
+        double candidate_to_destination = 
+          ComputeDistance(candidate, route_planner_->destination());
+        double current_to_candidate = ComputeDistance(current, candidate);
 
         // Compute times
         double time_to_destination = 
@@ -127,10 +147,13 @@ namespace supercharger
    * @param current_stop 
    * @return Stop 
    */
-  void BruteForce::PlanRoute(std::vector<Stop>& route) const {
+  void BruteForce::PlanRoute(std::vector<Stop>& route) {
     // Get the current stop
     Stop& current_stop = route.back();
     LOG("Current route: " << route);
+
+    // Create a local alias for the destination charger
+    const Charger* const destination = route_planner_->destination();
 
     // Use a map to store the candidate chargers, i.e. the next possible
     // chargers on the route, sorted by distance to the destination
@@ -149,24 +172,9 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances
-      current_to_candidate = great_circle_distance(
-        current_stop.charger->lat,
-        current_stop.charger->lon,
-        charger->lat,
-        charger->lon
-      );
-      current_to_dest = great_circle_distance(
-        current_stop.charger->lat,
-        current_stop.charger->lon,
-        route_planner_->destination()->lat,
-        route_planner_->destination()->lon
-      );
-      candidate_to_dest = great_circle_distance(
-        charger->lat,
-        charger->lon,
-        route_planner_->destination()->lat,
-        route_planner_->destination()->lon
-      );
+      current_to_candidate = ComputeDistance(current_stop.charger, charger);
+      current_to_dest = ComputeDistance(current_stop.charger, destination);
+      candidate_to_dest = ComputeDistance(charger, destination);
 
       // If candidate charger is within the maximum range of the vehicle, add
       // the candidate charger to "reachable" set
@@ -184,10 +192,10 @@ namespace supercharger
       // the current charger, add it to map of candidate chargers
       if ( is_reachable && is_closer ) {
         // Compute the cost for the candidate charger
-        double cost = ComputeCost(current_stop.charger, charger);
+        double cost = ComputeCost_(current_stop.charger, charger);
 
         // Add the charger to the map of candidate chargers
-        const auto& pair2 = candidates.try_emplace(cost, charger);
+        const auto& pair = candidates.try_emplace(cost, charger);
         candidate_names.push_back(charger->name);
       }
     }
@@ -196,30 +204,24 @@ namespace supercharger
     // std::unordered_set<Charger> candidate_chargers;
     // std::set_intersection(reachable.begin(), reachable.end(),
     //   closer_to.begin(), closer_to.end(),
-    //              std::inserter(candidate_chargers, candidate_chargers.begin()));
+    //   std::inserter(candidate_chargers, candidate_chargers.begin()));
 
     // If the destination is in the set of candidate chargers, we can go to the
     // destination on our remaining charge and we're done!
-    if ( std::find(candidate_names.begin(), candidate_names.end(), route_planner_->destination()->name) != candidate_names.end() ) {
-      // Compute the remaining range after arriving at the destination
-      double range_remaining = great_circle_distance(
-        current_stop.charger->lat,
-        current_stop.charger->lon,
-        route_planner_->destination()->lat,
-        route_planner_->destination()->lon
-      );
-
+    if ( std::find(candidate_names.begin(), candidate_names.end(), destination->name) != candidate_names.end() ) {
       // Compute the charge time to make it to the final destination
-      current_stop.duration = 
-        ComputeChargeTime(current_stop.charger, route_planner_->destination());
+      current_stop.duration = ComputeChargeTime_(current_stop, destination);
 
-      // Add the destination as the final stop on the route
-      route.emplace_back(
-        route_planner_->network().at(route_planner_->destination()->name),
-        0,
-        range_remaining,
-        &current_stop);
+      // Update the total cost at the current stop
+      UpdateRouteCost_(route);
 
+      // Finally, add the travel time to the destination to the total cost
+      total_cost_ += ComputeDistance(current_stop.charger, destination) /
+        route_planner_->speed();
+
+      // Add the destination as the final stop on the route (don't bother
+      // computing remaining range at destination)
+      route.emplace_back(route_planner_->network().at(destination->name), 0, 0);
       return;
     }
 
@@ -229,16 +231,23 @@ namespace supercharger
 
     // If we've arrived at the current stop with less than the maximum range
     // (which should be true for every stop that's not the origin), determine
-    // charge time to make it to the next stop
+    // charge time to make it to the next stop    
     if ( current_stop.range < route_planner_->max_range() ) {
       current_stop.duration = 
-        ComputeChargeTime(current_stop.charger, next_charger);
+        ComputeChargeTime_(current_stop, next_charger);
+
+      // Update the total cost at the current stop
+      UpdateRouteCost_(route);
     }
+
+    // Compute the range remaining after arriving at the next stop
+    double range_remaining = current_stop.range + 
+      (current_stop.duration * current_stop.charger->rate) -
+      ComputeDistance(current_stop.charger, next_charger);
 
     // Add the next stop to the route and continue iteration. Note that the
     // charge duration at the next stop will be computed on the next iteration.
-    route.emplace_back(
-      next_charger, static_cast<double>(NULL), 0, &current_stop);
+    route.emplace_back(next_charger, 0, range_remaining);
     PlanRoute(route);
 
     // Continue iteration with next stop
@@ -271,11 +280,34 @@ namespace supercharger
     return;
   }
 
-  void Dijkstras::PlanRoute(std::vector<Stop>& route) const {
+  void Dijkstras::PlanRoute(std::vector<Stop>& route) {
+    // 1. Mark all "nodes"/stops as unvisited
+
+    // 2. Assign a "distance to start" value to each node in the network.
+    // Initially, this value will be "infinity" since no path is yet known to
+    // these "unvisited" nodes.
+
+    // 3. From the unvisited set, select the current node to be the one with
+    // the smallest known distance from the origin. If the current node is the
+    // destination node, we're done; otherwise, continue to find the shortest
+    // path to all reachable nodes.
+
+    // 4. For the current node, consider all of its unvisited neighbors and
+    // update their distance through the current node. Compare the newly
+    // calculated distance to the one currently assigned to the neighbor, and
+    // assign the neighbor the smaller distance.
+
+    // 5. Once we've considered all the unvisited neighbors of the current node,
+    // mark the current node as visited and remove it from the unvisited set.
+
+    // 6. Return to step 3.
+
+    // 7. Once the loop (steps 3-5) exits, every node will contain the shortest
+    // distance from the start node.
     return;
   }
 
-  void AStar::PlanRoute(std::vector<Stop>& route) const {
+  void AStar::PlanRoute(std::vector<Stop>& route) {
     return;
   }
 

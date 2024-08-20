@@ -15,22 +15,19 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
-#include <iostream>
 #include <map>
 #include <sstream>
 
 namespace supercharger
 {
-  using AlgoType = PlanningAlgorithm::AlgorithmType;
-  using CostFcnType = PlanningAlgorithm::CostFunctionType;
-
   std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route) {
     size_t sz = route.size();
     size_t idx = 0;
     for ( const Stop& stop : route ) {
       stream << stop.charger->name;
+      // stream << &stop;
       if ( stop.duration > 0 ) {
-        stream << ", " << std::setprecision(5) << stop.duration;
+        stream << ", " << std::setprecision(6) << stop.duration;
       }
       if ( idx < sz - 1 ) {
         stream << ", ";
