@@ -1,13 +1,12 @@
 #pragma once
 /**
  * @file stop.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief The Stop struct represents a single node along the route.
  * @version 0.1
  * @date 2024-08-13
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "network.h"
 

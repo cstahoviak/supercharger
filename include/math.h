@@ -1,16 +1,13 @@
 #pragma once
 /**
  * @file math.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author Calr Stahoviak
+ * @brief Math utility functions.
  * @version 0.1
  * @date 2024-08-05
  * 
  * @copyright Copyright (c) 2024
- * 
  */
-#include "network.h"
-
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
@@ -43,8 +40,10 @@ namespace supercharger
     const double delta_phi = (lat2 - lat1) * M_PI / 180;
     const double delta_lambda = (lon2 - lon1) * M_PI / 180;
 
-    const double a = std::sin(delta_phi / 2) * std::sin(delta_phi / 2) +
-      std::cos(phi1) * std::cos(phi2) * std::sin(delta_lambda / 2) * std::sin(delta_lambda / 2);
+    const double a =
+      std::sin(delta_phi / 2) * std::sin(delta_phi / 2) +
+      std::cos(phi1) * std::cos(phi2) * 
+      std::sin(delta_lambda / 2) * std::sin(delta_lambda / 2);
 
     const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 

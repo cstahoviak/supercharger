@@ -44,6 +44,8 @@ namespace supercharger
       static std::unique_ptr<PlanningAlgorithm> GetPlanner(AlgorithmType&&, CostFunctionType&&);
       virtual void PlanRoute(std::vector<Stop>&) = 0;
 
+      double ComputeDistance(const Charger* const, const Charger* const) const;
+
       // RoutePlanner setter and getter
       void SetRoutePlanner(RoutePlanner* planner) { route_planner_ = planner; }
       // const RoutePlanner* const route_planner() const { return route_planner_; }
@@ -68,10 +70,6 @@ namespace supercharger
 
       void PlanRoute(std::vector<Stop>&) override;
 
-      // Cost functions (args are const pointers to const Chargers)
-      double ComputeChargeTime(const Stop&, const Charger* const) const;
-      double ComputeCost(const Charger* const, const Charger* const) const;
-
     private:
       CostFunctionType type_;
 
@@ -81,6 +79,10 @@ namespace supercharger
       // further refine these values.
       const double weight_time_to_destination_ = 0.75;
       const double weight_time_to_charge_ = 0.25;
+
+      // Cost functions (args are const pointers to const Chargers)
+      double ComputeChargeTime_(const Stop&, const Charger* const) const;
+      double ComputeCost_(const Charger* const, const Charger* const) const;
   };
 
   /**
