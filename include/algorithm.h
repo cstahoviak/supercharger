@@ -82,7 +82,7 @@ namespace supercharger
 
       // Utility functions (args are const pointers to const Chargers)
       double ComputeChargeTime_(const Stop&, const Charger* const) const;
-      void UpdateCost_(const std::vector<Stop>&);
+      void UpdateRouteCost_(const std::vector<Stop>&);
 
       // The "brute force" algorithm cost function
       double ComputeCost_(const Charger* const, const Charger* const) const;

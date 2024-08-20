@@ -78,7 +78,7 @@ namespace supercharger
     return (current_to_next - current_stop.range) / current_stop.charger->rate;
   }
 
-  void BruteForce::UpdateCost_(const std::vector<Stop>& route) {
+  void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
     // Get the current and previous stops
     const Stop& current = route.back();
     const Stop& previous = route.rbegin()[1];
@@ -213,7 +213,7 @@ namespace supercharger
       current_stop.duration = ComputeChargeTime_(current_stop, destination);
 
       // Update the total cost at the current stop
-      UpdateCost_(route);
+      UpdateRouteCost_(route);
 
       // Finally, add the travel time to the destination to the total cost
       total_cost_ += ComputeDistance(current_stop.charger, destination) /
@@ -237,7 +237,7 @@ namespace supercharger
         ComputeChargeTime_(current_stop, next_charger);
 
       // Update the total cost at the current stop
-      UpdateCost_(route);
+      UpdateRouteCost_(route);
     }
 
     // Compute the range remaining after arriving at the next stop
