@@ -28,12 +28,15 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Create the Route Planner
-  RoutePlanner planner(AlgoType::BRUTE_FORCE, CostFcnType::MINIMIZE_TIME_REMAINING);
+  RoutePlanner planner(
+    AlgoType::BRUTE_FORCE,
+    CostFcnType::MINIMIZE_TIME_REMAINING
+  );
 
   // Test to make sure the network getter works.
   auto& network = planner.network();
 
-  // Plan the route with the provided cost function for the "brute force" algo
+  // Plan the route with chosen algorithm and cost function
   std::vector<Stop> route = planner.PlanRoute(
     initial_charger_name,
     goal_charger_name

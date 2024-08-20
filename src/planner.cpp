@@ -21,9 +21,6 @@
 
 namespace supercharger
 {
-  using AlgoType = PlanningAlgorithm::AlgorithmType;
-  using CostFcnType = PlanningAlgorithm::CostFunctionType;
-
   std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route) {
     size_t sz = route.size();
     size_t idx = 0;
