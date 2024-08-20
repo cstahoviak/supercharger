@@ -41,6 +41,6 @@ int main(int argc, char** argv)
     initial_charger_name,
     goal_charger_name
   );
-  LOG("\nFinal Route: (Cost=" << planner.cost() << " hrs)");
+  LOG("\nFinal Route (Cost: " << planner.cost() << " hrs)");
   std::cout << route << std::endl;
 }

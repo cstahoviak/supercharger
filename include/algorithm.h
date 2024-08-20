@@ -80,8 +80,11 @@ namespace supercharger
       const double weight_time_to_destination_ = 0.75;
       const double weight_time_to_charge_ = 0.25;
 
-      // Cost functions (args are const pointers to const Chargers)
+      // Utility functions (args are const pointers to const Chargers)
       double ComputeChargeTime_(const Stop&, const Charger* const) const;
+      void UpdateCost_(const std::vector<Stop>&);
+
+      // The "brute force" algorithm cost function
       double ComputeCost_(const Charger* const, const Charger* const) const;
   };
 
