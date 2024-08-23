@@ -31,8 +31,11 @@ set(LIB_HEADERS
   "include/algorithm/algorithm.h"
   "include/algorithm/brute_force.h"
   "include/algorithm/dijkstras.h"
+  "include/logging.h"
+  "include/math.h"
   "include/network.h"
   "include/planner.h"
+  "include/stop.h"
 )
 
 # Create the superchargerlib
