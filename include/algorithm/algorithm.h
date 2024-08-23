@@ -9,7 +9,6 @@
  * @copyright Copyright (c) 2024
  * 
  */
-// #include "planner.h"
 #include "stop.h"
 
 #include <memory>
@@ -41,60 +40,25 @@ namespace supercharger
         NONE
       };
 
-      static std::unique_ptr<PlanningAlgorithm> GetPlanner(AlgorithmType&&, CostFunctionType&&);
+      static std::unique_ptr<PlanningAlgorithm> GetPlanner(
+        AlgorithmType&&, CostFunctionType&&);
+      
       virtual void PlanRoute(std::vector<Stop>&) = 0;
 
       double ComputeDistance(const Charger* const, const Charger* const) const;
 
-      // RoutePlanner setter and getter
+      // RoutePlanner setter
       void SetRoutePlanner(RoutePlanner* planner) { route_planner_ = planner; }
-      // const RoutePlanner* const route_planner() const { return route_planner_; }
 
+      // Getters
       const double cost() const { return total_cost_; }
 
     protected:
       // Store a reference to top-level RoutePlanner instance
       RoutePlanner* route_planner_{nullptr};
 
-      // Store the total cost of the route
+      // Store the total cost (time in hrs) of the route
       double total_cost_{0};
-  };
-
-  /**
-   * @brief My "brute force" path planner.
-   */
-  class BruteForce : public PlanningAlgorithm
-  {
-    public:
-      BruteForce(CostFunctionType type) : type_(type) {};
-
-      void PlanRoute(std::vector<Stop>&) override;
-
-    private:
-      CostFunctionType type_;
-
-      // Store "brute force" const function weight parameters (weight remaining
-      // travel time more heavily than charge time) NOTE: These weights were
-      // arrived at after a bit of tuning, but more work could be done here to
-      // further refine these values.
-      const double weight_time_to_destination_ = 0.75;
-      const double weight_time_to_charge_ = 0.25;
-
-      // Utility functions (args are const pointers to const Chargers)
-      double ComputeChargeTime_(const Stop&, const Charger* const) const;
-      void UpdateRouteCost_(const std::vector<Stop>&);
-
-      // The "brute force" algorithm cost function
-      double ComputeCost_(const Charger* const, const Charger* const) const;
-  };
-
-  /**
-   * @brief Implements Dijkstra's algorithm.
-   */
-  class Dijkstras : public PlanningAlgorithm
-  {
-    public:
-      void PlanRoute(std::vector<Stop>&) override;
   };
 
   /**

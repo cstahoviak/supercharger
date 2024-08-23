@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include "algorithm/algorithm.h"
 #include "logging.h"
 #include "math.h"
 #include "planner.h"
@@ -20,6 +21,14 @@
 
 namespace supercharger
 {
+  /**
+   * @brief Formats the final route output to comply with the format expected
+   * by the provided "checker" executables.
+   * 
+   * @param stream 
+   * @param route 
+   * @return std::ostream& 
+   */
   std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route) {
     size_t sz = route.size();
     size_t idx = 0;
@@ -37,7 +46,9 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(AlgoType&& algo_type, CostFcnType&& cost_type = CostFcnType::NONE)
+  RoutePlanner::RoutePlanner(
+    AlgoType&& algo_type,
+    CostFcnType&& cost_type = CostFcnType::NONE)
   {
     // Create the planning algorithm
     // NOTE: Even though this function accepts 'algo_type' and 'cost_type as 
@@ -75,9 +86,6 @@ namespace supercharger
     else {
       LOG("\nSearch terminated. Solution not found.");
     }
-
-    // TODO: Backtrace to determine the route (doesn't apply to current
-    // solution method).
     
     return route;
   }
@@ -104,7 +112,7 @@ namespace supercharger
 
     // Initialize the route and add the origin
     std::vector<Stop> route;
-    route.emplace_back(origin_, 0, max_range_, nullptr);
+    route.emplace_back(origin_, 0, max_range_);
     return route;
   }
 } // end namespace supercharger
