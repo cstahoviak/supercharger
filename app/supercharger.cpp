@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     // Create the Route Planner
     RoutePlanner planner(
       AlgoType::BRUTE_FORCE,
-      CostFcnType::MINIMIZE_TIME_REMAINING
+      CostFcnType::MINIMIZE_DIST_TO_NEXT
     );
 
     // Test to make sure the network getter works.

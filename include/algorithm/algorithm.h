@@ -36,6 +36,7 @@ namespace supercharger
 
       enum class CostFunctionType {
         // So far, these only apply to the Brute Force algorithm
+        MINIMIZE_DIST_TO_NEXT,
         MINIMIZE_DIST_REMAINING,
         MINIMIZE_TIME_REMAINING,
         NONE
@@ -64,6 +65,7 @@ namespace supercharger
       // Utility functions (args are const pointers to const Chargers)
       double ComputeDistance_(const Charger* const, const Charger* const) const;
       double ComputeChargeTime_(const Stop&, const Charger* const) const;
+      double ComputeRangeRemaining_(const Stop&, const Charger* const) const;
   };
 
   /**

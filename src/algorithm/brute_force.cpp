@@ -112,6 +112,24 @@ namespace supercharger
       return;
     }
 
+    if ( current_stop.charger->name == "Madison_WI" ) {
+      LOG("\nCurrent Stop: " << current_stop.charger->name);
+      for ( const auto& [cost, charger] : candidates) {
+        LOG(cost << ": " << charger->name);
+      }
+
+      double dist = ComputeDistance_(
+        current_stop.charger, route_planner_->network().at("Cherry_Valley_IL"));
+      LOG(dist << ": Cherry Valley, IL");
+
+      LOG(current_stop.charger->name << " -> " <<
+        route_planner_->destination()->name << ": " <<
+        ComputeDistance_(current_stop.charger, route_planner_->destination()));
+      LOG("Cherry Valley, IL -> " << route_planner_->destination()->name <<
+        ": " <<
+        ComputeDistance_(route_planner_->network().at("Cherry_Valley_IL"), route_planner_->destination()));
+    }
+
     // Choose the next charger such that it minimizes the cost
     double key = candidates.begin()->first;
     Charger* next_charger = candidates.at(key);
@@ -128,9 +146,9 @@ namespace supercharger
     }
 
     // Compute the range remaining after arriving at the next stop
-    double range_remaining = current_stop.range + 
-      (current_stop.duration * current_stop.charger->rate) -
-      ComputeDistance_(current_stop.charger, next_charger);
+    double range_remaining = ComputeRangeRemaining_(current_stop, next_charger);
+    LOG("Range remaining at '" << current_stop.charger->name << "': " <<
+      range_remaining);
 
     // Add the next stop to the route and continue iteration. Note that the
     // charge duration at the next stop will be computed on the next iteration.
@@ -195,6 +213,13 @@ namespace supercharger
     
     switch ( type_ )
     {
+      case CostFcnType::MINIMIZE_DIST_TO_NEXT:
+      {
+        // Effectively the same as Dijkstra's
+        cost = ComputeDistance_(current, candidate);
+        break;
+      }
+
       case CostFcnType::MINIMIZE_DIST_REMAINING:
       {
         // The "cost" is the distance from the candidate charger to the

@@ -82,6 +82,16 @@ namespace supercharger
     return (current_to_next - current_stop.range) / current_stop.charger->rate;
   }
 
+  double PlanningAlgorithm::ComputeRangeRemaining_(
+    const Stop& current_stop, const Charger* const next) const
+  {
+    // The range remaining is the range at the current stop + the range added by
+    // charging at the current stop - the distance to the next charger.
+    return current_stop.range + 
+      (current_stop.duration * current_stop.charger->rate) -
+      ComputeDistance_(current_stop.charger, next);
+  }
+
   void AStar::PlanRoute(std::vector<Stop>& route) {
     return;
   }
