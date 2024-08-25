@@ -46,10 +46,17 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(
-    AlgoType&& algo_type,
-    CostFcnType&& cost_type = CostFcnType::NONE)
-  {
+  RoutePlanner::RoutePlanner(AlgoType&& algo_type, CostFcnType&& cost_type) {
+    // Create the network map (must do this before creating the planning algo).
+    for ( Charger& charger : supercharger::network ) {
+      // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
+      const auto& pair = network_.try_emplace(charger.name, &charger);
+      if ( !pair.second ) {
+        LOG("Charger '" << charger.name << "' already exists in the network. "
+          << "Skipping.");
+      }
+    }
+
     // Create the planning algorithm
     // NOTE: Even though this function accepts 'algo_type' and 'cost_type as 
     // r-value references, once we're within the scope of this function, they
@@ -59,16 +66,6 @@ namespace supercharger
     planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
       this, std::move(algo_type), std::move(cost_type)
     );
-
-    // Create the network map
-    for ( Charger& charger : supercharger::network ) {
-      // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
-      const auto& pair = network_.try_emplace(charger.name, &charger);
-      if ( !pair.second ) {
-        LOG("Charger '" << charger.name << "' already exists in the network. "
-          << "Skipping.");
-      }
-    }
   }
 
   std::vector<Stop> RoutePlanner::PlanRoute(const std::string& origin, const std::string& destination) {

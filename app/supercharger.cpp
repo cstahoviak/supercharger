@@ -28,7 +28,7 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Use the Brute Force Algorithm
-  {
+  if (true) {
     // Create the Route Planner
     RoutePlanner planner(
       AlgoType::BRUTE_FORCE,
@@ -47,10 +47,19 @@ int main(int argc, char** argv)
     std::cout << route << std::endl;
   }
 
+  std::cout << "\n";
+
   // Dijkstra's Algorithm
-  {
+  if (true) {
+    // Create the Route Planner
+    RoutePlanner planner(AlgoType::DIJKSTRAS);
 
+    // Plan the route with chosen algorithm and cost function
+    std::vector<Stop> route = planner.PlanRoute(
+      initial_charger_name,
+      goal_charger_name
+    );
+    LOG("\nDijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
+    std::cout << route << std::endl;
   }
-
-
 }

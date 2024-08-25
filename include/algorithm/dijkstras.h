@@ -19,8 +19,7 @@ namespace supercharger
   class Dijkstras : public PlanningAlgorithm
   {
     public:
-      // TODO: Do I need to define a default constructor for use with
-      // std::make_unique?
+      Dijkstras(RoutePlanner* rp) : PlanningAlgorithm(rp) {};
 
       void PlanRoute(std::vector<Stop>&) override;
 

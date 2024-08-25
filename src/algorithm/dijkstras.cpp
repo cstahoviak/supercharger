@@ -108,10 +108,11 @@ namespace supercharger
     route.push_back(*final);
 
     // Iterate over the parents of each Stop to construct the complete path
-    const Stop* const current_stop = final;
+    Stop* current_stop = final;
     while ( current_stop->parent != nullptr ) {
       // Add the parent to the route
       route.push_back(*(current_stop->parent));
+      current_stop = current_stop->parent;
     }
 
     // Reverse the order to construct the final route
@@ -131,6 +132,7 @@ namespace supercharger
       // Compute the charge time for the current stop (skip the final stop)
       if ( iter != route.end() - 1 ) {
         iter->duration = ComputeChargeTime_(*iter, (iter + 1)->charger);
+        total_cost_ += iter->duration;
       }
     }
   }

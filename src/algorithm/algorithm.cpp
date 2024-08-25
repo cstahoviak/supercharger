@@ -8,8 +8,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
-// #include "algorithm/algorithm.h"
+#include "algorithm/algorithm.h"
 #include "algorithm/brute_force.h"
+#include "algorithm/dijkstras.h"
 #include "logging.h"
 #include "math.h"
 #include "planner.h"
@@ -31,7 +32,7 @@ namespace supercharger
   std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanningAlgorithm(
     RoutePlanner* rp,
     AlgorithmType&& algo_type,
-    CostFunctionType&& cost_type = CostFunctionType::NONE)
+    CostFunctionType&& cost_type)
   {
     switch ( algo_type )
     {
@@ -44,8 +45,7 @@ namespace supercharger
         return std::make_unique<BruteForce>(rp, cost_type);
 
       case AlgorithmType::DIJKSTRAS:
-        // return std::make_unique<Dijstras>();
-        return std::unique_ptr<PlanningAlgorithm>(nullptr);
+        return std::make_unique<Dijkstras>(rp);
 
       case AlgorithmType::ASTAR:
         return std::unique_ptr<PlanningAlgorithm>(nullptr);
