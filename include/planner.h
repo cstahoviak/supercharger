@@ -51,7 +51,7 @@ namespace supercharger
       const double max_range_{320};   // [km]
       const double speed_{105};       // [km/hr]
 
-      // Store the network
+      // Store the network of chargers
       std::unordered_map<std::string, Charger*> network_;
 
       // Store the path planning algorithm

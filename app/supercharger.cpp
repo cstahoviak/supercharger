@@ -27,20 +27,30 @@ int main(int argc, char** argv)
   const std::string initial_charger_name = argv[1];
   const std::string goal_charger_name = argv[2];
 
-  // Create the Route Planner
-  RoutePlanner planner(
-    AlgoType::BRUTE_FORCE,
-    CostFcnType::MINIMIZE_TIME_REMAINING
-  );
+  // Use the Brute Force Algorithm
+  {
+    // Create the Route Planner
+    RoutePlanner planner(
+      AlgoType::BRUTE_FORCE,
+      CostFcnType::MINIMIZE_TIME_REMAINING
+    );
 
-  // Test to make sure the network getter works.
-  const auto& network = planner.network();
+    // Test to make sure the network getter works.
+    const auto& network = planner.network();
 
-  // Plan the route with chosen algorithm and cost function
-  std::vector<Stop> route = planner.PlanRoute(
-    initial_charger_name,
-    goal_charger_name
-  );
-  LOG("\nFinal Route (Cost: " << planner.cost() << " hrs)");
-  std::cout << route << std::endl;
+    // Plan the route with chosen algorithm and cost function
+    std::vector<Stop> route = planner.PlanRoute(
+      initial_charger_name,
+      goal_charger_name
+    );
+    LOG("\n'Brute Force' Final Route (Cost: " << planner.cost() << " hrs)");
+    std::cout << route << std::endl;
+  }
+
+  // Dijkstra's Algorithm
+  {
+
+  }
+
+
 }

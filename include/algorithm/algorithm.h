@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace supercharger
@@ -40,15 +41,12 @@ namespace supercharger
         NONE
       };
 
-      static std::unique_ptr<PlanningAlgorithm> GetPlanner(
-        AlgorithmType&&, CostFunctionType&&);
+      PlanningAlgorithm(RoutePlanner* planner);
+
+      static std::unique_ptr<PlanningAlgorithm> GetPlanningAlgorithm(
+        RoutePlanner*, AlgorithmType&&, CostFunctionType&&);
       
       virtual void PlanRoute(std::vector<Stop>&) = 0;
-
-      double ComputeDistance(const Charger* const, const Charger* const) const;
-
-      // RoutePlanner setter
-      void SetRoutePlanner(RoutePlanner* planner) { route_planner_ = planner; }
 
       // Getters
       const double cost() const { return total_cost_; }
@@ -57,8 +55,15 @@ namespace supercharger
       // Store a reference to top-level RoutePlanner instance
       RoutePlanner* route_planner_{nullptr};
 
+      // Store all of the nodes (Stops) in the network
+      std::unordered_map<std::string, Stop> nodes_;
+
       // Store the total cost (time in hrs) of the route
       double total_cost_{0};
+
+      // Utility functions (args are const pointers to const Chargers)
+      double ComputeDistance_(const Charger* const, const Charger* const) const;
+      double ComputeChargeTime_(const Stop&, const Charger* const) const;
   };
 
   /**

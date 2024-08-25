@@ -12,15 +12,24 @@
 #include "algorithm/brute_force.h"
 #include "logging.h"
 #include "math.h"
+#include "planner.h"
 
 
 namespace supercharger
 {
+  PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
+    // Create a set of nodes (stops) from the route planner's charger network
+    for (const auto& [name, charger] : route_planner_->network() ) {
+      nodes_.try_emplace(name, charger);
+    }
+  }
+
   // NOTE: Do NOT repeat the 'static keyword at the cpp file level
   // NOTE: I think this must be defined at the cpp file level because otherwise
   // I get a "not declared in this scope error" related to the derived planning
   // algorithm types (BruteForce, Dijkstra's, etc.). 
-  std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanner(
+  std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanningAlgorithm(
+    RoutePlanner* rp,
     AlgorithmType&& algo_type,
     CostFunctionType&& cost_type = CostFunctionType::NONE)
   {
@@ -32,7 +41,7 @@ namespace supercharger
         // unique_ptr of the base class (the return type of this function) can
         // be initialized from a unique_ptr of the derived class: public
         // inheritance allows this, but protected inheritance does not. But why?
-        return std::make_unique<BruteForce>(cost_type);
+        return std::make_unique<BruteForce>(rp, cost_type);
 
       case AlgorithmType::DIJKSTRAS:
         // return std::make_unique<Dijstras>();
@@ -54,11 +63,23 @@ namespace supercharger
    * @param charger2
    * @return double 
    */
-  double PlanningAlgorithm::ComputeDistance(
+  double PlanningAlgorithm::ComputeDistance_(
     const Charger* const charger1, const Charger* const charger2) const
   {
     return great_circle_distance(
       charger1->lat, charger1->lon, charger2->lat, charger2->lon);
+  }
+
+  double PlanningAlgorithm::ComputeChargeTime_(
+    const Stop& current_stop, const Charger* const next_charger) const
+  {
+    // Compute the distance to the next charger
+    double current_to_next = 
+      ComputeDistance_(current_stop.charger, next_charger);
+
+    // Compute the charge time required to make it to the next charger.
+    // NOTE: we're charging the car only enough to make it to the next stop.
+    return (current_to_next - current_stop.range) / current_stop.charger->rate;
   }
 
   void AStar::PlanRoute(std::vector<Stop>& route) {

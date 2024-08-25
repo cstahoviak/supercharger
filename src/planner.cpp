@@ -56,10 +56,9 @@ namespace supercharger
     // become l-values (pretty odd, right?). So we need to use std::move() to 
     // cast the l-values 'algo_type' and 'cost_type' as r-values to "move" them
     // to PlanningAlgorithm::GetPlanner.
-    planning_algo_ = PlanningAlgorithm::GetPlanner(
-      std::move(algo_type), std::move(cost_type)
+    planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
+      this, std::move(algo_type), std::move(cost_type)
     );
-    planning_algo_->SetRoutePlanner(this);
 
     // Create the network map
     for ( Charger& charger : supercharger::network ) {

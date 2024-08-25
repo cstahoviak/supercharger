@@ -10,6 +10,8 @@
  */
 #include "network.h"
 
+#include <limits>
+
 namespace supercharger
 {
   /**
@@ -28,12 +30,26 @@ namespace supercharger
     Stop(Charger* charger, double duration, double range) :
       Stop(charger, duration, range, nullptr) {};
 
-    // Store the current charger
+    // For use with Dijkstra's algorithm
+    Stop(Charger* charger, double range, double cost, bool visited) : 
+      charger(charger), range(range), cost(cost), visited(visited) {};
+    Stop(Charger* charger) : charger(charger) {};
+    // Stop(Charger* charger) : Stop(charger, 0, 0, nullptr) {};
+
+    // Store the charger associated with this stop
     Charger* charger{nullptr};
+
     // The length of time charging (hrs)
     double duration{0};
     // The current range or the vehicle after arriving at the stop
     double range{0};
+
+    // The following were added for Dijstra's implementation
+
+    // True if the node has been visited
+    bool visited{false};
+    // The cost (distance for Dijkstra's) from this Stop to the route origin
+    double cost{std::numeric_limits<double>::max()};
     // Store the previous stop on the route
     Stop* parent{nullptr};
   };

@@ -16,77 +16,11 @@
 
 #include <algorithm>
 #include <map>
+#include <stdexcept>
 
 
 namespace supercharger
 {
-  double BruteForce::ComputeChargeTime_(
-    const Stop& current_stop, const Charger* const next_charger) const
-  {
-    // Compute the distance to the next charger
-    double current_to_next = 
-      ComputeDistance(current_stop.charger, next_charger);
-
-    // Compute the charge time required to make it to the next charger.
-    // NOTE: we're charging the car only enough to make it to the next stop.
-    return (current_to_next - current_stop.range) / current_stop.charger->rate;
-  }
-
-  void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
-    // Get the current and previous stops
-    const Stop& current = route.back();
-    const Stop& previous = route.rbegin()[1];
-
-    // Add the travel time between the previous and current stops
-    total_cost_ += ComputeDistance(previous.charger, current.charger) /
-      route_planner_->speed();
-
-    // Add the time to charge at the current stop
-    total_cost_ += current.duration;
-  }
-
-  double BruteForce::ComputeCost_(
-    const Charger* const current, const Charger* const candidate) const 
-  {
-    // Define the cost
-    double cost{0};
-    
-    switch ( type_ )
-    {
-      case CostFcnType::MINIMIZE_DIST_REMAINING:
-      {
-        // The "cost" is the distance from the candidate charger to the
-        // destination charger.
-        cost = ComputeDistance(candidate, route_planner_->destination());
-        break;
-      }
-      
-      case CostFcnType::MINIMIZE_TIME_REMAINING:
-      {
-        // Compute distances
-        double candidate_to_destination = 
-          ComputeDistance(candidate, route_planner_->destination());
-        double current_to_candidate = ComputeDistance(current, candidate);
-
-        // Compute times
-        double time_to_destination = 
-          candidate_to_destination / route_planner_->speed();
-        double time_to_charge = current_to_candidate / candidate->rate;
-
-        // The cost is the total time to drive the remaining distance between
-        // the candidate charger and the destination + the time to fully charge
-        // at the candidate charger.
-        cost = weight_time_to_destination_ * time_to_destination + 
-          weight_time_to_charge_ * time_to_charge;
-        break;
-      }
-      
-      default:
-        break;
-    }
-    return cost;
-  }
-
   /**
    * @brief The "brute force" route planner.
    * 
@@ -125,9 +59,9 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances
-      current_to_candidate = ComputeDistance(current_stop.charger, charger);
-      current_to_dest = ComputeDistance(current_stop.charger, destination);
-      candidate_to_dest = ComputeDistance(charger, destination);
+      current_to_candidate = ComputeDistance_(current_stop.charger, charger);
+      current_to_dest = ComputeDistance_(current_stop.charger, destination);
+      candidate_to_dest = ComputeDistance_(charger, destination);
 
       // If candidate charger is within the maximum range of the vehicle, add
       // the candidate charger to "reachable" set
@@ -169,7 +103,7 @@ namespace supercharger
       UpdateRouteCost_(route);
 
       // Finally, add the travel time to the destination to the total cost
-      total_cost_ += ComputeDistance(current_stop.charger, destination) /
+      total_cost_ += ComputeDistance_(current_stop.charger, destination) /
         route_planner_->speed();
 
       // Add the destination as the final stop on the route (don't bother
@@ -196,7 +130,7 @@ namespace supercharger
     // Compute the range remaining after arriving at the next stop
     double range_remaining = current_stop.range + 
       (current_stop.duration * current_stop.charger->rate) -
-      ComputeDistance(current_stop.charger, next_charger);
+      ComputeDistance_(current_stop.charger, next_charger);
 
     // Add the next stop to the route and continue iteration. Note that the
     // charge duration at the next stop will be computed on the next iteration.
@@ -231,5 +165,68 @@ namespace supercharger
     // }
 
     return;
+  }
+
+  void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
+    // Get the current and previous stops
+    const Stop& current = route.back();
+    const Stop& previous = route.rbegin()[1];
+
+    // Add the travel time between the previous and current stops
+    total_cost_ += ComputeDistance_(previous.charger, current.charger) /
+      route_planner_->speed();
+
+    // Add the time to charge at the current stop
+    total_cost_ += current.duration;
+  }
+
+  /**
+   * @brief The "brute force" algorithm cost function.
+   * 
+   * @param current 
+   * @param candidate 
+   * @return double 
+   */
+  double BruteForce::ComputeCost_(
+    const Charger* const current, const Charger* const candidate) const 
+  {
+    // Define the cost
+    double cost{0};
+    
+    switch ( type_ )
+    {
+      case CostFcnType::MINIMIZE_DIST_REMAINING:
+      {
+        // The "cost" is the distance from the candidate charger to the
+        // destination charger.
+        cost = ComputeDistance_(candidate, route_planner_->destination());
+        break;
+      }
+      
+      case CostFcnType::MINIMIZE_TIME_REMAINING:
+      {
+        // Compute distances
+        double candidate_to_destination = 
+          ComputeDistance_(candidate, route_planner_->destination());
+        double current_to_candidate = ComputeDistance_(current, candidate);
+
+        // Compute times
+        double time_to_destination = 
+          candidate_to_destination / route_planner_->speed();
+        double time_to_charge = current_to_candidate / candidate->rate;
+
+        // The cost is the total time to drive the remaining distance between
+        // the candidate charger and the destination + the time to fully charge
+        // at the candidate charger.
+        cost = weight_time_to_destination_ * time_to_destination + 
+          weight_time_to_charge_ * time_to_charge;
+        break;
+      }
+      
+      default:
+        throw std::invalid_argument("Ivalid cost fucntion type.");
+        break;
+    }
+    return cost;
   }
 } // end namespace supercharger

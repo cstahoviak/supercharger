@@ -19,7 +19,9 @@ namespace supercharger
   class BruteForce : public PlanningAlgorithm
   {
     public:
-      BruteForce(CostFunctionType type) : type_(type) {};
+      // NOTE: Call the base class via initializer list "constructor chaining"
+      BruteForce(RoutePlanner* rp, CostFunctionType type) : 
+        PlanningAlgorithm(rp), type_(type) {};
 
       void PlanRoute(std::vector<Stop>&) override;
 
@@ -33,8 +35,6 @@ namespace supercharger
       const double weight_time_to_destination_ = 0.75;
       const double weight_time_to_charge_ = 0.25;
 
-      // Utility functions (args are const pointers to const Chargers)
-      double ComputeChargeTime_(const Stop&, const Charger* const) const;
       void UpdateRouteCost_(const std::vector<Stop>&);
 
       // The "brute force" algorithm cost function
