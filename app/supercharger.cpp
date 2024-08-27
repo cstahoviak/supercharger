@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     // Create the Route Planner
     RoutePlanner planner(
       AlgoType::BRUTE_FORCE,
-      CostFcnType::MINIMIZE_DIST_TO_NEXT
+      CostFcnType::MINIMIZE_TIME_REMAINING
     );
 
     // Test to make sure the network getter works.
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
       initial_charger_name,
       goal_charger_name
     );
-    LOG("\n'Brute Force' Final Route (Cost: " << planner.cost() << " hrs)");
+    DEBUG("\n'Brute Force' Final Route (Cost: " << planner.cost() << " hrs)");
     std::cout << route << std::endl;
   }
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
       initial_charger_name,
       goal_charger_name
     );
-    LOG("\nDijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
+    DEBUG("\nDijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
     std::cout << route << std::endl;
   }
 }

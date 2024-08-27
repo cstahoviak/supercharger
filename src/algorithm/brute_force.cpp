@@ -37,7 +37,7 @@ namespace supercharger
   void BruteForce::PlanRoute(std::vector<Stop>& route) {
     // Get the current stop
     Stop& current_stop = route.back();
-    LOG("Current route: " << route);
+    DEBUG("Current route: " << route);
 
     // Create a local alias for the destination charger
     const Charger* const destination = route_planner_->destination();
@@ -113,19 +113,19 @@ namespace supercharger
     }
 
     if ( current_stop.charger->name == "Madison_WI" ) {
-      LOG("\nCurrent Stop: " << current_stop.charger->name);
+      DEBUG("\nCurrent Stop: " << current_stop.charger->name);
       for ( const auto& [cost, charger] : candidates) {
-        LOG(cost << ": " << charger->name);
+        DEBUG(cost << ": " << charger->name);
       }
 
       double dist = ComputeDistance_(
         current_stop.charger, route_planner_->network().at("Cherry_Valley_IL"));
-      LOG(dist << ": Cherry Valley, IL");
+      DEBUG(dist << ": Cherry Valley, IL");
 
-      LOG(current_stop.charger->name << " -> " <<
+      DEBUG(current_stop.charger->name << " -> " <<
         route_planner_->destination()->name << ": " <<
         ComputeDistance_(current_stop.charger, route_planner_->destination()));
-      LOG("Cherry Valley, IL -> " << route_planner_->destination()->name <<
+      DEBUG("Cherry Valley, IL -> " << route_planner_->destination()->name <<
         ": " <<
         ComputeDistance_(route_planner_->network().at("Cherry_Valley_IL"), route_planner_->destination()));
     }
@@ -147,7 +147,7 @@ namespace supercharger
 
     // Compute the range remaining after arriving at the next stop
     double range_remaining = ComputeRangeRemaining_(current_stop, next_charger);
-    LOG("Range remaining at '" << current_stop.charger->name << "': " <<
+    DEBUG("Range remaining at '" << current_stop.charger->name << "': " <<
       range_remaining);
 
     // Add the next stop to the route and continue iteration. Note that the

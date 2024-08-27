@@ -52,7 +52,7 @@ namespace supercharger
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
       const auto& pair = network_.try_emplace(charger.name, &charger);
       if ( !pair.second ) {
-        LOG("Charger '" << charger.name << "' already exists in the network. "
+        DEBUG("Charger '" << charger.name << "' already exists in the network. "
           << "Skipping.");
       }
     }
@@ -73,14 +73,14 @@ namespace supercharger
     std::vector<Stop> route = InitializeRoute_(origin, destination);
 
     // Plan the route
-    LOG("Planning route between '" << origin << "' and '" << destination << "'");
+    DEBUG("Planning route between '" << origin << "' and '" << destination << "'");
     planning_algo_.get()->PlanRoute(route);
 
     if ( route.back().charger->name == destination_->name ) {
-      LOG("\nSolution found!");
+      DEBUG("\nSolution found!");
     }
     else {
-      LOG("\nSearch terminated. Solution not found.");
+      DEBUG("\nSearch terminated. Solution not found.");
     }
     
     return route;
