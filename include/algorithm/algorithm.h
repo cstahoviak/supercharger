@@ -67,18 +67,5 @@ namespace supercharger
       double ComputeChargeTime_(const Stop&, const Charger* const) const;
       double ComputeRangeRemaining_(const Stop&, const Charger* const) const;
   };
-
-  /**
-   * @brief Implements the A* search algorithm. A* makes sense in this scenario
-   * because the total cost of the route is computed as a function of both the
-   * distance (total time traveled) from the current node to the start node as 
-   * well as a heuristic that, in our case, should be a function of the charge
-   * rate.
-   */
-  class AStar : public PlanningAlgorithm
-  {
-    public:
-      void PlanRoute(std::vector<Stop>&) override;
-  };
   
 } // end namespace supercharger

@@ -9,6 +9,7 @@
  * 
  */
 #include "algorithm/algorithm.h"
+#include "algorithm/astar.h"
 #include "algorithm/brute_force.h"
 #include "algorithm/dijkstras.h"
 #include "logging.h"
@@ -48,8 +49,7 @@ namespace supercharger
         return std::make_unique<Dijkstras>(rp);
 
       case AlgorithmType::ASTAR:
-        return std::unique_ptr<PlanningAlgorithm>(nullptr);
-        // return std::make_unique<AStar>();
+        return std::make_unique<AStar>(rp);
       
       default:
         return std::unique_ptr<PlanningAlgorithm>(nullptr);

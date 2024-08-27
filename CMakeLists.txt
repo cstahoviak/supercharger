@@ -21,6 +21,7 @@ include_directories(include)
 
 set(LIB_SOURCES
   "src/algorithm/algorithm.cpp"
+  "src/algorithm/astar.cpp"
   "src/algorithm/brute_force.cpp"
   "src/algorithm/dijkstras.cpp"
   "src/network.cpp"
@@ -29,6 +30,7 @@ set(LIB_SOURCES
 
 set(LIB_HEADERS
   "include/algorithm/algorithm.h"
+  "include/algorithm/astar.h"
   "include/algorithm/brute_force.h"
   "include/algorithm/dijkstras.h"
   "include/logging.h"
