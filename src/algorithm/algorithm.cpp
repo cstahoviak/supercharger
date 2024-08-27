@@ -91,9 +91,4 @@ namespace supercharger
       (current_stop.duration * current_stop.charger->rate) -
       ComputeDistance_(current_stop.charger, next);
   }
-
-  void AStar::PlanRoute(std::vector<Stop>& route) {
-    return;
-  }
-
 } // end namespace supercharger
