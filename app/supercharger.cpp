@@ -43,7 +43,7 @@ int main(int argc, char** argv)
       initial_charger_name,
       goal_charger_name
     );
-    DEBUG("\n'Brute Force' Final Route (Cost: " << planner.cost() << " hrs)");
+    INFO("'Brute Force' Final Route (Cost: " << planner.cost() << " hrs)");
     std::cout << route << std::endl;
   }
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
       initial_charger_name,
       goal_charger_name
     );
-    DEBUG("\nDijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
+    INFO("Dijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
     std::cout << route << std::endl;
   }
 }
