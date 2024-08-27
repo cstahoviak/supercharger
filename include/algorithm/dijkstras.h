@@ -24,7 +24,7 @@ namespace supercharger
       void PlanRoute(std::vector<Stop>&) override;
 
     private:
-      std::vector<Stop*> GetNeighbors_(Stop* const);
-      void ConstructFinalRoute_(Stop* const, std::vector<Stop>&);
+      std::vector<Stop*> GetNeighbors_(const Stop* const);
+      void ConstructFinalRoute_(const Stop* const, std::vector<Stop>&);
   };
 } // end namespace supercharger

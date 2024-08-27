@@ -77,10 +77,10 @@ namespace supercharger
     planning_algo_.get()->PlanRoute(route);
 
     if ( route.back().charger->name == destination_->name ) {
-      DEBUG("\nSolution found!");
+      DEBUG("Solution found!");
     }
     else {
-      DEBUG("\nSearch terminated. Solution not found.");
+      DEBUG("Search terminated. Solution not found.");
     }
     
     return route;
