@@ -14,32 +14,55 @@
 
 #include <algorithm>
 #include <queue>
+#include <unordered_set>
 
 namespace supercharger
 {
   void Dijkstras::PlanRoute(std::vector<Stop>& route) {
     // Define a lambda function for priority queue comparison
-    auto compare = [](const Stop* lhs, const Stop* rhs) {
+    auto compare = [](const Stop* const lhs, const Stop* const rhs) {
       return lhs->cost > rhs->cost;
     };
 
     // 1. Create the unvisited set as a priority queue
     std::priority_queue<Stop*, std::vector<Stop*>, decltype(compare)> 
       unvisited(compare);
+    // for (auto& [name, node] : nodes_ ) {
+    //   if ( node.charger->name == route.back().charger->name ) {
+    //     DEBUG("Origin Stop Address: " << &node);
+    //     node.range = route_planner_->max_range();
+    //     node.cost = 0;
+    //   }
+    //   unvisited.push(&node);
+    // }
 
-    // Update the origin node' data and add it to the unvisited set
+    // Store the set of nodes in the priority queue
+    std::unordered_set<int> unisted_ids;
+
+    // Update the origin node's data
     Stop& origin = nodes_.at(route.back().charger->name);
+    DEBUG("Origin Stop Address: " << &origin);
     origin.range = route_planner_->max_range();
     origin.cost = 0;
-    unvisited.emplace(&origin);
+    unvisited.push(&origin);
 
     while ( !unvisited.empty() ) {
+      DEBUG("\nPriority Queue Size: " << unvisited.size());
+
       // 3. The next stop is the one with the smallest known distance from the
       // origin. Mark the current stop as visited ans removed it from the
       // unvisited set.
       Stop* const current_stop = unvisited.top();
-      current_stop->visited = true;
+      DEBUG("Current Stop: " << current_stop->charger->name);
       unvisited.pop();
+      if ( current_stop->visited ) {
+        DEBUG("Already visited '" << current_stop->charger->name << 
+          "'. Skipping.");
+        continue;
+      }
+
+      // Mark the current node as visited prior to getting neighbors.
+      current_stop->visited = true;
 
       // If the current node is the destination node, we're done!
       if ( current_stop->charger->name == route_planner_->destination()->name) {
@@ -49,11 +72,11 @@ namespace supercharger
       }
 
       if ( current_stop->charger->name == "Madison_WI" ) {
-        LOG("\nCurrent Stop: " << current_stop->charger->name);
-        LOG("Previous cost to neighbors:");
+        DEBUG("\nCurrent Stop: " << current_stop->charger->name);
+        DEBUG("Previous cost to neighbors:");
 
         for ( Stop* neighbor : GetNeighbors_(current_stop) ) {
-          LOG(neighbor->charger->name << ": " << neighbor->cost);
+          DEBUG(neighbor->charger->name << ": " << neighbor->cost);
         }
       }
 
@@ -61,8 +84,9 @@ namespace supercharger
       // update their distance through the current node.
       double cost{0};
       for ( Stop* neighbor : GetNeighbors_(current_stop) ) {
-        cost = ComputeDistance_(current_stop->charger, neighbor->charger);
         // TODO: The cost update below is wrong.
+        cost = current_stop->cost +
+          ComputeDistance_(current_stop->charger, neighbor->charger);
 
         // If the distance to the neighbor node through the current node is less
         // than the neighbor's current distance from the origin, update the
@@ -71,17 +95,20 @@ namespace supercharger
         if ( cost < neighbor->cost ) {
           neighbor->cost = cost;
           neighbor->parent = current_stop;
-        }
 
-        // Add the neighbor to the unvisited set.
-        unvisited.push(neighbor);
+          // Add the neighbor to the unvisited set.
+          // NOTE: It's likely that nodes that are already in the queue will be
+          // added again by this line - that's okay.
+          DEBUG("Adding neighbor '" << neighbor->charger->name << "'");
+          unvisited.push(neighbor);
+        }
       }
 
       if ( current_stop->charger->name == "Madison_WI" ) {
-        LOG("\nUpdated cost to neighbors:");
+        DEBUG("\nUpdated cost to neighbors:");
 
         for ( Stop* neighbor : GetNeighbors_(current_stop) ) {
-          LOG(neighbor->charger->name << ": " << neighbor->cost);
+          DEBUG(neighbor->charger->name << ": " << neighbor->cost);
         }
       }
 
@@ -94,7 +121,7 @@ namespace supercharger
     // distance from the start node.
 
     // If we've gotten here, no path was found!
-    LOG("No path found!");
+    INFO("No path found!");
     return;
   }
 
@@ -108,13 +135,22 @@ namespace supercharger
    * @return std::vector<Stop* const> A vector of const pointers to Stops.
    */
   std::vector<Stop*> Dijkstras::GetNeighbors_(Stop* const current) {
+    DEBUG("Getting neighbors of: " << current->charger->name);
     std::vector<Stop*> neighbors;
     double current_to_neighbor{0};
     for ( auto& [name, node] : nodes_ ) {
+      if ( node.visited ) {
+        // DEBUG("Already visited: " << node.charger->name);
+      }
       current_to_neighbor = ComputeDistance_(current->charger, node.charger);
       if ( current_to_neighbor <= route_planner_->max_range() && !node.visited ) {
         neighbors.push_back(&node);
       }
+    }
+
+    DEBUG("Neighbors (" << neighbors.size() << "):");
+    for (const Stop* const stop : neighbors) {
+      DEBUG(stop->charger->name);
     }
 
     return neighbors;
@@ -145,7 +181,7 @@ namespace supercharger
 
       // Update the range after arriving at the current stop
       iter->range = ComputeRangeRemaining_(previous, current.charger);
-      LOG("Range remaining at '" << current.charger->name << "': " <<
+      DEBUG("Range remaining at '" << current.charger->name << "': " <<
         iter->range);
 
       // Update the total cost of the trip
