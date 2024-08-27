@@ -112,24 +112,6 @@ namespace supercharger
       return;
     }
 
-    if ( current_stop.charger->name == "Madison_WI" ) {
-      DEBUG("\nCurrent Stop: " << current_stop.charger->name);
-      for ( const auto& [cost, charger] : candidates) {
-        DEBUG(cost << ": " << charger->name);
-      }
-
-      double dist = ComputeDistance_(
-        current_stop.charger, route_planner_->network().at("Cherry_Valley_IL"));
-      DEBUG(dist << ": Cherry Valley, IL");
-
-      DEBUG(current_stop.charger->name << " -> " <<
-        route_planner_->destination()->name << ": " <<
-        ComputeDistance_(current_stop.charger, route_planner_->destination()));
-      DEBUG("Cherry Valley, IL -> " << route_planner_->destination()->name <<
-        ": " <<
-        ComputeDistance_(route_planner_->network().at("Cherry_Valley_IL"), route_planner_->destination()));
-    }
-
     // Choose the next charger such that it minimizes the cost
     double key = candidates.begin()->first;
     Charger* next_charger = candidates.at(key);
@@ -154,11 +136,6 @@ namespace supercharger
     // charge duration at the next stop will be computed on the next iteration.
     route.emplace_back(next_charger, 0, range_remaining);
     PlanRoute(route);
-
-    // Continue iteration with next stop
-    // Stop next{next_charger, static_cast<double>(NULL), 0, &current_stop};
-    // route.push_back(BruteForce_(next, cost_type));
-    // route.push_back(std::move(BruteForce_(next, cost_type)));
 
     // NOTE: My initial thought was to not choose a single "next charger", but
     // recursively call BruteForce_ on ALL candidate chargers. Thus allowing the
