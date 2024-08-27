@@ -1,138 +1,26 @@
 /**
- * @file algorithm.cpp
+ * @file brute_force.cpp
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
- * @date 2024-08-13
+ * @date 2024-08-23
  * 
  * @copyright Copyright (c) 2024
  * 
  */
-
-#include "algorithm.h"
+#include "algorithm/brute_force.h"
 #include "logging.h"
-#include "math.h"
 // Need to include planner.h here to avoid "pointer or reference to incomplete
 // type is not allowed" errors erlated to using the route_planner_ pointer.
 #include "planner.h"
 
 #include <algorithm>
 #include <map>
+#include <stdexcept>
+
 
 namespace supercharger
 {
-  // NOTE: Do NOT repeat the 'static keyword at the cpp file level
-  // NOTE: I think this must be defined at the cpp file level because otherwise
-  // I get a "not declared in this scope error" related to the derived planning
-  // algorithm types (BruteForce, Dijkstra's, etc.). 
-  std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanner(
-    AlgorithmType&& algo_type,
-    CostFunctionType&& cost_type = CostFunctionType::NONE)
-  {
-    switch ( algo_type )
-    {
-      case AlgorithmType::BRUTE_FORCE:
-        // NOTE: There is an important difference between public and protected
-        // inheritance when it comes to the compiler "being aware" that a
-        // unique_ptr of the base class (the return type of this function) can
-        // be initialized from unique_ptr of the derived class: public
-        // inheritance allows this, but protected inheritance does not. But why?
-        return std::make_unique<BruteForce>(cost_type);
-
-      case AlgorithmType::DIJKSTRAS:
-        // return std::make_unique<Dijstras>();
-        return std::unique_ptr<PlanningAlgorithm>(nullptr);
-
-      case AlgorithmType::ASTAR:
-        return std::unique_ptr<PlanningAlgorithm>(nullptr);
-        // return std::make_unique<AStar>();
-      
-      default:
-        return std::unique_ptr<PlanningAlgorithm>(nullptr);
-    }
-  }
-
-  /**
-   * @brief Effectively a wrapper around the great_circle_distance() function.
-   * 
-   * @param charger1
-   * @param charger2
-   * @return double 
-   */
-  double PlanningAlgorithm::ComputeDistance(
-    const Charger* const charger1, const Charger* const charger2) const
-  {
-    return great_circle_distance(
-      charger1->lat, charger1->lon, charger2->lat, charger2->lon);
-  }
-
-  double BruteForce::ComputeChargeTime_(
-    const Stop& current_stop, const Charger* const next_charger) const
-  {
-    // Compute the distance to the next charger
-    double current_to_next = 
-      ComputeDistance(current_stop.charger, next_charger);
-
-    // Compute the charge time required to make it to the next charger.
-    // NOTE: we're charging the car only enough to make it to the next stop.
-    return (current_to_next - current_stop.range) / current_stop.charger->rate;
-  }
-
-  void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
-    // Get the current and previous stops
-    const Stop& current = route.back();
-    const Stop& previous = route.rbegin()[1];
-
-    // Add the travel time between the previous and current stops
-    total_cost_ += ComputeDistance(previous.charger, current.charger) /
-      route_planner_->speed();
-
-    // Add the time to charge at the current stop
-    total_cost_ += current.duration;
-  }
-
-  double BruteForce::ComputeCost_(
-    const Charger* const current, const Charger* const candidate) const 
-  {
-    // Define the cost
-    double cost{0};
-    
-    switch ( type_ )
-    {
-      case CostFcnType::MINIMIZE_DIST_REMAINING:
-      {
-        // The "cost" is the distance from the candidate charger to the
-        // destination charger.
-        cost = ComputeDistance(candidate, route_planner_->destination());
-        break;
-      }
-      
-      case CostFcnType::MINIMIZE_TIME_REMAINING:
-      {
-        // Compute distances
-        double candidate_to_destination = 
-          ComputeDistance(candidate, route_planner_->destination());
-        double current_to_candidate = ComputeDistance(current, candidate);
-
-        // Compute times
-        double time_to_destination = 
-          candidate_to_destination / route_planner_->speed();
-        double time_to_charge = current_to_candidate / candidate->rate;
-
-        // The cost is the total time to drive the remaining distance between
-        // the candidate charger and the destination + the time to fully charge
-        // at the candidate charger.
-        cost = weight_time_to_destination_ * time_to_destination + 
-          weight_time_to_charge_ * time_to_charge;
-        break;
-      }
-      
-      default:
-        break;
-    }
-    return cost;
-  }
-
   /**
    * @brief The "brute force" route planner.
    * 
@@ -144,13 +32,12 @@ namespace supercharger
    * "reachable" and "closer to" sets. I beleive this will require defining
    * both operator== and a hash function for the supercharger::Charger class.
    * 
-   * @param current_stop 
-   * @return Stop 
+   * @param route 
    */
   void BruteForce::PlanRoute(std::vector<Stop>& route) {
     // Get the current stop
     Stop& current_stop = route.back();
-    LOG("Current route: " << route);
+    DEBUG("Current route: " << route);
 
     // Create a local alias for the destination charger
     const Charger* const destination = route_planner_->destination();
@@ -172,9 +59,9 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances
-      current_to_candidate = ComputeDistance(current_stop.charger, charger);
-      current_to_dest = ComputeDistance(current_stop.charger, destination);
-      candidate_to_dest = ComputeDistance(charger, destination);
+      current_to_candidate = ComputeDistance_(current_stop.charger, charger);
+      current_to_dest = ComputeDistance_(current_stop.charger, destination);
+      candidate_to_dest = ComputeDistance_(charger, destination);
 
       // If candidate charger is within the maximum range of the vehicle, add
       // the candidate charger to "reachable" set
@@ -216,13 +103,31 @@ namespace supercharger
       UpdateRouteCost_(route);
 
       // Finally, add the travel time to the destination to the total cost
-      total_cost_ += ComputeDistance(current_stop.charger, destination) /
+      total_cost_ += ComputeDistance_(current_stop.charger, destination) /
         route_planner_->speed();
 
       // Add the destination as the final stop on the route (don't bother
       // computing remaining range at destination)
       route.emplace_back(route_planner_->network().at(destination->name), 0, 0);
       return;
+    }
+
+    if ( current_stop.charger->name == "Madison_WI" ) {
+      DEBUG("\nCurrent Stop: " << current_stop.charger->name);
+      for ( const auto& [cost, charger] : candidates) {
+        DEBUG(cost << ": " << charger->name);
+      }
+
+      double dist = ComputeDistance_(
+        current_stop.charger, route_planner_->network().at("Cherry_Valley_IL"));
+      DEBUG(dist << ": Cherry Valley, IL");
+
+      DEBUG(current_stop.charger->name << " -> " <<
+        route_planner_->destination()->name << ": " <<
+        ComputeDistance_(current_stop.charger, route_planner_->destination()));
+      DEBUG("Cherry Valley, IL -> " << route_planner_->destination()->name <<
+        ": " <<
+        ComputeDistance_(route_planner_->network().at("Cherry_Valley_IL"), route_planner_->destination()));
     }
 
     // Choose the next charger such that it minimizes the cost
@@ -241,9 +146,9 @@ namespace supercharger
     }
 
     // Compute the range remaining after arriving at the next stop
-    double range_remaining = current_stop.range + 
-      (current_stop.duration * current_stop.charger->rate) -
-      ComputeDistance(current_stop.charger, next_charger);
+    double range_remaining = ComputeRangeRemaining_(current_stop, next_charger);
+    DEBUG("Range remaining at '" << current_stop.charger->name << "': " <<
+      range_remaining);
 
     // Add the next stop to the route and continue iteration. Note that the
     // charge duration at the next stop will be computed on the next iteration.
@@ -280,35 +185,73 @@ namespace supercharger
     return;
   }
 
-  void Dijkstras::PlanRoute(std::vector<Stop>& route) {
-    // 1. Mark all "nodes"/stops as unvisited
+  void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
+    // Get the current and previous stops
+    const Stop& current = route.back();
+    const Stop& previous = route.rbegin()[1];
 
-    // 2. Assign a "distance to start" value to each node in the network.
-    // Initially, this value will be "infinity" since no path is yet known to
-    // these "unvisited" nodes.
+    // Add the travel time between the previous and current stops
+    total_cost_ += ComputeDistance_(previous.charger, current.charger) /
+      route_planner_->speed();
 
-    // 3. From the unvisited set, select the current node to be the one with
-    // the smallest known distance from the origin. If the current node is the
-    // destination node, we're done; otherwise, continue to find the shortest
-    // path to all reachable nodes.
-
-    // 4. For the current node, consider all of its unvisited neighbors and
-    // update their distance through the current node. Compare the newly
-    // calculated distance to the one currently assigned to the neighbor, and
-    // assign the neighbor the smaller distance.
-
-    // 5. Once we've considered all the unvisited neighbors of the current node,
-    // mark the current node as visited and remove it from the unvisited set.
-
-    // 6. Return to step 3.
-
-    // 7. Once the loop (steps 3-5) exits, every node will contain the shortest
-    // distance from the start node.
-    return;
+    // Add the time to charge at the current stop
+    total_cost_ += current.duration;
   }
 
-  void AStar::PlanRoute(std::vector<Stop>& route) {
-    return;
-  }
+  /**
+   * @brief The "brute force" algorithm cost function.
+   * 
+   * @param current 
+   * @param candidate 
+   * @return double 
+   */
+  double BruteForce::ComputeCost_(
+    const Charger* const current, const Charger* const candidate) const 
+  {
+    // Define the cost
+    double cost{0};
+    
+    switch ( type_ )
+    {
+      case CostFcnType::MINIMIZE_DIST_TO_NEXT:
+      {
+        // Effectively the same as Dijkstra's
+        cost = ComputeDistance_(current, candidate);
+        break;
+      }
 
+      case CostFcnType::MINIMIZE_DIST_REMAINING:
+      {
+        // The "cost" is the distance from the candidate charger to the
+        // destination charger.
+        cost = ComputeDistance_(candidate, route_planner_->destination());
+        break;
+      }
+      
+      case CostFcnType::MINIMIZE_TIME_REMAINING:
+      {
+        // Compute distances
+        double candidate_to_destination = 
+          ComputeDistance_(candidate, route_planner_->destination());
+        double current_to_candidate = ComputeDistance_(current, candidate);
+
+        // Compute times
+        double time_to_destination = 
+          candidate_to_destination / route_planner_->speed();
+        double time_to_charge = current_to_candidate / candidate->rate;
+
+        // The cost is the total time to drive the remaining distance between
+        // the candidate charger and the destination + the time to fully charge
+        // at the candidate charger.
+        cost = weight_time_to_destination_ * time_to_destination + 
+          weight_time_to_charge_ * time_to_charge;
+        break;
+      }
+      
+      default:
+        throw std::invalid_argument("Ivalid cost fucntion type.");
+        break;
+    }
+    return cost;
+  }
 } // end namespace supercharger

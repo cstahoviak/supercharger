@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include "algorithm/algorithm.h"
 #include "logging.h"
 #include "math.h"
 #include "planner.h"
@@ -20,6 +21,14 @@
 
 namespace supercharger
 {
+  /**
+   * @brief Formats the final route output to comply with the format expected
+   * by the provided "checker" executables.
+   * 
+   * @param stream 
+   * @param route 
+   * @return std::ostream& 
+   */
   std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route) {
     size_t sz = route.size();
     size_t idx = 0;
@@ -37,28 +46,26 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(AlgoType&& algo_type, CostFcnType&& cost_type = CostFcnType::NONE)
-  {
+  RoutePlanner::RoutePlanner(AlgoType&& algo_type, CostFcnType&& cost_type) {
+    // Create the network map (must do this before creating the planning algo).
+    for ( Charger& charger : supercharger::network ) {
+      // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
+      const auto& pair = network_.try_emplace(charger.name, &charger);
+      if ( !pair.second ) {
+        DEBUG("Charger '" << charger.name << "' already exists in the network. "
+          << "Skipping.");
+      }
+    }
+
     // Create the planning algorithm
     // NOTE: Even though this function accepts 'algo_type' and 'cost_type as 
     // r-value references, once we're within the scope of this function, they
     // become l-values (pretty odd, right?). So we need to use std::move() to 
     // cast the l-values 'algo_type' and 'cost_type' as r-values to "move" them
     // to PlanningAlgorithm::GetPlanner.
-    planning_algo_ = PlanningAlgorithm::GetPlanner(
-      std::move(algo_type), std::move(cost_type)
+    planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
+      this, std::move(algo_type), std::move(cost_type)
     );
-    planning_algo_->SetRoutePlanner(this);
-
-    // Create the network map
-    for ( Charger& charger : supercharger::network ) {
-      // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
-      const auto& pair = network_.try_emplace(charger.name, &charger);
-      if ( !pair.second ) {
-        LOG("Charger '" << charger.name << "' already exists in the network. "
-          << "Skipping.");
-      }
-    }
   }
 
   std::vector<Stop> RoutePlanner::PlanRoute(const std::string& origin, const std::string& destination) {
@@ -66,18 +73,15 @@ namespace supercharger
     std::vector<Stop> route = InitializeRoute_(origin, destination);
 
     // Plan the route
-    LOG("Planning route between '" << origin << "' and '" << destination << "'");
+    DEBUG("Planning route between '" << origin << "' and '" << destination << "'");
     planning_algo_.get()->PlanRoute(route);
 
     if ( route.back().charger->name == destination_->name ) {
-      LOG("\nSolution found!");
+      DEBUG("\nSolution found!");
     }
     else {
-      LOG("\nSearch terminated. Solution not found.");
+      DEBUG("\nSearch terminated. Solution not found.");
     }
-
-    // TODO: Backtrace to determine the route (doesn't apply to current
-    // solution method).
     
     return route;
   }
@@ -104,7 +108,7 @@ namespace supercharger
 
     // Initialize the route and add the origin
     std::vector<Stop> route;
-    route.emplace_back(origin_, 0, max_range_, nullptr);
+    route.emplace_back(origin_, 0, max_range_);
     return route;
   }
 } // end namespace supercharger

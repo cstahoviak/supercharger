@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm.h"
+#include "algorithm/algorithm.h"
 #include "network.h"
 #include "stop.h"
 
@@ -27,8 +27,8 @@ namespace supercharger
   class RoutePlanner
   {
     public:
-      // TODO: Change to accepting r-value reference?
-      RoutePlanner(AlgoType&&, CostFcnType&&);
+      // NOTE: Default parameter values must appear in the declaration
+      RoutePlanner(AlgoType&&, CostFcnType&& = CostFcnType::NONE);
 
       // TODO: Add ctor that also takes max range and speed
 
@@ -45,14 +45,14 @@ namespace supercharger
 
     private:
       // TODO: Switch to unique_ptr?
-      Charger* origin_;
-      Charger* destination_;
+      Charger* origin_{nullptr};
+      Charger* destination_{nullptr};
 
       // Store some hard-coded constants
       const double max_range_{320};   // [km]
       const double speed_{105};       // [km/hr]
 
-      // Store the network
+      // Store the network of chargers
       std::unordered_map<std::string, Charger*> network_;
 
       // Store the path planning algorithm

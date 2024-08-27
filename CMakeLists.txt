@@ -15,8 +15,28 @@ message(STATUS "DEBUG_INFO: ${DEBUG_INFO}")
 
 include_directories(include)
 
-file(GLOB LIB_SOURCES src/*.cpp)
-file(GLOB LIB_HEADERS include/*.h)
+# NOTE: Need to use GLOB_RECURSE to grab files in subdiirectories
+# file(GLOB_RECURSE LIB_SOURCES src/*.cpp)
+# file(GLOB_RECURSE LIB_HEADERS include/*.h)
+
+set(LIB_SOURCES
+  "src/algorithm/algorithm.cpp"
+  "src/algorithm/brute_force.cpp"
+  "src/algorithm/dijkstras.cpp"
+  "src/network.cpp"
+  "src/planner.cpp"
+)
+
+set(LIB_HEADERS
+  "include/algorithm/algorithm.h"
+  "include/algorithm/brute_force.h"
+  "include/algorithm/dijkstras.h"
+  "include/logging.h"
+  "include/math.h"
+  "include/network.h"
+  "include/planner.h"
+  "include/stop.h"
+)
 
 # Create the superchargerlib
 add_library(superchargerlib ${LIB_SOURCES} ${LIB_HEADERS})
