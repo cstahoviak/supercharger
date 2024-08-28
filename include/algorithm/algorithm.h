@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+#include "math.h"
 #include "node.h"
 
 #include <memory>
@@ -63,10 +64,25 @@ namespace supercharger
       // Store the total cost (time in hrs) of the route
       double total_cost_{0};
 
-      // Utility functions (args are const pointers to const Chargers)
-      double ComputeDistance_(const Charger* const, const Charger* const) const;
+      // Utility functions
       double ComputeChargeTime_(const Node&, const Charger* const) const;
       double ComputeRangeRemaining_(const Node&, const Charger* const) const;
   };
+
+  /**
+   * @brief Effectively a wrapper around the great_circle_distance() function.
+   * 
+   * TODO: Would it make more sense for this to be in math.h?
+   * 
+   * @param charger1
+   * @param charger2
+   * @return double 
+   */
+  inline double ComputeDistance(
+    const Charger* const charger1, const Charger* const charger2)
+  {
+    return great_circle_distance(
+      charger1->lat, charger1->lon, charger2->lat, charger2->lon);
+  }
   
 } // end namespace supercharger

@@ -59,9 +59,9 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances
-      current_to_candidate = ComputeDistance_(current_node.charger, charger);
-      current_to_dest = ComputeDistance_(current_node.charger, destination);
-      candidate_to_dest = ComputeDistance_(charger, destination);
+      current_to_candidate = ComputeDistance(current_node.charger, charger);
+      current_to_dest = ComputeDistance(current_node.charger, destination);
+      candidate_to_dest = ComputeDistance(charger, destination);
 
       // If candidate charger is within the maximum range of the vehicle, add
       // the candidate charger to "reachable" set
@@ -103,7 +103,7 @@ namespace supercharger
       UpdateRouteCost_(route);
 
       // Finally, add the travel time to the destination to the total cost
-      total_cost_ += ComputeDistance_(current_node.charger, destination) /
+      total_cost_ += ComputeDistance(current_node.charger, destination) /
         route_planner_->speed();
 
       // Add the destination as the final node on the route (don't bother
@@ -172,7 +172,7 @@ namespace supercharger
     const Node& previous = route.rbegin()[1];
 
     // Add the travel time between the previous and current nodes
-    total_cost_ += ComputeDistance_(previous.charger, current.charger) /
+    total_cost_ += ComputeDistance(previous.charger, current.charger) /
       route_planner_->speed();
 
     // Add the time to charge at the current node
@@ -197,7 +197,7 @@ namespace supercharger
       case CostFcnType::MINIMIZE_DIST_TO_NEXT:
       {
         // Effectively the same as Dijkstra's
-        cost = ComputeDistance_(current, candidate);
+        cost = ComputeDistance(current, candidate);
         break;
       }
 
@@ -205,7 +205,7 @@ namespace supercharger
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
-        cost = ComputeDistance_(candidate, route_planner_->destination());
+        cost = ComputeDistance(candidate, route_planner_->destination());
         break;
       }
       
@@ -213,8 +213,8 @@ namespace supercharger
       {
         // Compute distances
         double candidate_to_destination = 
-          ComputeDistance_(candidate, route_planner_->destination());
-        double current_to_candidate = ComputeDistance_(current, candidate);
+          ComputeDistance(candidate, route_planner_->destination());
+        double current_to_candidate = ComputeDistance(current, candidate);
 
         // Compute times
         double time_to_destination = 

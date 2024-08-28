@@ -13,7 +13,6 @@
 #include "algorithm/brute_force.h"
 #include "algorithm/dijkstras.h"
 #include "logging.h"
-#include "math.h"
 #include "planner.h"
 
 
@@ -56,26 +55,12 @@ namespace supercharger
     }
   }
 
-  /**
-   * @brief Effectively a wrapper around the great_circle_distance() function.
-   * 
-   * @param charger1
-   * @param charger2
-   * @return double 
-   */
-  double PlanningAlgorithm::ComputeDistance_(
-    const Charger* const charger1, const Charger* const charger2) const
-  {
-    return great_circle_distance(
-      charger1->lat, charger1->lon, charger2->lat, charger2->lon);
-  }
-
   double PlanningAlgorithm::ComputeChargeTime_(
     const Node& current_node, const Charger* const next_charger) const
   {
     // Compute the distance to the next charger
     double current_to_next = 
-      ComputeDistance_(current_node.charger, next_charger);
+      ComputeDistance(current_node.charger, next_charger);
 
     // Compute the charge time required to make it to the next charger.
     // NOTE: we're charging the car only enough to make it to the next node.
@@ -89,6 +74,6 @@ namespace supercharger
     // charging at the current node - the distance to the next charger.
     return current_node.range + 
       (current_node.duration * current_node.charger->rate) -
-      ComputeDistance_(current_node.charger, next);
+      ComputeDistance(current_node.charger, next);
   }
 } // end namespace supercharger

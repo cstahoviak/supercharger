@@ -89,7 +89,7 @@ namespace supercharger
 
   double Dijkstras::ComputeCost(const Node& current, const Charger* const neighbor) const {
     return current.cost + ComputeChargeTime_(current, neighbor) +
-      ComputeDistance_(current.charger, neighbor) / route_planner_->speed();
+      ComputeDistance(current.charger, neighbor) / route_planner_->speed();
   }
 
   /**
@@ -110,7 +110,7 @@ namespace supercharger
     double current_to_neighbor{0};
 
     for ( auto& [name, node] : nodes_ ) {
-      current_to_neighbor = ComputeDistance_(current->charger, node.charger);
+      current_to_neighbor = ComputeDistance(current->charger, node.charger);
       if ( current_to_neighbor <= route_planner_->max_range() && !node.visited ) {
         neighbors.push_back(&node);
       }
@@ -152,7 +152,7 @@ namespace supercharger
         iter->range);
 
       // Update the total cost of the trip
-      prev_to_current = ComputeDistance_(previous.charger, current.charger);
+      prev_to_current = ComputeDistance(previous.charger, current.charger);
       total_cost_ += prev_to_current / route_planner_->speed();
 
       // Compute the charge time at the current node (skip the final node)
