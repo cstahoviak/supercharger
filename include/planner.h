@@ -11,7 +11,7 @@
  */
 #include "algorithm/algorithm.h"
 #include "network.h"
-#include "stop.h"
+#include "node.h"
 
 #include <memory>
 #include <ostream>
@@ -32,7 +32,7 @@ namespace supercharger
 
       // TODO: Add ctor that also takes max range and speed
 
-      std::vector<Stop> PlanRoute(const std::string&, const std::string&);
+      std::vector<Node> PlanRoute(const std::string&, const std::string&);
 
       // Getters
       const std::unordered_map<std::string, Charger*>& network() const { return network_; }
@@ -58,10 +58,10 @@ namespace supercharger
       // Store the path planning algorithm
       std::unique_ptr<PlanningAlgorithm> planning_algo_;
 
-      std::vector<Stop> InitializeRoute_(const std::string&, const std::string&);
+      std::vector<Node> InitializeRoute_(const std::string&, const std::string&);
   };
 
   // Overload the string stream operator to output the route
-  std::ostream& operator<<(std::ostream&, const std::vector<Stop>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
 
 } // end namespace supercharger

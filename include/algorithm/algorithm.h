@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "stop.h"
+#include "node.h"
 
 #include <memory>
 #include <string>
@@ -42,13 +42,13 @@ namespace supercharger
         NONE
       };
 
-      PlanningAlgorithm(RoutePlanner* planner);
+      PlanningAlgorithm(RoutePlanner*);
 
       static std::unique_ptr<PlanningAlgorithm> GetPlanningAlgorithm(
         RoutePlanner*, AlgorithmType&&, CostFunctionType&&);
       
-      virtual void PlanRoute(std::vector<Stop>&) = 0;
-      virtual double ComputeCost(const Stop&, const Charger* const) const = 0;
+      virtual void PlanRoute(std::vector<Node>&) = 0;
+      virtual double ComputeCost(const Node&, const Charger* const) const = 0;
 
       // Getters
       const double cost() const { return total_cost_; }
@@ -57,16 +57,16 @@ namespace supercharger
       // Store a reference to top-level RoutePlanner instance
       RoutePlanner* route_planner_{nullptr};
 
-      // Store all of the nodes (Stops) in the network
-      std::unordered_map<std::string, Stop> nodes_;
+      // Store all of the nodes (Nodes) in the network
+      std::unordered_map<std::string, Node> nodes_;
 
       // Store the total cost (time in hrs) of the route
       double total_cost_{0};
 
       // Utility functions (args are const pointers to const Chargers)
       double ComputeDistance_(const Charger* const, const Charger* const) const;
-      double ComputeChargeTime_(const Stop&, const Charger* const) const;
-      double ComputeRangeRemaining_(const Stop&, const Charger* const) const;
+      double ComputeChargeTime_(const Node&, const Charger* const) const;
+      double ComputeRangeRemaining_(const Node&, const Charger* const) const;
   };
   
 } // end namespace supercharger

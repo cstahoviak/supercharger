@@ -12,11 +12,11 @@
 
 namespace supercharger
 {
-  void AStar::PlanRoute(std::vector<Stop>& route) {
+  void AStar::PlanRoute(std::vector<Node>& route) {
     return;
   }
 
-  double AStar::ComputeCost(const Stop& current, const Charger* const neighbor) const {
+  double AStar::ComputeCost(const Node& current, const Charger* const neighbor) const {
     return 0;
   }
 } // end namespace supercharger

@@ -36,8 +36,8 @@ set(LIB_HEADERS
   "include/logging.h"
   "include/math.h"
   "include/network.h"
+  "include/node.h"
   "include/planner.h"
-  "include/stop.h"
 )
 
 # Create the superchargerlib

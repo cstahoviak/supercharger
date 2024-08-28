@@ -29,14 +29,14 @@ namespace supercharger
    * @param route 
    * @return std::ostream& 
    */
-  std::ostream& operator<<(std::ostream& stream, const std::vector<Stop>& route) {
+  std::ostream& operator<<(std::ostream& stream, const std::vector<Node>& route) {
     size_t sz = route.size();
     size_t idx = 0;
-    for ( const Stop& stop : route ) {
-      stream << stop.charger->name;
-      // stream << &stop;
-      if ( stop.duration > 0 ) {
-        stream << ", " << std::setprecision(6) << stop.duration;
+    for ( const Node& node : route ) {
+      stream << node.charger->name;
+      // stream << &node;
+      if ( node.duration > 0 ) {
+        stream << ", " << std::setprecision(6) << node.duration;
       }
       if ( idx < sz - 1 ) {
         stream << ", ";
@@ -68,9 +68,9 @@ namespace supercharger
     );
   }
 
-  std::vector<Stop> RoutePlanner::PlanRoute(const std::string& origin, const std::string& destination) {
+  std::vector<Node> RoutePlanner::PlanRoute(const std::string& origin, const std::string& destination) {
     // Initialize the route
-    std::vector<Stop> route = InitializeRoute_(origin, destination);
+    std::vector<Node> route = InitializeRoute_(origin, destination);
 
     // Plan the route
     DEBUG("Planning route between '" << origin << "' and '" << destination << "'");
@@ -86,7 +86,7 @@ namespace supercharger
     return route;
   }
 
-  std::vector<Stop> RoutePlanner::InitializeRoute_(const std::string& origin, const std::string& destination) {
+  std::vector<Node> RoutePlanner::InitializeRoute_(const std::string& origin, const std::string& destination) {
     // Store the origin and destination chargers
     try {
       origin_ = network_.at(origin); 
@@ -107,7 +107,7 @@ namespace supercharger
     };
 
     // Initialize the route and add the origin
-    std::vector<Stop> route;
+    std::vector<Node> route;
     route.emplace_back(origin_, 0, max_range_);
     return route;
   }

@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     const auto& network = planner.network();
 
     // Plan the route with chosen algorithm and cost function
-    std::vector<Stop> route = planner.PlanRoute(
+    std::vector<Node> route = planner.PlanRoute(
       initial_charger_name,
       goal_charger_name
     );
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     RoutePlanner planner(AlgoType::DIJKSTRAS);
 
     // Plan the route with chosen algorithm and cost function
-    std::vector<Stop> route = planner.PlanRoute(
+    std::vector<Node> route = planner.PlanRoute(
       initial_charger_name,
       goal_charger_name
     );

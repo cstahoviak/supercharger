@@ -34,9 +34,9 @@ namespace supercharger
    * 
    * @param route 
    */
-  void BruteForce::PlanRoute(std::vector<Stop>& route) {
-    // Get the current stop
-    Stop& current_stop = route.back();
+  void BruteForce::PlanRoute(std::vector<Node>& route) {
+    // Get the current node
+    Node& current_node = route.back();
     DEBUG("Current route: " << route);
 
     // Create a local alias for the destination charger
@@ -59,8 +59,8 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances
-      current_to_candidate = ComputeDistance_(current_stop.charger, charger);
-      current_to_dest = ComputeDistance_(current_stop.charger, destination);
+      current_to_candidate = ComputeDistance_(current_node.charger, charger);
+      current_to_dest = ComputeDistance_(current_node.charger, destination);
       candidate_to_dest = ComputeDistance_(charger, destination);
 
       // If candidate charger is within the maximum range of the vehicle, add
@@ -79,7 +79,7 @@ namespace supercharger
       // the current charger, add it to map of candidate chargers
       if ( is_reachable && is_closer ) {
         // Compute the cost for the candidate charger
-        double cost = ComputeCost_(current_stop.charger, charger);
+        double cost = ComputeCost_(current_node.charger, charger);
 
         // Add the charger to the map of candidate chargers
         const auto& pair = candidates.try_emplace(cost, charger);
@@ -97,16 +97,16 @@ namespace supercharger
     // destination on our remaining charge and we're done!
     if ( std::find(candidate_names.begin(), candidate_names.end(), destination->name) != candidate_names.end() ) {
       // Compute the charge time to make it to the final destination
-      current_stop.duration = ComputeChargeTime_(current_stop, destination);
+      current_node.duration = ComputeChargeTime_(current_node, destination);
 
-      // Update the total cost at the current stop
+      // Update the total cost at the current node
       UpdateRouteCost_(route);
 
       // Finally, add the travel time to the destination to the total cost
-      total_cost_ += ComputeDistance_(current_stop.charger, destination) /
+      total_cost_ += ComputeDistance_(current_node.charger, destination) /
         route_planner_->speed();
 
-      // Add the destination as the final stop on the route (don't bother
+      // Add the destination as the final node on the route (don't bother
       // computing remaining range at destination)
       route.emplace_back(route_planner_->network().at(destination->name), 0, 0);
       return;
@@ -116,24 +116,24 @@ namespace supercharger
     double key = candidates.begin()->first;
     Charger* next_charger = candidates.at(key);
 
-    // If we've arrived at the current stop with less than the maximum range
-    // (which should be true for every stop that's not the origin), determine
-    // charge time to make it to the next stop    
-    if ( current_stop.range < route_planner_->max_range() ) {
-      current_stop.duration = 
-        ComputeChargeTime_(current_stop, next_charger);
+    // If we've arrived at the current node with less than the maximum range
+    // (which should be true for every node that's not the origin), determine
+    // charge time to make it to the next node    
+    if ( current_node.range < route_planner_->max_range() ) {
+      current_node.duration = 
+        ComputeChargeTime_(current_node, next_charger);
 
-      // Update the total cost at the current stop
+      // Update the total cost at the current node
       UpdateRouteCost_(route);
     }
 
-    // Compute the range remaining after arriving at the next stop
-    double range_remaining = ComputeRangeRemaining_(current_stop, next_charger);
-    DEBUG("Range remaining at '" << current_stop.charger->name << "': " <<
+    // Compute the range remaining after arriving at the next node
+    double range_remaining = ComputeRangeRemaining_(current_node, next_charger);
+    DEBUG("Range remaining at '" << current_node.charger->name << "': " <<
       range_remaining);
 
-    // Add the next stop to the route and continue iteration. Note that the
-    // charge duration at the next stop will be computed on the next iteration.
+    // Add the next node to the route and continue iteration. Note that the
+    // charge duration at the next node will be computed on the next iteration.
     route.emplace_back(next_charger, 0, range_remaining);
     PlanRoute(route);
 
@@ -148,34 +148,34 @@ namespace supercharger
     // charger is in the reachable set.
     // for ( const auto& [name, charger] : candidate_chargers ) {
     //   // Compute the charge time to return to max charge (Assume for now that 
-    //   // the vehicle leaves the current stop with a full charge)
-    //   double dist = ComputeDistance(*(current_stop.charger), *charger);
+    //   // the vehicle leaves the current node with a full charge)
+    //   double dist = ComputeDistance(*(current_node.charger), *charger);
     //   double charge_duration = (max_range_ - dist) / charger->rate;
 
     //   // Recursively call the brute force algorithm until the destination is
     //   // reached
-    //   Stop next_stop = 
-    //     { network_.at(charger->name), charge_duration, max_range_, &current_stop };
-    //   BruteForce_(next_stop);
+    //   Node next_node = 
+    //     { network_.at(charger->name), charge_duration, max_range_, &current_node };
+    //   BruteForce_(next_node);
     // }
 
     return;
   }
 
-  double BruteForce::ComputeCost(const Stop& current, const Charger* const next) const {
+  double BruteForce::ComputeCost(const Node& current, const Charger* const next) const {
     return ComputeCost_(current.charger, next);
   }
 
-  void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
-    // Get the current and previous stops
-    const Stop& current = route.back();
-    const Stop& previous = route.rbegin()[1];
+  void BruteForce::UpdateRouteCost_(const std::vector<Node>& route) {
+    // Get the current and previous nodes
+    const Node& current = route.back();
+    const Node& previous = route.rbegin()[1];
 
-    // Add the travel time between the previous and current stops
+    // Add the travel time between the previous and current nodes
     total_cost_ += ComputeDistance_(previous.charger, current.charger) /
       route_planner_->speed();
 
-    // Add the time to charge at the current stop
+    // Add the time to charge at the current node
     total_cost_ += current.duration;
   }
 

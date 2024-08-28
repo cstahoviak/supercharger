@@ -21,11 +21,11 @@ namespace supercharger
     public:
       Dijkstras(RoutePlanner* rp) : PlanningAlgorithm(rp) {};
 
-      void PlanRoute(std::vector<Stop>&) override;
-      double ComputeCost(const Stop&, const Charger* const) const override;
+      void PlanRoute(std::vector<Node>&) override;
+      double ComputeCost(const Node&, const Charger* const) const override;
 
     private:
-      std::vector<Stop*> GetNeighbors_(const Stop* const);
-      void ConstructFinalRoute_(const Stop* const, std::vector<Stop>&);
+      std::vector<Node*> GetNeighbors_(const Node* const);
+      void ConstructFinalRoute_(const Node* const, std::vector<Node>&);
   };
 } // end namespace supercharger

@@ -23,8 +23,8 @@ namespace supercharger
       BruteForce(RoutePlanner* rp, CostFunctionType type) : 
         PlanningAlgorithm(rp), type_(type) {};
 
-      void PlanRoute(std::vector<Stop>&) override;
-      double ComputeCost(const Stop&, const Charger* const) const override;
+      void PlanRoute(std::vector<Node>&) override;
+      double ComputeCost(const Node&, const Charger* const) const override;
 
     private:
       CostFunctionType type_;
@@ -36,7 +36,7 @@ namespace supercharger
       const double weight_time_to_destination_ = 0.75;
       const double weight_time_to_charge_ = 0.25;
 
-      void UpdateRouteCost_(const std::vector<Stop>&);
+      void UpdateRouteCost_(const std::vector<Node>&);
 
       // The "brute force" algorithm cost function
       double ComputeCost_(const Charger* const, const Charger* const) const;

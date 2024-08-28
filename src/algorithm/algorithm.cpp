@@ -20,7 +20,7 @@
 namespace supercharger
 {
   PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
-    // Create a set of nodes (stops) from the route planner's charger network
+    // Create a set of nodes (nodes) from the route planner's charger network
     for (const auto& [name, charger] : route_planner_->network() ) {
       nodes_.try_emplace(name, charger);
     }
@@ -71,24 +71,24 @@ namespace supercharger
   }
 
   double PlanningAlgorithm::ComputeChargeTime_(
-    const Stop& current_stop, const Charger* const next_charger) const
+    const Node& current_node, const Charger* const next_charger) const
   {
     // Compute the distance to the next charger
     double current_to_next = 
-      ComputeDistance_(current_stop.charger, next_charger);
+      ComputeDistance_(current_node.charger, next_charger);
 
     // Compute the charge time required to make it to the next charger.
-    // NOTE: we're charging the car only enough to make it to the next stop.
-    return (current_to_next - current_stop.range) / current_stop.charger->rate;
+    // NOTE: we're charging the car only enough to make it to the next node.
+    return (current_to_next - current_node.range) / current_node.charger->rate;
   }
 
   double PlanningAlgorithm::ComputeRangeRemaining_(
-    const Stop& current_stop, const Charger* const next) const
+    const Node& current_node, const Charger* const next) const
   {
-    // The range remaining is the range at the current stop + the range added by
-    // charging at the current stop - the distance to the next charger.
-    return current_stop.range + 
-      (current_stop.duration * current_stop.charger->rate) -
-      ComputeDistance_(current_stop.charger, next);
+    // The range remaining is the range at the current node + the range added by
+    // charging at the current node - the distance to the next charger.
+    return current_node.range + 
+      (current_node.duration * current_node.charger->rate) -
+      ComputeDistance_(current_node.charger, next);
   }
 } // end namespace supercharger
