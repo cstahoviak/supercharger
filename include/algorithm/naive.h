@@ -14,13 +14,13 @@
 namespace supercharger
 {
   /**
-   * @brief My "brute force" path planner.
+   * @brief My "naive" path planner.
    */
-  class BruteForce : public PlanningAlgorithm
+  class Naive : public PlanningAlgorithm
   {
     public:
       // NOTE: Call the base class via initializer list "constructor chaining"
-      BruteForce(RoutePlanner* rp, CostFunctionType type) : 
+      Naive(RoutePlanner* rp, CostFunctionType type) : 
         PlanningAlgorithm(rp), type_(type) {};
 
       void PlanRoute(std::vector<Node>&) override;

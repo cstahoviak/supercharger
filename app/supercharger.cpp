@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   if (true) {
     // Create the Route Planner
     RoutePlanner planner(
-      AlgoType::BRUTE_FORCE,
+      AlgoType::NAIVE,
       CostFcnType::MINIMIZE_TIME_REMAINING
     );
 

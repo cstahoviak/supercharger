@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/brute_force.h"
+#include "algorithm/naive.h"
 #include "logging.h"
 // Need to include planner.h here to avoid "pointer or reference to incomplete
 // type is not allowed" errors erlated to using the route_planner_ pointer.
@@ -34,7 +34,7 @@ namespace supercharger
    * 
    * @param route 
    */
-  void BruteForce::PlanRoute(std::vector<Node>& route) {
+  void Naive::PlanRoute(std::vector<Node>& route) {
     // Get the current node
     Node& current_node = route.back();
     DEBUG("Current route: " << route);
@@ -162,11 +162,11 @@ namespace supercharger
     return;
   }
 
-  double BruteForce::ComputeCost(const Node& current, const Charger* const next) const {
+  double Naive::ComputeCost(const Node& current, const Charger* const next) const {
     return ComputeCost_(current.charger, next);
   }
 
-  void BruteForce::UpdateRouteCost_(const std::vector<Node>& route) {
+  void Naive::UpdateRouteCost_(const std::vector<Node>& route) {
     // Get the current and previous nodes
     const Node& current = route.back();
     const Node& previous = route.rbegin()[1];
@@ -186,7 +186,7 @@ namespace supercharger
    * @param candidate 
    * @return double 
    */
-  double BruteForce::ComputeCost_(
+  double Naive::ComputeCost_(
     const Charger* const current, const Charger* const candidate) const 
   {
     // Define the cost

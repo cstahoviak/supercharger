@@ -30,13 +30,13 @@ namespace supercharger
   {
     public:
       enum class AlgorithmType {
-        BRUTE_FORCE,
+        ASTAR,
         DIJKSTRAS,
-        ASTAR
+        NAIVE
       };
 
       enum class CostFunctionType {
-        // So far, these only apply to the Brute Force algorithm
+        // So far, these only apply to the Naive algorithm
         MINIMIZE_DIST_TO_NEXT,
         MINIMIZE_DIST_REMAINING,
         MINIMIZE_TIME_REMAINING,
