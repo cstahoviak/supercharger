@@ -146,9 +146,9 @@ namespace supercharger
       const Node& next = *(iter + 1);
 
       // Update the range after arriving at the current node.
-      iter->range = ComputeRangeRemaining_(previous, current.charger);
+      current.range = ComputeRangeRemaining_(previous, current.charger);
       DEBUG("Range remaining at '" << current.charger->name << "': " <<
-        iter->range);
+        current.range);
 
       // Update the total cost of the trip.
       prev_to_current = ComputeDistance(previous.charger, current.charger);
