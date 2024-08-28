@@ -24,6 +24,7 @@ namespace supercharger
         PlanningAlgorithm(rp), type_(type) {};
 
       void PlanRoute(std::vector<Stop>&) override;
+      double ComputeCost(const Stop&, const Charger* const) const override;
 
     private:
       CostFunctionType type_;

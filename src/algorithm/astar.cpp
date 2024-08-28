@@ -1,7 +1,7 @@
 /**
  * @file astar.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief Implements the A* path planning algorithm.
  * @version 0.1
  * @date 2024-08-27
  * 
@@ -14,5 +14,9 @@ namespace supercharger
 {
   void AStar::PlanRoute(std::vector<Stop>& route) {
     return;
+  }
+
+  double AStar::ComputeCost(const Stop& current, const Charger* const neighbor) const {
+    return 0;
   }
 } // end namespace supercharger

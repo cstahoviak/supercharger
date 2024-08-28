@@ -48,6 +48,7 @@ namespace supercharger
         RoutePlanner*, AlgorithmType&&, CostFunctionType&&);
       
       virtual void PlanRoute(std::vector<Stop>&) = 0;
+      virtual double ComputeCost(const Stop&, const Charger* const) const = 0;
 
       // Getters
       const double cost() const { return total_cost_; }

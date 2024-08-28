@@ -162,6 +162,10 @@ namespace supercharger
     return;
   }
 
+  double BruteForce::ComputeCost(const Stop& current, const Charger* const next) const {
+    return ComputeCost_(current.charger, next);
+  }
+
   void BruteForce::UpdateRouteCost_(const std::vector<Stop>& route) {
     // Get the current and previous stops
     const Stop& current = route.back();

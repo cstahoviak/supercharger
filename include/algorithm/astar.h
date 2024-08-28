@@ -1,8 +1,8 @@
 #pragma once
 /**
  * @file astar.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief The A* path planning algorithm.
  * @version 0.1
  * @date 2024-08-27
  * 
@@ -25,5 +25,6 @@ namespace supercharger
     public:
       AStar(RoutePlanner* rp) : Dijkstras(rp) {};
       void PlanRoute(std::vector<Stop>&) override;
+      double ComputeCost(const Stop&, const Charger* const) const override;
   };
 } // end namespace supercharger

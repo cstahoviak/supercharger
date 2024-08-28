@@ -34,7 +34,6 @@ namespace supercharger
     Stop(Charger* charger, double range, double cost, bool visited) : 
       charger(charger), range(range), cost(cost), visited(visited) {};
     Stop(Charger* charger) : charger(charger) {};
-    // Stop(Charger* charger) : Stop(charger, 0, 0, nullptr) {};
 
     // Store the charger associated with this stop
     Charger* charger{nullptr};
@@ -44,7 +43,7 @@ namespace supercharger
     // The current range or the vehicle after arriving at the stop
     double range{0};
 
-    // The following were added for Dijstra's implementation
+    // The following were added for Dijkstra's implementation
 
     // True if the node has been visited
     bool visited{false};

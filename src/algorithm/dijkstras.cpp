@@ -56,15 +56,16 @@ namespace supercharger
       current_stop->visited = true;
 
       // For the current node, consider all of its unvisited neighbors and
-      // update their distance through the current node.
+      // update their cost through the current node.
       double cost{0};
       for ( Stop* const neighbor : GetNeighbors_(current_stop) ) {
-        cost = current_stop->cost +
-          ComputeDistance_(current_stop->charger, neighbor->charger);
 
-        // If the distance to the neighbor node through the current node is less
-        // than the neighbor's current distance from the origin, update the
-        // neighbor's distance and assign the current node as the neighbor's
+        // Comoute the cost to get to the neighbor through the current node.
+        cost = ComputeCost(*current_stop, neighbor->charger);
+
+        // If the cost to the neighbor node through the current node is less
+        // than the neighbor's current cost from the origin, update the
+        // neighbor's cost and assign the current node as the neighbor's
         // parent.
         if ( cost < neighbor->cost ) {
           neighbor->cost = cost;
@@ -84,6 +85,11 @@ namespace supercharger
     // If we've gotten here, no path was found!
     INFO("No path found!");
     return;
+  }
+
+  double Dijkstras::ComputeCost(const Stop& current, const Charger* const neighbor) const {
+    return current.cost + ComputeChargeTime_(current, neighbor) +
+      ComputeDistance_(current.charger, neighbor) / route_planner_->speed();
   }
 
   /**
