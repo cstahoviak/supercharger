@@ -1,8 +1,8 @@
 #pragma once
 /**
  * @file brute_force.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief My "naive" path planner.
  * @version 0.1
  * @date 2024-08-23
  * 
@@ -19,7 +19,7 @@ namespace supercharger
   class Naive : public PlanningAlgorithm
   {
     public:
-      // NOTE: Call the base class via initializer list "constructor chaining"
+      // NOTE: Calls the base class via initializer list "constructor chaining"
       Naive(RoutePlanner* rp, CostFunctionType type) : 
         PlanningAlgorithm(rp), type_(type) {};
 
@@ -29,7 +29,7 @@ namespace supercharger
     private:
       CostFunctionType type_;
 
-      // Store "brute force" const function weight parameters (weight remaining
+      // Store the "naive" cost function weight parameters (weight remaining
       // travel time more heavily than charge time) NOTE: These weights were
       // arrived at after a bit of tuning, but more work could be done here to
       // further refine these values.
@@ -38,7 +38,7 @@ namespace supercharger
 
       void UpdateRouteCost_(const std::vector<Node>&);
 
-      // The "brute force" algorithm cost function
+      // The "naive" algorithm cost function
       double ComputeCost_(const Charger* const, const Charger* const) const;
   };
 } // end namespace supercharger

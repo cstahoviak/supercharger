@@ -1,7 +1,7 @@
 /**
  * @file algorithm.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief Defines the PlanningAlgorithm interface functions.
  * @version 0.1
  * @date 2024-08-13
  * 
@@ -19,16 +19,16 @@
 namespace supercharger
 {
   PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
-    // Create a set of nodes (nodes) from the route planner's charger network
+    // Create a set of nodes from the route planner's charger network
     for (const auto& [name, charger] : route_planner_->network() ) {
       nodes_.try_emplace(name, charger);
     }
   }
 
-  // NOTE: Do NOT repeat the 'static keyword at the cpp file level
+  // NOTE: Do NOT repeat the 'static' keyword at the cpp file level.
   // NOTE: I think this must be defined at the cpp file level because otherwise
   // I get a "not declared in this scope error" related to the derived planning
-  // algorithm types (BruteForce, Dijkstra's, etc.). 
+  // algorithm types (Naive, Dijkstra's, etc.). 
   std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanningAlgorithm(
     RoutePlanner* rp,
     AlgorithmType&& algo_type,
@@ -58,7 +58,7 @@ namespace supercharger
   double PlanningAlgorithm::ComputeChargeTime_(
     const Node& current_node, const Charger* const next_charger) const
   {
-    // Compute the distance to the next charger
+    // Compute the distance to the next charger.
     double current_to_next = 
       ComputeDistance(current_node.charger, next_charger);
 

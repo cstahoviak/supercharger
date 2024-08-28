@@ -1,7 +1,7 @@
 /**
  * @file djikstras.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief Dijkstra's algorithm implementation.
  * @version 0.1
  * @date 2024-08-23
  * 
@@ -34,8 +34,7 @@ namespace supercharger
     unvisited.push(&origin);
 
     while ( !unvisited.empty() ) {
-      // The next node is the one with the smallest known distance from the
-      // origin.
+      // Get the next node (it has the smallest knowst distance from the origin)
       Node* const current_node = unvisited.top();
       unvisited.pop();
 
@@ -59,15 +58,14 @@ namespace supercharger
       // update their cost through the current node.
       double cost{0};
       for ( Node* const neighbor : GetNeighbors_(current_node) ) {
-
-        // Comoute the cost to get to the neighbor through the current node.
+        // Compute the cost to get to the neighbor through the current node.
         cost = ComputeCost(*current_node, neighbor->charger);
 
-        // If the cost to the neighbor node through the current node is less
-        // than the neighbor's current cost from the origin, update the
-        // neighbor's cost and assign the current node as the neighbor's
-        // parent.
         if ( cost < neighbor->cost ) {
+          // If the cost to the neighbor node through the current node is less
+          // than the neighbor's current cost from the origin, update the
+          // neighbor's cost and assign the current node as the neighbor's
+          // parent.
           neighbor->cost = cost;
           neighbor->parent = current_node;
 
@@ -87,7 +85,9 @@ namespace supercharger
     return;
   }
 
-  double Dijkstras::ComputeCost(const Node& current, const Charger* const neighbor) const {
+  double Dijkstras::ComputeCost(
+    const Node& current, const Charger* const neighbor) const
+  {
     return current.cost + ComputeChargeTime_(current, neighbor) +
       ComputeDistance(current.charger, neighbor) / route_planner_->speed();
   }
@@ -103,7 +103,7 @@ namespace supercharger
    * cannot do this with const elements.
    * 
    * @param current The current node (a const pointer to a const Node).
-   * @return std::vector<Node* const> A vector of const pointers to Nodes.
+   * @return std::vector<Node*> A vector of neighbors as Node pointers.
    */
   std::vector<Node*> Dijkstras::GetNeighbors_(const Node* const current) {
     std::vector<Node*> neighbors;
@@ -120,14 +120,13 @@ namespace supercharger
   }
 
   void Dijkstras::ConstructFinalRoute_(
-    const Node* const final,
-    std::vector<Node>& route)
+    const Node* const final, std::vector<Node>& route)
   {
-    // Clear the route to prepare for reverse population and add the final node
+    // Clear the route to prepare for reverse population and add the final node.
     route.clear();
     route.push_back(*final);
 
-    // Iterate over the parents of each Node to construct the complete path
+    // Iterate over the parents of each node to construct the complete path.
     const Node* current_node = final;
     while ( current_node->parent != nullptr ) {
       // Add the parent to the route
@@ -135,7 +134,7 @@ namespace supercharger
       current_node = current_node->parent;
     }
 
-    // Reverse the order to construct the final route
+    // Reverse the order to construct the final route.
     std::reverse(route.begin(), route.end());
 
     // Compute the charge time (duration) for each node that's not the origin
@@ -146,16 +145,16 @@ namespace supercharger
       Node& current = *iter;
       const Node& next = *(iter + 1);
 
-      // Update the range after arriving at the current node
+      // Update the range after arriving at the current node.
       iter->range = ComputeRangeRemaining_(previous, current.charger);
       DEBUG("Range remaining at '" << current.charger->name << "': " <<
         iter->range);
 
-      // Update the total cost of the trip
+      // Update the total cost of the trip.
       prev_to_current = ComputeDistance(previous.charger, current.charger);
       total_cost_ += prev_to_current / route_planner_->speed();
 
-      // Compute the charge time at the current node (skip the final node)
+      // Compute the charge time at the current node (skip the final node).
       if ( current.charger->name != route_planner_->destination()->name ) {
         current.duration = ComputeChargeTime_(current, next.charger);
         DEBUG("Charging " << current.duration << " hrs at '" <<

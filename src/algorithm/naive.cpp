@@ -1,7 +1,7 @@
 /**
  * @file brute_force.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief Implements my "naive" route planner.
  * @version 0.1
  * @date 2024-08-23
  * 
@@ -11,7 +11,7 @@
 #include "algorithm/naive.h"
 #include "logging.h"
 // Need to include planner.h here to avoid "pointer or reference to incomplete
-// type is not allowed" errors erlated to using the route_planner_ pointer.
+// type is not allowed" errors related to using the route_planner_ pointer.
 #include "planner.h"
 
 #include <algorithm>
@@ -22,7 +22,7 @@
 namespace supercharger
 {
   /**
-   * @brief The "brute force" route planner.
+   * @brief The "naive" route planner.
    * 
    * TODO: Consider using std::unordered_set to store the "reachable" (chargers 
    * that are within the current range of the vehicle post-charging) and 
@@ -35,21 +35,22 @@ namespace supercharger
    * @param route 
    */
   void Naive::PlanRoute(std::vector<Node>& route) {
-    // Get the current node
+    // Get the current node.
     Node& current_node = route.back();
     DEBUG("Current route: " << route);
 
-    // Create a local alias for the destination charger
+    // Create a local alias for the destination charger.
     const Charger* const destination = route_planner_->destination();
 
     // Use a map to store the candidate chargers, i.e. the next possible
-    // chargers on the route, sorted by distance to the destination
+    // chargers on the route, sorted by distance to the destination.
+    // TODO: Could use a priority queue instead? 
     std::map<double, Charger*> candidates;
     std::vector<std::string> candidate_names;
     bool is_reachable{false};
     bool is_closer{false};
 
-    // Store relative distance measurements
+    // Store relative distance measurements.
     double current_to_candidate{0};
     double current_to_dest{0};
     double candidate_to_dest{0};
@@ -58,30 +59,30 @@ namespace supercharger
       is_reachable = false;
       is_closer = false;
 
-      // Compute distances
+      // Compute distances.
       current_to_candidate = ComputeDistance(current_node.charger, charger);
       current_to_dest = ComputeDistance(current_node.charger, destination);
       candidate_to_dest = ComputeDistance(charger, destination);
 
       // If candidate charger is within the maximum range of the vehicle, add
-      // the candidate charger to "reachable" set
+      // the candidate charger to "reachable" set.
       if ( current_to_candidate <= route_planner_->max_range() ) {
         is_reachable = true;
       }
 
       // If the candidate charger is closer to the destination than the current
-      // charger, add the candidate charger to the "closer to" set
+      // charger, add the candidate charger to the "closer to" set.
       if ( candidate_to_dest < current_to_dest ) {
         is_closer = true;
       }
 
       // If the charger is reachable, and it's closer to the destination than
-      // the current charger, add it to map of candidate chargers
+      // the current charger, add it to map of candidate chargers.
       if ( is_reachable && is_closer ) {
-        // Compute the cost for the candidate charger
+        // Compute the cost for the candidate charger.
         double cost = ComputeCost_(current_node.charger, charger);
 
-        // Add the charger to the map of candidate chargers
+        // Add the charger to the map of candidate chargers.
         const auto& pair = candidates.try_emplace(cost, charger);
         candidate_names.push_back(charger->name);
       }
@@ -99,31 +100,31 @@ namespace supercharger
       // Compute the charge time to make it to the final destination
       current_node.duration = ComputeChargeTime_(current_node, destination);
 
-      // Update the total cost at the current node
+      // Update the total route cost at the current node.
       UpdateRouteCost_(route);
 
-      // Finally, add the travel time to the destination to the total cost
+      // Finally, add the travel time to the destination to the total cost.
       total_cost_ += ComputeDistance(current_node.charger, destination) /
         route_planner_->speed();
 
       // Add the destination as the final node on the route (don't bother
-      // computing remaining range at destination)
+      // computing remaining range at destination).
       route.emplace_back(route_planner_->network().at(destination->name), 0, 0);
       return;
     }
 
-    // Choose the next charger such that it minimizes the cost
+    // Choose the next charger such that it minimizes the cost.
     double key = candidates.begin()->first;
     Charger* next_charger = candidates.at(key);
 
     // If we've arrived at the current node with less than the maximum range
     // (which should be true for every node that's not the origin), determine
-    // charge time to make it to the next node    
+    // charge time to make it to the next node.
     if ( current_node.range < route_planner_->max_range() ) {
       current_node.duration = 
         ComputeChargeTime_(current_node, next_charger);
 
-      // Update the total cost at the current node
+      // Update the total cost at the current node.
       UpdateRouteCost_(route);
     }
 
@@ -138,7 +139,7 @@ namespace supercharger
     PlanRoute(route);
 
     // NOTE: My initial thought was to not choose a single "next charger", but
-    // recursively call BruteForce_ on ALL candidate chargers. Thus allowing the
+    // recursively call PlanRoute on ALL candidate chargers. Thus allowing the
     // search space to grow beyond a single charger at each iteration. I have no
     // idea if this is even feasible, or if it can be accomplished via
     // recursion. Below is the code I wrote to attempt that (it didn't work).

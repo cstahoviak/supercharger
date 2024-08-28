@@ -2,7 +2,7 @@
 /**
  * @file algorithm.h
  * @author Carl Stahoviak
- * @brief The path planning algorithms.
+ * @brief The path planning algorithm interface class.
  * @version 0.1
  * @date 2024-08-13
  * 
@@ -36,7 +36,7 @@ namespace supercharger
       };
 
       enum class CostFunctionType {
-        // So far, these only apply to the Naive algorithm
+        // So far, these only apply to the Naive planning algorithm.
         MINIMIZE_DIST_TO_NEXT,
         MINIMIZE_DIST_REMAINING,
         MINIMIZE_TIME_REMAINING,
@@ -55,13 +55,13 @@ namespace supercharger
       const double cost() const { return total_cost_; }
 
     protected:
-      // Store a reference to top-level RoutePlanner instance
+      // Store a reference to the top-level RoutePlanner instance.
       RoutePlanner* route_planner_{nullptr};
 
-      // Store all of the nodes (Nodes) in the network
+      // Store all of the nodes in the network.
       std::unordered_map<std::string, Node> nodes_;
 
-      // Store the total cost (time in hrs) of the route
+      // Store the total cost (time in hrs) of the route.
       double total_cost_{0};
 
       // Utility functions

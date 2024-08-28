@@ -27,10 +27,10 @@ namespace supercharger
   class RoutePlanner
   {
     public:
-      // NOTE: Default parameter values must appear in the declaration
+      // NOTE: Default parameter values must appear in the declaration.
       RoutePlanner(AlgoType&&, CostFcnType&& = CostFcnType::NONE);
 
-      // TODO: Add ctor that also takes max range and speed
+      // TODO: Add ctor that also takes max range and speed.
 
       std::vector<Node> PlanRoute(const std::string&, const std::string&);
 
@@ -40,7 +40,7 @@ namespace supercharger
       const double max_range() const { return max_range_; }
       const double speed() const { return speed_; }
 
-      // Return the total cost (time) of the planned route
+      // Return the total cost (time in hours) of the planned route.
       const double cost() const { return planning_algo_->cost(); }
 
     private:
@@ -48,14 +48,14 @@ namespace supercharger
       Charger* origin_{nullptr};
       Charger* destination_{nullptr};
 
-      // Store some hard-coded constants
+      // Store some hard-coded constants.
       const double max_range_{320};   // [km]
       const double speed_{105};       // [km/hr]
 
-      // Store the network of chargers
+      // Store the network of chargers.
       std::unordered_map<std::string, Charger*> network_;
 
-      // Store the path planning algorithm
+      // Store the path planning algorithm.
       std::unique_ptr<PlanningAlgorithm> planning_algo_;
 
       std::vector<Node> InitializeRoute_(const std::string&, const std::string&);

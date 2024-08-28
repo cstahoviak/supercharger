@@ -27,7 +27,7 @@ int main(int argc, char** argv)
   const std::string initial_charger_name = argv[1];
   const std::string goal_charger_name = argv[2];
 
-  // Use the Brute Force Algorithm
+  // Use the "naive" planning algorithm
   if (true) {
     // Create the Route Planner
     RoutePlanner planner(
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
       initial_charger_name,
       goal_charger_name
     );
-    INFO("'Brute Force' Final Route (Cost: " << planner.cost() << " hrs)");
+    INFO("Nainve Planner Final Route (Cost: " << planner.cost() << " hrs)");
     std::cout << route << std::endl;
   }
 
