@@ -1,8 +1,8 @@
 #pragma once
 /**
  * @file dijkstras.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief Dijkstra's path planning algorithm.
  * @version 0.1
  * @date 2024-08-23
  * 
@@ -21,10 +21,11 @@ namespace supercharger
     public:
       Dijkstras(RoutePlanner* rp) : PlanningAlgorithm(rp) {};
 
-      void PlanRoute(std::vector<Stop>&) override;
+      void PlanRoute(std::vector<Node>&) override;
+      double ComputeCost(const Node&, const Charger* const) const override;
 
     private:
-      std::vector<Stop*> GetNeighbors_(const Stop* const);
-      void ConstructFinalRoute_(const Stop* const, std::vector<Stop>&);
+      std::vector<Node*> GetNeighbors_(const Node* const);
+      void ConstructFinalRoute_(const Node* const, std::vector<Node>&);
   };
 } // end namespace supercharger

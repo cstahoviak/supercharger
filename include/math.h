@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file math.h
- * @author Calr Stahoviak
+ * @author Carl Stahoviak
  * @brief Math utility functions.
  * @version 0.1
  * @date 2024-08-05
