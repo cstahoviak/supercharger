@@ -33,6 +33,7 @@ namespace supercharger
       // TODO: Add ctor that also takes max range and speed.
 
       std::vector<Node> PlanRoute(const std::string&, const std::string&);
+      std::vector<Node> OptimizeRoute(const std::vector<Node>&) const;
 
       // Getters
       const std::unordered_map<std::string, Charger*>& network() const { return network_; }

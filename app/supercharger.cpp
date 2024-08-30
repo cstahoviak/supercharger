@@ -61,5 +61,9 @@ int main(int argc, char** argv)
     );
     INFO("Dijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
     std::cout << route << std::endl;
+
+    std::vector<Node> optimized = planner.OptimizeRoute(route);
+    INFO("Optimized Route (Cost: hrs)");
+    std::cout << optimized << std::endl;
   }
 }

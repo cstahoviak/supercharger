@@ -17,7 +17,7 @@
   #define DEBUG(msg) std::cout << "[DEBUG] " << msg << std::endl
   #define WARNING(msg) std::cout << "[WARNING] " << msg << std::endl
 #else
-  #define INFO(msg) std::cout << "[INFO] " msg << std::endl
+  #define INFO(msg) std::cout << "[INFO] " << msg << std::endl
   #define DEBUG(msg)
   #define WANRING(msg)
 #endif
