@@ -41,6 +41,10 @@ namespace supercharger
       const double max_range() const { return max_range_; }
       const double speed() const { return speed_; }
 
+      // Setters
+      double& max_range() { return max_range_; }
+      double& speed() { return speed_; }
+
       // Return the total cost (time in hours) of the planned route.
       const double cost() const { return planning_algo_->cost(); }
 
@@ -50,8 +54,8 @@ namespace supercharger
       Charger* destination_{nullptr};
 
       // Store some hard-coded constants.
-      const double max_range_{320};   // [km]
-      const double speed_{105};       // [km/hr]
+      double max_range_{0};   // [km]
+      double speed_{0};       // [km/hr]
 
       // Store the network of chargers.
       std::unordered_map<std::string, Charger*> network_;

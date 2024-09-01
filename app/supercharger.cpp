@@ -35,6 +35,10 @@ int main(int argc, char** argv)
       CostFcnType::MINIMIZE_TIME_REMAINING
     );
 
+    // Set the vehicle's speed and max range
+    planner.max_range() = 320;
+    planner.speed() = 105;
+
     // Test to make sure the network getter works.
     const auto& network = planner.network();
 
@@ -53,6 +57,10 @@ int main(int argc, char** argv)
   if (true) {
     // Create the Route Planner
     RoutePlanner planner(AlgoType::DIJKSTRAS);
+
+    // Set the vehicle's speed and max range
+    planner.max_range() = 320;
+    planner.speed() = 105;
 
     // Plan the route with chosen algorithm and cost function
     std::vector<Node> route = planner.PlanRoute(
