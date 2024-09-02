@@ -8,6 +8,8 @@
  * 
  * @copyright Copyright (c) 2024
  */
+#include "node.h"
+
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
@@ -49,5 +51,36 @@ namespace supercharger
 
     // Return value in km
     return M_EARTH_RADIUS_KM * c;
+  }
+
+  /**
+   * @brief Effectively a wrapper around the great_circle_distance() function
+   * for use with the Charger type.
+   * 
+   * TODO: Would it make more sense for this to be in math.h?
+   * 
+   * @param charger1
+   * @param charger2
+   * @return double 
+   */
+  inline double compute_distance(
+    const Charger* const charger1, const Charger* const charger2)
+  {
+    return great_circle_distance(
+      charger1->lat, charger1->lon, charger2->lat, charger2->lon);
+  }
+
+  /**
+   * @brief Effectively a wrapper around the great_circle_distance() function
+   * for use with the Node type.
+   * 
+   * @param node1 
+   * @param node2 
+   * @return double 
+   */
+  inline double compute_distance(
+    const Node* const node1, const Node* const node2)
+  {
+    return compute_distance(node1->charger, node2->charger);
   }
 } //end namespace supercharger
