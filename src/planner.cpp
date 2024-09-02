@@ -33,11 +33,20 @@ namespace supercharger
     size_t sz = route.size();
     size_t idx = 0;
     for ( const Node& node : route ) {
-      stream << node.charger->name;
-      // stream << &node;
-      if ( node.duration > 0 ) {
-        stream << ", " << std::setprecision(6) << node.duration;
+      stream << node;
+      if ( idx < sz - 1 ) {
+        stream << ", ";
       }
+      idx++;
+    }
+    return stream;
+  }
+
+  std::ostream& operator<<(std::ostream& stream, const std::vector<Node*>& route) {
+    size_t sz = route.size();
+    size_t idx = 0;
+    for ( const Node* const node : route ) {
+      stream << *node;
       if ( idx < sz - 1 ) {
         stream << ", ";
       }
@@ -68,22 +77,24 @@ namespace supercharger
     );
   }
 
-  std::vector<Node> RoutePlanner::PlanRoute(const std::string& origin, const std::string& destination) {
+  PlannerResult RoutePlanner::PlanRoute(
+    const std::string& origin, const std::string& destination)
+  {
     // Initialize the route
-    std::vector<Node> route = InitializeRoute_(origin, destination);
+    Initialize_(origin, destination);
 
     // Plan the route
     DEBUG("Planning route between '" << origin << "' and '" << destination << "'");
-    planning_algo_.get()->PlanRoute(route);
+    PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
-    if ( route.back().charger->name == destination_->name ) {
+    if ( result.route.back().charger->name == destination_->name ) {
       DEBUG("Solution found!");
     }
     else {
       DEBUG("Search terminated. Solution not found.");
     }
     
-    return route;
+    return result;
   }
 
   std::vector<Node> RoutePlanner::OptimizeRoute(const std::vector<Node>& route) const {
@@ -114,7 +125,7 @@ namespace supercharger
     for ( size_t idx = argmax + 1; idx < route.size(); idx++ ) {
       const Node& prev = route.at(idx - 1);
       const Node& current = route.at(idx);
-      dist_remaining += ComputeDistance(prev.charger, current.charger);
+      dist_remaining += compute_distance(prev.charger, current.charger);
     }
     DEBUG("Distance remaining between '" << max_node.charger->name <<
       "' and '" << destination_->name << "': " << dist_remaining << "km.");
@@ -156,14 +167,14 @@ namespace supercharger
 
       // For all remaining nodes on the route, update the range remaining
       // after arriving at the node.
-      range_remaining -= ComputeDistance(prev.charger, current.charger);
+      range_remaining -= compute_distance(prev.charger, current.charger);
       current.range = range_remaining;
 
       if ( idx < optimized.size() - 1 ) {
         Node& next = optimized.at(idx + 1);
 
         // Update the total cost of the optimized route
-        double dist_to_next = ComputeDistance(current.charger, next.charger);
+        double dist_to_next = compute_distance(current.charger, next.charger);
         updated_cost += dist_to_next / speed_;
 
         // For all nodes not the destination, update the charge duration if
@@ -182,7 +193,9 @@ namespace supercharger
     return optimized;
   }
 
-  std::vector<Node> RoutePlanner::InitializeRoute_(const std::string& origin, const std::string& destination) {
+  void RoutePlanner::Initialize_(
+    const std::string& origin, const std::string& destination)
+  {
     // Store the origin and destination chargers
     try {
       origin_ = network_.at(origin); 
@@ -218,10 +231,5 @@ namespace supercharger
       "invalid. The vehicle's speed must be greater than zero.";
       throw std::runtime_error(os.str());
     }
-
-    // Initialize the route and add the origin
-    std::vector<Node> route;
-    route.emplace_back(origin_, 0, max_range_);
-    return route;
   }
 } // end namespace supercharger

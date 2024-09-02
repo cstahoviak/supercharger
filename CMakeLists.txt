@@ -25,6 +25,7 @@ set(LIB_SOURCES
   "src/algorithm/dijkstras.cpp"
   "src/algorithm/naive.cpp"
   "src/network.cpp"
+  "src/node.cpp"
   "src/planner.cpp"
 )
 

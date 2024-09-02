@@ -56,24 +56,23 @@ namespace supercharger
   }
 
   double PlanningAlgorithm::ComputeChargeTime_(
-    const Node& current_node, const Charger* const next_charger) const
+    const Node* const current, const Node* const next) const
   {
     // Compute the distance to the next charger.
-    double current_to_next = 
-      ComputeDistance(current_node.charger, next_charger);
+    double current_to_next = compute_distance(current, next);
 
     // Compute the charge time required to make it to the next charger.
     // NOTE: we're charging the car only enough to make it to the next node.
-    return (current_to_next - current_node.range) / current_node.charger->rate;
+    return (current_to_next - current->range) / current->charger->rate;
   }
 
   double PlanningAlgorithm::ComputeRangeRemaining_(
-    const Node& current_node, const Charger* const next) const
+    const Node* const current, const Node* const next) const
   {
-    // The range remaining is the range at the current node + the range added by
-    // charging at the current node - the distance to the next charger.
-    return current_node.range + 
-      (current_node.duration * current_node.charger->rate) -
-      ComputeDistance(current_node.charger, next);
+    // The range remaining after arriving at the next node is the range at the
+    // current node + the range added by charging at the current node - the 
+    // distance to the next charger.
+    return current->range + (current->duration * current->charger->rate) -
+      compute_distance(current, next);
   }
 } // end namespace supercharger

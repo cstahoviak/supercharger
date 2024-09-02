@@ -24,6 +24,17 @@ namespace supercharger
   class RoutePlanner;
 
   /**
+   * @brief Stores the resulting output of a path planning algorithm. The result
+   * contains both a path and a total cost (duration in hours) of the planned
+   * route.
+   */
+  struct PlannerResult
+  {
+    std::vector<Node> route;
+    double cost{0};
+  };
+
+  /**
    * @brief Defines the public interface for all planning algorithm classes.
    */
   class PlanningAlgorithm
@@ -48,13 +59,16 @@ namespace supercharger
       static std::unique_ptr<PlanningAlgorithm> GetPlanningAlgorithm(
         RoutePlanner*, AlgorithmType&&, CostFunctionType&&);
       
-      virtual void PlanRoute(std::vector<Node>&) = 0;
-      virtual double ComputeCost(const Node&, const Charger* const) const = 0;
+      virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
+      virtual double ComputeCost(const Node* const, const Node* const) const = 0;
 
       // Getters
       const double cost() const { return total_cost_; }
 
     protected:
+      // Constructs the final route.
+      virtual std::vector<Node> ConstructFinalRoute_(const Node* const) = 0;
+
       // Store a reference to the top-level RoutePlanner instance.
       RoutePlanner* route_planner_{nullptr};
 
@@ -65,24 +79,7 @@ namespace supercharger
       double total_cost_{0};
 
       // Utility functions
-      double ComputeChargeTime_(const Node&, const Charger* const) const;
-      double ComputeRangeRemaining_(const Node&, const Charger* const) const;
+      double ComputeChargeTime_(const Node* const, const Node* const) const;
+      double ComputeRangeRemaining_(const Node* const, const Node* const) const;
   };
-
-  /**
-   * @brief Effectively a wrapper around the great_circle_distance() function.
-   * 
-   * TODO: Would it make more sense for this to be in math.h?
-   * 
-   * @param charger1
-   * @param charger2
-   * @return double 
-   */
-  inline double ComputeDistance(
-    const Charger* const charger1, const Charger* const charger2)
-  {
-    return great_circle_distance(
-      charger1->lat, charger1->lon, charger2->lat, charger2->lon);
-  }
-  
 } // end namespace supercharger

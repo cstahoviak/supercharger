@@ -43,12 +43,12 @@ int main(int argc, char** argv)
     const auto& network = planner.network();
 
     // Plan the route with chosen algorithm and cost function
-    std::vector<Node> route = planner.PlanRoute(
+    PlannerResult result = planner.PlanRoute(
       initial_charger_name,
       goal_charger_name
     );
-    INFO("Nainve Planner Final Route (Cost: " << planner.cost() << " hrs)");
-    std::cout << route << std::endl;
+    INFO("Naive Planner Final Route (Cost: " << result.cost << " hrs)");
+    std::cout << result.route << std::endl;
   }
 
   std::cout << "\n";
@@ -63,14 +63,14 @@ int main(int argc, char** argv)
     planner.speed() = 105;
 
     // Plan the route with chosen algorithm and cost function
-    std::vector<Node> route = planner.PlanRoute(
+    PlannerResult result = planner.PlanRoute(
       initial_charger_name,
       goal_charger_name
     );
-    INFO("Dijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
-    std::cout << route << std::endl;
+    INFO("Dijkstra's Final Route (Cost: " << result.cost << " hrs)");
+    std::cout << result.route << std::endl;
 
-    std::vector<Node> optimized = planner.OptimizeRoute(route);
+    std::vector<Node> optimized = planner.OptimizeRoute(result.route);
     INFO("Optimized Route (Cost: hrs)");
     std::cout << optimized << std::endl;
   }

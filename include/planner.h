@@ -32,7 +32,7 @@ namespace supercharger
 
       // TODO: Add ctor that also takes max range and speed.
 
-      std::vector<Node> PlanRoute(const std::string&, const std::string&);
+      PlannerResult PlanRoute(const std::string&, const std::string&);
       std::vector<Node> OptimizeRoute(const std::vector<Node>&) const;
 
       // Getters
@@ -63,10 +63,11 @@ namespace supercharger
       // Store the path planning algorithm.
       std::unique_ptr<PlanningAlgorithm> planning_algo_;
 
-      std::vector<Node> InitializeRoute_(const std::string&, const std::string&);
+      void Initialize_(const std::string&, const std::string&);
   };
 
   // Overload the string stream operator to output the route
   std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<Node*>&);
 
 } // end namespace supercharger
