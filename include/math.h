@@ -74,8 +74,8 @@ namespace supercharger
    * @brief Effectively a wrapper around the great_circle_distance() function
    * for use with the Node type.
    * 
-   * @param node1 
-   * @param node2 
+   * @param node1 A const pointer to a const Node.
+   * @param node2 A const pointer to a const Node.
    * @return double 
    */
   inline double compute_distance(
@@ -83,4 +83,20 @@ namespace supercharger
   {
     return compute_distance(node1->charger, node2->charger);
   }
+
+  /**
+   * @brief Effectively a wrapper around the great_circle_distance() function
+   * for use with the Node type.
+   * 
+   * @param node1 A reference a const Node.
+   * @param node2 A reference to a const Node.
+   * @return double 
+   */
+  inline double compute_distance(
+    const Node& node1, const Node& node2)
+  {
+    return compute_distance(node1.charger, node2.charger);
+  }
+
+
 } //end namespace supercharger

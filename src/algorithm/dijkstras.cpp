@@ -150,7 +150,7 @@ namespace supercharger
         current.range);
 
       // Update the total cost of the trip.
-      prev_to_current = compute_distance(previous.charger, current.charger);
+      prev_to_current = compute_distance(previous, current);
       total_cost_ += prev_to_current / route_planner_->speed();
 
       // Compute the charge time at the current node (skip the final node).
