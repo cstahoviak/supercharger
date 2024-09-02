@@ -46,4 +46,6 @@ namespace supercharger
     // Store the previous node on the route.
     Node* parent{nullptr};
   };
+
+  std::ostream& operator<<(std::ostream&, const Node&);
 } // end namespace supercharger
