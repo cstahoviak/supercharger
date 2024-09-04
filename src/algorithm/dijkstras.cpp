@@ -31,14 +31,14 @@ namespace supercharger
 
     // Update the origin node's data and add it to the unvisited set.
     Node& origin_node = nodes_.at(origin);
-    origin_node.departure_range = route_planner_->max_range();
+    origin_node.arrival_range = route_planner_->max_range();
     origin_node.cost = 0;
     unvisited.push(&origin_node);
 
     while ( !unvisited.empty() ) {
       // Get the next node (it has the smallest knowst distance from the origin)
       Node* const current_node = unvisited.top();
-      DEBUG("Current node: " << current_node->charger->name << ", cost = " <<
+      DEBUG("Current node: " << current_node->name() << ", cost = " <<
         current_node->cost);
       unvisited.pop();
 
@@ -51,8 +51,8 @@ namespace supercharger
 
       // If the current node is the destination node, we're done!
       if ( current_node->charger->name == destination) {
-        DEBUG("Final route cost: " << total_cost_ << " hrs.");
-        return { ConstructFinalRoute_(current_node), total_cost_ };
+        DEBUG("Final route cost: " << current_node->cost << " hrs.");
+        return { ConstructFinalRoute_(current_node), current_node->cost };
       }
 
       // Mark the current node as visited prior to getting neighbors.
@@ -66,15 +66,6 @@ namespace supercharger
         cost = ComputeCost(current_node, neighbor);
 
         if ( cost < neighbor->cost ) {
-          if ( neighbor->charger->name == "Albert_Lea_MN" ) {
-            std::string parent_name = ( neighbor->parent ) ? 
-              neighbor->parent->charger->name : "NULL";
-            DEBUG("OLD: '" << parent_name << "' to 'Albert_Lea_MN' cost = " <<
-              neighbor->cost);
-            DEBUG("NEW: '" << current_node->charger->name << 
-              "' to 'Albert_Lea_MN' cost = " << cost);
-          }
-
           // If the cost to the neighbor node through the current node is less
           // than the neighbor's current cost from the origin, update the
           // neighbor's cost and assign the current node as the neighbor's
@@ -82,15 +73,16 @@ namespace supercharger
           neighbor->cost = cost;
           neighbor->parent = current_node;
 
-          // Update the range remaining after arriving at the neighbor node.
-          neighbor->arrival_range = current_node->departure_range -
-            compute_distance(current_node, neighbor);
-          DEBUG(neighbor->name() << " (from " << current_node->name() <<
-            ") arrival_range = " << neighbor->arrival_range);
+          // Compute the charge time at the current node to reach the neighbor.
+          current_node->duration = ComputeChargeTime_(current_node, neighbor);
 
-          // Update the range remaining after arriving at the neighbor node.
-          // neighbor->range = current_node->range -
-          //   compute_distance(current_node, neighbor);
+          // Compute the departure range at the current node.
+          current_node->departure_range = ComputeDepartureRange_(current_node);
+
+          // Compute the arrival range at the neighbor node.
+          neighbor->arrival_range = ComputeArrivalRange_(current_node, neighbor);
+          // DEBUG(neighbor->name() << " (from " << current_node->name() <<
+          //   ") arrival_range = " << neighbor->arrival_range);
 
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
@@ -117,7 +109,7 @@ namespace supercharger
    * Note that the cost associated with the neighbor node has no term that
    * accounts for the charging rate at the neighbor node. The cost function does
    * NOT include the charging rate or time at the neighbor node because we have
-   * no information about the node that may follow the neighbor.
+   * no information about the node that may come after the neighbor.
    * 
    * @param current 
    * @param neighbor 
