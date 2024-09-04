@@ -38,14 +38,12 @@ namespace supercharger
     while ( !unvisited.empty() ) {
       // Get the next node (it has the smallest knowst distance from the origin)
       Node* const current_node = unvisited.top();
-      DEBUG("Current node: " << current_node->name() << ", cost = " <<
-        current_node->cost);
       unvisited.pop();
 
       // Skip the current node if it's already been visited.
       if ( current_node->visited ) {
-        // DEBUG("Already visited '" << current_node->charger->name << 
-        //   "'. Skipping.");
+        DEBUG("Already visited '" << current_node->charger->name << 
+          "'. Skipping.");
         continue;
       }
 
@@ -74,15 +72,17 @@ namespace supercharger
           neighbor->parent = current_node;
 
           // Compute the charge time at the current node to reach the neighbor.
-          current_node->duration = ComputeChargeTime_(current_node, neighbor);
+          double duration = ComputeChargeTime_(current_node, neighbor);
 
           // Compute the departure range at the current node.
-          current_node->departure_range = ComputeDepartureRange_(current_node);
+          double departure_range = current_node->arrival_range + 
+            duration * current_node->charger->rate;
 
-          // Compute the arrival range at the neighbor node.
-          neighbor->arrival_range = ComputeArrivalRange_(current_node, neighbor);
-          // DEBUG(neighbor->name() << " (from " << current_node->name() <<
-          //   ") arrival_range = " << neighbor->arrival_range);
+          // Updating the arrival range at the neighbor node ensures that
+          // the charge duration is calculated properly when the neighbor node
+          // is considered as the "current" node.
+          neighbor->arrival_range = departure_range - 
+            compute_distance(current_node, neighbor);
 
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
@@ -141,10 +141,10 @@ namespace supercharger
 
     // TODO: Iterate over nodes_ via 'const auto&' rather than 'auto&'. This
     // creates issues with push_back().
-    for ( auto& [name, node] : nodes_ ) {
+    for ( const auto& [name, node] : nodes_ ) {
       current_to_neighbor = compute_distance(current->charger, node.charger);
       if ( current_to_neighbor <= route_planner_->max_range() && !node.visited ) {
-        neighbors.push_back(&node);
+        neighbors.push_back(const_cast<Node*>(std::addressof(node)));
       }
     }
 
@@ -154,50 +154,76 @@ namespace supercharger
   std::vector<Node> Dijkstras::ConstructFinalRoute_(const Node* const final) {
     // Create the route and add the final node.
     std::vector<Node> route;
-    route.push_back(*final);
+    route.emplace_back(final->charger);
+    route.back().cost = final->cost;
+
+    DEBUG("");
 
     // Iterate over the parents of each node to construct the complete path.
     const Node* current_node = final;
     while ( current_node->parent != nullptr ) {
+      DEBUG(current_node->name() << " cost: " << current_node->cost << " hrs");
+      DEBUG(current_node->name() << " arrival range: " <<
+        current_node->arrival_range << " km");
+      DEBUG(current_node->name() << " charge duration: " <<
+        current_node->duration << " hrs");
+      
       // Add the parent to the route
-      route.push_back(*(current_node->parent));
+      route.emplace_back(current_node->parent->charger);
+      
+      // Below we will update the charging durations for each node, but the
+      // cost previosly computed for this node will not change because it
+      // represents the minimum time required to reach this node.
+      route.back().cost = current_node->cost;
+
       current_node = current_node->parent;
     }
+
+    DEBUG("");
 
     // Reverse the order to construct the final route.
     std::reverse(route.begin(), route.end());
 
-    // Update the total route cost.
-    double prev_to_current{0};
-    for ( auto iter = route.begin() + 1; iter != route.end(); ++iter) {
-      const Node& previous = *(iter - 1);
-      Node& current = *iter;
-      const Node& next = *(iter + 1);
+    // We need to update the charging times for each node along the route
+    // because the charging durations computed as part of Dijkstra's algorithm
+    // are incorrect. The charge times represent the time required to charge at
+    // a given node... (I need to think more about what's actually happening
+    // during the Dijkstra's route planning process).
+    route.front().cost = 0;
+    route.front().arrival_range = route_planner_->max_range();
+    for ( size_t idx = 0; idx < route.size() - 1; idx++) {
+      // TODO: Is there really no better way to convert an iterator to a raw
+      // pointer?
+      Node* const current = std::addressof(route[idx]);
+      Node* const next = std::addressof(route[idx + 1]);
 
-      // Update the range after arriving at the current node.
-      current.arrival_range = ComputeArrivalRange_(&previous, &current);
-      DEBUG("Drive time between '" << previous.charger->name << "' and '" <<
-        current.charger->name << "': " <<
-        compute_distance(previous, current) / route_planner_->speed());
-      DEBUG("Arrival ange at '" << current.charger->name << "': " <<
-        current.arrival_range);
+      // Compute the charge time at the current node to reach the neighbor.
+      current->duration = ComputeChargeTime_(current, next);
+      DEBUG(current->name() << " charge time: " << current->duration << " hrs");
 
-      // Add the drive time between the current and the prev nodes to the
-      // route's total cost
-      prev_to_current = compute_distance(previous, current);
-      total_cost_ += prev_to_current / route_planner_->speed();
+      // Compute the departure range at the current node.
+      current->departure_range = ComputeDepartureRange_(current);
 
-      // Compute the charge time at the current node (skip the final node).
-      if ( current.charger->name != route_planner_->destination()->name ) {
-        current.duration = ComputeChargeTime_(&current, &next);
-        DEBUG("Charging " << current.duration << " hrs at '" <<
-          current.charger->name << "'" );
-        total_cost_ += current.duration;
+      // Compute the arrival range at the neighbor node.
+      next->arrival_range = ComputeArrivalRange_(current, next);
+
+      // Update the cost at the current node
+      if ( idx > 0 ) {
+        Node* const prev = std::addressof(route[idx - 1]);
+        current->cost = prev->cost + prev->duration +
+          compute_distance(prev, current) / route_planner_->speed();
+        DEBUG("Updating cost at " << current->name() << " cost: " << 
+          current->cost << " hrs");
       }
-
-      DEBUG("Total cost at '" << current.charger->name << "': " <<
-        total_cost_ << ". Node.cost = " << current.cost);
     }
+
+    // Update the cost at the final node
+    route.back().cost = route.rbegin()[1].cost + route.rbegin()[1].duration +
+      compute_distance(route.back(), route.rbegin()[1]) / route_planner_->speed();
+    DEBUG("Updating cost at " << route.back().name() << " cost: " << 
+      route.back().cost << " hrs");
+
+    DEBUG("");
 
     return route;
   }

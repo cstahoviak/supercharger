@@ -196,7 +196,7 @@ namespace supercharger
   }
 
   void Naive::UpdateRouteCost_() {
-    // Cost update cone only take place for the second node onward.
+    // Cost update can only take place for the second node onward.
     if ( route_.size() > 1 ) {
       // Get the current and previous nodes
       const Node* const current = route_.back();
