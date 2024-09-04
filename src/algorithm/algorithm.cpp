@@ -74,7 +74,7 @@ namespace supercharger
     // Compute the charge time required to make it to the next charger.
     // NOTE: we're charging the car only enough to make it to the next node.
     double charge_time = 
-      (current_to_next - current->departure_range) / current->charger->rate;
+      (current_to_next - current->arrival_range) / current->charger->rate;
 
     // If the charge time is negative, we have sufficient range without
     // additional charging to reach the next node.

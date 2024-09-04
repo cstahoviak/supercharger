@@ -43,7 +43,7 @@ namespace supercharger
       const double weight_time_to_charge_ = 0.25;
 
       // The "naive" route planner is implemented as a recursive algorithm.
-      void PlanRouteRecursive_(const std::string&);
+      void PlanRouteRecursive_(const std::string&, const std::string&);
 
       void UpdateRouteCost_();
   };

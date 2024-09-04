@@ -45,11 +45,13 @@ namespace supercharger
     }
 
     // Plan the route via recursion.
-    PlanRouteRecursive_(destination);
+    PlanRouteRecursive_(origin, destination);
     return { ConstructFinalRoute_(&nodes_.at(destination)), total_cost_ };
   }
 
-  void Naive::PlanRouteRecursive_(const std::string& destination) {
+  void Naive::PlanRouteRecursive_(
+    const std::string& origin, const std::string& destination)
+  {
     // Get the current node and mark it as visited.
     Node* const current = route_.back();
     current->visited = true;
@@ -130,7 +132,6 @@ namespace supercharger
     // Choose the next node such that it minimizes the cost.
     double key = candidates.begin()->first;
     Node* const next_node = const_cast<Node* const>(candidates.at(key));
-    DEBUG("Next node: " << next_node->name());
 
     // If we've arrived at the current node with less than the maximum range
     // (which should be true for every node that's not the origin), determine
@@ -144,28 +145,32 @@ namespace supercharger
     // }
 
     // Compute the charge time and the departure range for the current node.
-    DEBUG("Updating the charging duration and departure range at " <<
-      current->name());
     current->duration = ComputeChargeTime_(current, next_node);
-    current->departure_range = current->arrival_range +
-      current->duration * current->charger->rate;
+    DEBUG("Charge duration at " << current->name() << ": " << current->duration);
+    // double departure_range = current->arrival_range +
+    //   current->duration * current->charger->rate;
+    // current->departure_range = std::max(current->departure_range, departure_range);
+    // current->departure_range = current->arrival_range +
+    //   current->duration * current->charger->rate;
 
-    // Update the total cost at the current node.
-    if ( route_.size() > 1 ) {
+    if ( current->name() != origin ) {
+      // Update the departure range for the current node.
+      current->departure_range = current->arrival_range +
+        current->duration * current->charger->rate;
+
+      // Update the total cost at the current node.
       UpdateRouteCost_();
     }
 
     // Compute the range remaining after arriving at the next node.
-    DEBUG("Updating the arrival range at " << current->name());
     next_node->arrival_range = ComputeArrivalRange_(current, next_node);
-    DEBUG("Range remaining at '" << current->charger->name << "': " <<
+    DEBUG("Range remaining at '" << next_node->name() << "': " <<
       next_node->arrival_range);
 
     // Add the next node to the route and continue iteration. Note that the
     // charge duration at the next node will be computed on the next iteration.
-    DEBUG("Adding " << next_node->name() << "to the route.");
     route_.emplace_back(next_node);
-    PlanRouteRecursive_(destination);
+    PlanRouteRecursive_(origin, destination);
 
     // NOTE: My initial thought was to not choose a single "next charger", but
     // recursively call PlanRoute on ALL candidate chargers. Thus allowing the

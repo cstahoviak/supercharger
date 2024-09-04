@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   std::cout << "\n";
 
   // Dijkstra's Algorithm
-  if (true) {
+  if (false) {
     // Create the Route Planner
     RoutePlanner planner(AlgoType::DIJKSTRAS);
 
