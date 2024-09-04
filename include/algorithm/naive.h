@@ -44,7 +44,7 @@ namespace supercharger
 
       // The "naive" route planner is implemented as a recursive algorithm.
       void PlanRouteRecursive_(const std::string&, const std::string&);
-
+      
       void UpdateRouteCost_();
   };
 } // end namespace supercharger

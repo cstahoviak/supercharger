@@ -41,7 +41,6 @@ namespace supercharger
     if ( route_.empty() ) {
       Node& origin_node = nodes_.at(origin);
       origin_node.arrival_range = route_planner_->max_range();
-      origin_node.departure_range = route_planner_->max_range();
       route_.push_back(&origin_node);
     }
 
@@ -57,6 +56,8 @@ namespace supercharger
     Node* const current = route_.back();
     current->visited = true;
     DEBUG("Current route: " << route_);
+    DEBUG("Arrival range at " << current->name() << ": " <<
+      current->arrival_range);
 
     // Create a local alias for the destination node.
     const Node* const end_node = std::addressof(nodes_.at(destination));
@@ -115,7 +116,7 @@ namespace supercharger
 
     // If the destination is in the set of candidate nodes, we can go to the
     // destination on our remaining charge and we're done!
-    if ( std::find(candidate_names.begin(), candidate_names.end(), end_node->charger->name) != candidate_names.end() ) {
+    if ( std::find(candidate_names.begin(), candidate_names.end(), end_node->name()) != candidate_names.end() ) {
       // Compute the charge time to make it to the final destination
       current->duration = ComputeChargeTime_(current, end_node);
 
@@ -134,14 +135,15 @@ namespace supercharger
     double key = candidates.begin()->first;
     Node* const next_node = const_cast<Node* const>(candidates.at(key));
 
-    // Compute the charge time and the departure range for the current node.
-    current->duration = ComputeChargeTime_(current, next_node);
-    DEBUG("Charge duration at " << current->name() << ": " << current->duration);
+    // TODO: Maybe make this whole block its own function (UpdateCurrentNode_?)
+    {
+      // Compute the charge time and the departure range for the current node.
+      current->duration = ComputeChargeTime_(current, next_node);
+      DEBUG("Charge duration at " << current->name() << ": " << 
+        current->duration);
 
-    if ( current->name() != origin ) {
       // Update the departure range for the current node.
-      current->departure_range = current->arrival_range +
-        current->duration * current->charger->rate;
+      current->departure_range = ComputeDepartureRange_(current);
 
       // Update the total cost at the current node.
       UpdateRouteCost_();
@@ -149,8 +151,6 @@ namespace supercharger
 
     // Compute the range remaining after arriving at the next node.
     next_node->arrival_range = ComputeArrivalRange_(current, next_node);
-    DEBUG("Range remaining at '" << next_node->name() << "': " <<
-      next_node->arrival_range);
 
     // Add the next node to the route and continue iteration. Note that the
     // charge duration at the next node will be computed on the next iteration.
@@ -196,16 +196,19 @@ namespace supercharger
   }
 
   void Naive::UpdateRouteCost_() {
-    // Get the current and previous nodes
-    const Node* const current = route_.back();
-    const Node* const previous = route_.rbegin()[1];
+    // Cost update cone only take place for the second node onward.
+    if ( route_.size() > 1 ) {
+      // Get the current and previous nodes
+      const Node* const current = route_.back();
+      const Node* const previous = route_.rbegin()[1];
 
-    // Add the travel time between the previous and current nodes
-    total_cost_ += compute_distance(previous, current) /
-      route_planner_->speed();
+      // Add the travel time between the previous and current nodes
+      total_cost_ += compute_distance(previous, current) /
+        route_planner_->speed();
 
-    // Add the time to charge at the current node
-    total_cost_ += current->duration;
+      // Add the time to charge at the current node
+      total_cost_ += current->duration;
+    }
   }
 
   /**

@@ -81,6 +81,6 @@ namespace supercharger
       // Utility functions
       double ComputeChargeTime_(const Node* const, const Node* const) const;
       double ComputeArrivalRange_(const Node* const, const Node* const) const;
-      double ComputeDepartureRange_(const Node* const, const Node* const) const;
+      double ComputeDepartureRange_(const Node* const) const;
   };
 } // end namespace supercharger

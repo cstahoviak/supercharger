@@ -84,12 +84,16 @@ namespace supercharger
   double PlanningAlgorithm::ComputeArrivalRange_(
     const Node* const current, const Node* const next) const
   {
-    // The range remaining after arriving at the next node is the range at the
-    // current node + the range added by charging at the current node - the 
-    // distance to the next charger.
-    // return 
-    //   current->arrival_range + (current->duration * current->charger->rate) -
-    //   compute_distance(current, next);
+    // The range remaining after arriving at the next node is the departure
+    // range at the current node - the distance to the next charger.
     return current->departure_range - compute_distance(current, next);
+  }
+
+  double PlanningAlgorithm::ComputeDepartureRange_(
+    const Node* const current) const
+  {
+    // The departure range at the current node is the arrival range at the
+    // current node + range added by charging.
+    return current->arrival_range + current->duration * current->charger->rate;
   }
 } // end namespace supercharger
