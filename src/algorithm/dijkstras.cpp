@@ -71,6 +71,10 @@ namespace supercharger
           neighbor->cost = cost;
           neighbor->parent = current_node;
 
+          // TODO: Could store charging durations and departure ranges as an
+          // unordered map for each node. Then we wouldn't have to re-compute
+          // these values during ConstructFinalRoute_().
+
           // Compute the charge time at the current node to reach the neighbor.
           double duration = ComputeChargeTime_(current_node, neighbor);
 
@@ -154,32 +158,21 @@ namespace supercharger
   std::vector<Node> Dijkstras::ConstructFinalRoute_(const Node* const final) {
     // Create the route and add the final node.
     std::vector<Node> route;
-    route.emplace_back(final->charger);
-    route.back().cost = final->cost;
-
-    DEBUG("");
+    route.push_back(*final);
 
     // Iterate over the parents of each node to construct the complete path.
     const Node* current_node = final;
     while ( current_node->parent != nullptr ) {
       DEBUG(current_node->name() << " cost: " << current_node->cost << " hrs");
-      DEBUG(current_node->name() << " arrival range: " <<
-        current_node->arrival_range << " km");
-      DEBUG(current_node->name() << " charge duration: " <<
-        current_node->duration << " hrs");
       
-      // Add the parent to the route
-      route.emplace_back(current_node->parent->charger);
-      
-      // Below we will update the charging durations for each node, but the
-      // cost previosly computed for this node will not change because it
-      // represents the minimum time required to reach this node.
-      route.back().cost = current_node->cost;
-
+      // Add the parent to the route.
+      // NOTE: Below we will update the charging durations for each node, but 
+      // the cost previously computed for this node will not change because it
+      // represents the minimum time required to reach this node, and thus we
+      // can copy the cost when making a copy of the Node.
+      route.push_back(*(current_node->parent));
       current_node = current_node->parent;
     }
-
-    DEBUG("");
 
     // Reverse the order to construct the final route.
     std::reverse(route.begin(), route.end());
@@ -189,8 +182,6 @@ namespace supercharger
     // are incorrect. The charge times represent the time required to charge at
     // a given node... (I need to think more about what's actually happening
     // during the Dijkstra's route planning process).
-    route.front().cost = 0;
-    route.front().arrival_range = route_planner_->max_range();
     for ( size_t idx = 0; idx < route.size() - 1; idx++) {
       // TODO: Is there really no better way to convert an iterator to a raw
       // pointer?
@@ -199,31 +190,16 @@ namespace supercharger
 
       // Compute the charge time at the current node to reach the neighbor.
       current->duration = ComputeChargeTime_(current, next);
-      DEBUG(current->name() << " charge time: " << current->duration << " hrs");
+      DEBUG(current->name() << " updated charge time: " << 
+        current->duration << " hrs");
 
       // Compute the departure range at the current node.
       current->departure_range = ComputeDepartureRange_(current);
 
-      // Compute the arrival range at the neighbor node.
+      // Compute the arrival range at the neighbor node (this may be
+      // unnecessary because it was computed during PlanRoute).
       next->arrival_range = ComputeArrivalRange_(current, next);
-
-      // Update the cost at the current node
-      if ( idx > 0 ) {
-        Node* const prev = std::addressof(route[idx - 1]);
-        current->cost = prev->cost + prev->duration +
-          compute_distance(prev, current) / route_planner_->speed();
-        DEBUG("Updating cost at " << current->name() << " cost: " << 
-          current->cost << " hrs");
-      }
     }
-
-    // Update the cost at the final node
-    route.back().cost = route.rbegin()[1].cost + route.rbegin()[1].duration +
-      compute_distance(route.back(), route.rbegin()[1]) / route_planner_->speed();
-    DEBUG("Updating cost at " << route.back().name() << " cost: " << 
-      route.back().cost << " hrs");
-
-    DEBUG("");
 
     return route;
   }
