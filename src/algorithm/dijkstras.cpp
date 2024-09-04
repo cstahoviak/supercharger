@@ -182,11 +182,11 @@ namespace supercharger
     // are incorrect. The charge times represent the time required to charge at
     // a given node... (I need to think more about what's actually happening
     // during the Dijkstra's route planning process).
-    for ( size_t idx = 0; idx < route.size() - 1; idx++) {
+    for ( auto iter = route.begin(); iter != route.end() - 1; ++iter) {
       // TODO: Is there really no better way to convert an iterator to a raw
       // pointer?
-      Node* const current = std::addressof(route[idx]);
-      Node* const next = std::addressof(route[idx + 1]);
+      Node* const current = std::addressof(*iter);
+      Node* const next = std::addressof(*(iter + 1));
 
       // Compute the charge time at the current node to reach the neighbor.
       current->duration = ComputeChargeTime_(current, next);
