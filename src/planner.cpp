@@ -84,7 +84,8 @@ namespace supercharger
     Initialize_(origin, destination);
 
     // Plan the route
-    DEBUG("Planning route between '" << origin << "' and '" << destination << "'");
+    DEBUG("Planning route between '" << origin << "' and '" << destination << 
+      "'.");
     PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
     if ( result.route.back().charger->name == destination_->name ) {
@@ -97,7 +98,7 @@ namespace supercharger
     return result;
   }
 
-  std::vector<Node> RoutePlanner::OptimizeRoute(const std::vector<Node>& route) const {
+  PlannerResult RoutePlanner::OptimizeRoute(const std::vector<Node>& route) const {
     // For debug purposes, print the charger rate at each node
     for ( const Node& node : route ) {
       DEBUG("'" << node.charger->name << "' charger rate: " <<
@@ -114,6 +115,7 @@ namespace supercharger
         argmax = idx;
       }
     }
+    
     const Node& max_node = route.at(argmax);
 
     DEBUG("Charger at '" << max_node.charger->name << "' with a rate of " <<
@@ -130,67 +132,63 @@ namespace supercharger
     DEBUG("Distance remaining between '" << max_node.charger->name <<
       "' and '" << destination_->name << "': " << dist_remaining << "km.");
 
-    double range_on_departure{0};
-    if ( dist_remaining <= max_range_ ) {
-      // If the distance remaining is less than the max range of the vehicle,
-      // only charge the vehicle enough to make it the destination.
-      range_on_departure = dist_remaining - max_node.range;
-    }
-    else {
-      // If the distance remaining is greater than the maximum range of the
-      // vehicle, we can charge the vehicle fully at the max-rate node and not
-      // charge again between that node and the end of the route.
-      range_on_departure = max_range_;
-    }
+    // If the distance remaining is less than the max range of the vehicle, only
+    // charge the vehicle enough to make it the destination. Otherwise, the
+    // distance remaining is greater than the maximum range of the vihicle, so
+    // we can charge the vehicle fully. 
+    double range_on_departure = ( dist_remaining <= max_range_ ) ? 
+      dist_remaining - max_node.departure_range : max_range_;
+
+    // Compute the charging duration at the max-rate node.
     double duration = range_on_departure / max_node.charger->rate;
 
-    // For the node the with maximum charger rate, update the newly
-    // calculated charge duration.
+    // For the max-rate node, update the newly calculated charge duration.
     DEBUG("Charging for " << duration << " at '" <<
       max_node.charger->name << "'.");
     DEBUG("Leaving '" << max_node.charger->name << "' with a range of " <<
       range_on_departure << "km.");
 
     // Initialize the optimized route as a copy of the provided route and
-    // update the charge duration at the max-rate node and the total cost of
-    // the optimized route
+    // update the charge duration at the newly-optimized max-rate node.
     std::vector<Node> optimized = route;
-    optimized.at(argmax).duration = duration;
-    double updated_cost = route.at(argmax - 1).cost + duration;
+    Node& optimized_max_node = optimized.at(argmax);
+    optimized_max_node.duration = duration;
 
-    // Update the route from the max charger to the end and return the
-    // optimized route.
+    // Update the route cost at the newly-optimized max-rate node
+    optimized_max_node.cost = optimized.at(argmax - 1).cost + duration + 
+      compute_distance(optimized.at(argmax - 1), max_node) / speed_;
+
+    // Update the optimized route from the max-rate node to the end.
     double range_remaining = range_on_departure;
     for ( size_t idx = argmax + 1; idx < optimized.size(); idx++ ) {
-      Node& prev = optimized.at(idx - 1);
+      const Node& prev = optimized.at(idx - 1);
       Node& current = optimized.at(idx);
 
       // For all remaining nodes on the route, update the range remaining
       // after arriving at the node.
-      range_remaining -= compute_distance(prev.charger, current.charger);
-      current.range = range_remaining;
+      range_remaining -= compute_distance(prev, current);
+      current.arrival_range = range_remaining;
+
+      // Update the total cost of the optimized route.
+      current.cost = prev.cost + compute_distance(prev, current) / speed_;
 
       if ( idx < optimized.size() - 1 ) {
-        Node& next = optimized.at(idx + 1);
-
-        // Update the total cost of the optimized route
-        double dist_to_next = compute_distance(current.charger, next.charger);
-        updated_cost += dist_to_next / speed_;
-
         // For all nodes not the destination, update the charge duration if
         // the range remaining is less than the distance to the next node.
+        Node& next = optimized.at(idx + 1);
+        double dist_to_next = compute_distance(current, next);
         if ( dist_to_next > range_remaining ) {
           // Charge just long enough to make it to the next node.
           current.duration =
-            (dist_to_next - current.range) / current.charger->rate;
+            (dist_to_next - current.departure_range) / current.charger->rate;
           DEBUG("Updating charge duration at '" << current.charger->name <<
             "' from " << route.at(idx).duration << " hrs to " <<
             current.duration << " hrs.");
-          updated_cost += current.duration;
+          current.cost += current.duration;
         }
       }
     }
-    return optimized;
+    return { optimized, optimized.back().cost };
   }
 
   void RoutePlanner::Initialize_(

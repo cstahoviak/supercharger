@@ -24,8 +24,8 @@ namespace supercharger
     // i.e. (I think) the route vector is copied between recursive calls to
     // PlanRoute, and thus the pointer to the parent Node ends up pointing to an
     // object that no longer exists.
-    Node(Charger* charger, double duration, double range) : charger(charger),
-      duration(duration), range(range) {};
+    // Node(Charger* charger, double duration, double range) : charger(charger),
+    //   duration(duration), range(range) {};
 
     // For use with Dijkstra's algorithm.
     Node(Charger* charger) : charger(charger) {};
@@ -35,8 +35,10 @@ namespace supercharger
 
     // The length of time charging (hrs).
     double duration{0};
-    // The current range or the vehicle after arriving at the node.
-    double range{0};
+    // The range of the vehicle after arriving at this node.
+    double arrival_range{0};
+    // The post-charging range of the vehicle when departing this node.
+    double departure_range{0}; 
 
     // The following were added for Dijkstra's implementation.
     // True if the node has been visited.
@@ -45,6 +47,13 @@ namespace supercharger
     double cost{std::numeric_limits<double>::max()};
     // Store the previous node on the route.
     Node* parent{nullptr};
+
+    // Getters
+    const std::string& name() const { 
+      return ( charger ) ? charger->name : default_name_; }
+
+  private:
+    std::string default_name_{"NULL"};
   };
 
   std::ostream& operator<<(std::ostream&, const Node&);

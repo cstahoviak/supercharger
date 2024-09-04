@@ -40,7 +40,7 @@ namespace supercharger
     // Initially, populate the route with the origin node.
     if ( route_.empty() ) {
       Node& origin_node = nodes_.at(origin);
-      origin_node.range = route_planner_->max_range();
+      origin_node.departure_range = route_planner_->max_range();
       route_.push_back(&origin_node);
     }
 
@@ -130,25 +130,40 @@ namespace supercharger
     // Choose the next node such that it minimizes the cost.
     double key = candidates.begin()->first;
     Node* const next_node = const_cast<Node* const>(candidates.at(key));
+    DEBUG("Next node: " << next_node->name());
 
     // If we've arrived at the current node with less than the maximum range
     // (which should be true for every node that's not the origin), determine
     // charge time to make it to the next node.
-    if ( current->range < route_planner_->max_range() ) {
-      current->duration = 
-        ComputeChargeTime_(current, next_node);
+    // if ( current->arrival_range < route_planner_->max_range() ) {
+    //   current->duration = 
+    //     ComputeChargeTime_(current, next_node);
 
-      // Update the total cost at the current node.
+    //   // Update the total cost at the current node.
+    //   UpdateRouteCost_();
+    // }
+
+    // Compute the charge time and the departure range for the current node.
+    DEBUG("Updating the charging duration and departure range at " <<
+      current->name());
+    current->duration = ComputeChargeTime_(current, next_node);
+    current->departure_range = current->arrival_range +
+      current->duration * current->charger->rate;
+
+    // Update the total cost at the current node.
+    if ( route_.size() > 1 ) {
       UpdateRouteCost_();
     }
 
-    // Compute the range remaining after arriving at the next node
-    next_node->range = ComputeRangeRemaining_(current, next_node);
+    // Compute the range remaining after arriving at the next node.
+    DEBUG("Updating the arrival range at " << current->name());
+    next_node->arrival_range = ComputeArrivalRange_(current, next_node);
     DEBUG("Range remaining at '" << current->charger->name << "': " <<
-      next_node->range);
+      next_node->arrival_range);
 
     // Add the next node to the route and continue iteration. Note that the
     // charge duration at the next node will be computed on the next iteration.
+    DEBUG("Adding " << next_node->name() << "to the route.");
     route_.emplace_back(next_node);
     PlanRouteRecursive_(destination);
 

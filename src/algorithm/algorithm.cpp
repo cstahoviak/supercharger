@@ -15,11 +15,13 @@
 #include "logging.h"
 #include "planner.h"
 
+#include <algorithm>
+
 
 namespace supercharger
 {
   PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
-    // Create a set of nodes from the route planner's charger network
+    // Create a set of nodes from the route planner's charger network.
     for (const auto& [name, charger] : route_planner_->network() ) {
       nodes_.try_emplace(name, charger);
     }
@@ -55,6 +57,14 @@ namespace supercharger
     }
   }
 
+  /**
+   * @brief Computes the charge time at the current node required to make it to
+   * the next node.
+   * 
+   * @param current 
+   * @param next 
+   * @return double 
+   */
   double PlanningAlgorithm::ComputeChargeTime_(
     const Node* const current, const Node* const next) const
   {
@@ -63,16 +73,23 @@ namespace supercharger
 
     // Compute the charge time required to make it to the next charger.
     // NOTE: we're charging the car only enough to make it to the next node.
-    return (current_to_next - current->range) / current->charger->rate;
+    double charge_time = 
+      (current_to_next - current->departure_range) / current->charger->rate;
+
+    // If the charge time is negative, we have sufficient range without
+    // additional charging to reach the next node.
+    return std::max(0.0, charge_time);
   }
 
-  double PlanningAlgorithm::ComputeRangeRemaining_(
+  double PlanningAlgorithm::ComputeArrivalRange_(
     const Node* const current, const Node* const next) const
   {
     // The range remaining after arriving at the next node is the range at the
     // current node + the range added by charging at the current node - the 
     // distance to the next charger.
-    return current->range + (current->duration * current->charger->rate) -
-      compute_distance(current, next);
+    // return 
+    //   current->arrival_range + (current->duration * current->charger->rate) -
+    //   compute_distance(current, next);
+    return current->departure_range - compute_distance(current, next);
   }
 } // end namespace supercharger

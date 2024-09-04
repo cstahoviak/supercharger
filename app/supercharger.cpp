@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     planner.max_range() = 320;
     planner.speed() = 105;
 
-    // Plan the route with chosen algorithm and cost function
+    // Plan the route
     PlannerResult result = planner.PlanRoute(
       initial_charger_name,
       goal_charger_name
@@ -70,8 +70,8 @@ int main(int argc, char** argv)
     INFO("Dijkstra's Final Route (Cost: " << result.cost << " hrs)");
     std::cout << result.route << std::endl;
 
-    std::vector<Node> optimized = planner.OptimizeRoute(result.route);
-    INFO("Optimized Route (Cost: hrs)");
-    std::cout << optimized << std::endl;
+    PlannerResult optimized = planner.OptimizeRoute(result.route);
+    INFO("Optimized Route (Cost: " << optimized.cost << " hrs)");
+    std::cout << optimized.route << std::endl;
   }
 }

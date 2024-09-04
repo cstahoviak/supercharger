@@ -31,25 +31,28 @@ namespace supercharger
 
     // Update the origin node's data and add it to the unvisited set.
     Node& origin_node = nodes_.at(origin);
-    origin_node.range = route_planner_->max_range();
+    origin_node.departure_range = route_planner_->max_range();
     origin_node.cost = 0;
     unvisited.push(&origin_node);
 
     while ( !unvisited.empty() ) {
       // Get the next node (it has the smallest knowst distance from the origin)
       Node* const current_node = unvisited.top();
+      DEBUG("Current node: " << current_node->charger->name << ", cost = " <<
+        current_node->cost);
       unvisited.pop();
 
       // Skip the current node if it's already been visited.
       if ( current_node->visited ) {
-        DEBUG("Already visited '" << current_node->charger->name << 
-          "'. Skipping.");
+        // DEBUG("Already visited '" << current_node->charger->name << 
+        //   "'. Skipping.");
         continue;
       }
 
       // If the current node is the destination node, we're done!
       if ( current_node->charger->name == destination) {
-        return {ConstructFinalRoute_(current_node), total_cost_};
+        DEBUG("Final route cost: " << total_cost_ << " hrs.");
+        return { ConstructFinalRoute_(current_node), total_cost_ };
       }
 
       // Mark the current node as visited prior to getting neighbors.
@@ -63,12 +66,31 @@ namespace supercharger
         cost = ComputeCost(current_node, neighbor);
 
         if ( cost < neighbor->cost ) {
+          if ( neighbor->charger->name == "Albert_Lea_MN" ) {
+            std::string parent_name = ( neighbor->parent ) ? 
+              neighbor->parent->charger->name : "NULL";
+            DEBUG("OLD: '" << parent_name << "' to 'Albert_Lea_MN' cost = " <<
+              neighbor->cost);
+            DEBUG("NEW: '" << current_node->charger->name << 
+              "' to 'Albert_Lea_MN' cost = " << cost);
+          }
+
           // If the cost to the neighbor node through the current node is less
           // than the neighbor's current cost from the origin, update the
           // neighbor's cost and assign the current node as the neighbor's
           // parent.
           neighbor->cost = cost;
           neighbor->parent = current_node;
+
+          // Update the range remaining after arriving at the neighbor node.
+          neighbor->arrival_range = current_node->departure_range -
+            compute_distance(current_node, neighbor);
+          DEBUG(neighbor->name() << " (from " << current_node->name() <<
+            ") arrival_range = " << neighbor->arrival_range);
+
+          // Update the range remaining after arriving at the neighbor node.
+          // neighbor->range = current_node->range -
+          //   compute_distance(current_node, neighbor);
 
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
@@ -86,6 +108,21 @@ namespace supercharger
     return {};
   }
 
+  /**
+   * @brief The Dijkstra's const function computes the cost at the neighbor node
+   * as the sum of the cost at the current node + the charge time required to
+   * reach the neighbor node from the current node + the travel time from the
+   * current node to the neighbor.
+   * 
+   * Note that the cost associated with the neighbor node has no term that
+   * accounts for the charging rate at the neighbor node. The cost function does
+   * NOT include the charging rate or time at the neighbor node because we have
+   * no information about the node that may follow the neighbor.
+   * 
+   * @param current 
+   * @param neighbor 
+   * @return double 
+   */
   double Dijkstras::ComputeCost(
     const Node* const current, const Node* const neighbor) const
   {
@@ -94,7 +131,7 @@ namespace supercharger
   }
 
   /**
-   * @brief Returns all unvisited neighbors of the current node (node).
+   * @brief Returns all unvisited neighbors of the current node.
    * 
    * NOTE: Originally, I wanted the return type to be std::vector<Node* const>,
    * but this isn't possible. The vector is probably the only container that
@@ -110,6 +147,8 @@ namespace supercharger
     std::vector<Node*> neighbors;
     double current_to_neighbor{0};
 
+    // TODO: Iterate over nodes_ via 'const auto&' rather than 'auto&'. This
+    // creates issues with push_back().
     for ( auto& [name, node] : nodes_ ) {
       current_to_neighbor = compute_distance(current->charger, node.charger);
       if ( current_to_neighbor <= route_planner_->max_range() && !node.visited ) {
@@ -136,8 +175,7 @@ namespace supercharger
     // Reverse the order to construct the final route.
     std::reverse(route.begin(), route.end());
 
-    // Compute the charge time (duration) for each node that's not the origin
-    // or the destination.
+    // Update the total route cost.
     double prev_to_current{0};
     for ( auto iter = route.begin() + 1; iter != route.end(); ++iter) {
       const Node& previous = *(iter - 1);
@@ -145,11 +183,15 @@ namespace supercharger
       const Node& next = *(iter + 1);
 
       // Update the range after arriving at the current node.
-      current.range = ComputeRangeRemaining_(&previous, &current);
-      DEBUG("Range remaining at '" << current.charger->name << "': " <<
-        current.range);
+      current.arrival_range = ComputeArrivalRange_(&previous, &current);
+      DEBUG("Drive time between '" << previous.charger->name << "' and '" <<
+        current.charger->name << "': " <<
+        compute_distance(previous, current) / route_planner_->speed());
+      DEBUG("Arrival ange at '" << current.charger->name << "': " <<
+        current.arrival_range);
 
-      // Update the total cost of the trip.
+      // Add the drive time between the current and the prev nodes to the
+      // route's total cost
       prev_to_current = compute_distance(previous, current);
       total_cost_ += prev_to_current / route_planner_->speed();
 
@@ -160,6 +202,9 @@ namespace supercharger
           current.charger->name << "'" );
         total_cost_ += current.duration;
       }
+
+      DEBUG("Total cost at '" << current.charger->name << "': " <<
+        total_cost_ << ". Node.cost = " << current.cost);
     }
 
     return route;
