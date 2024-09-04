@@ -40,6 +40,7 @@ namespace supercharger
     // Initially, populate the route with the origin node.
     if ( route_.empty() ) {
       Node& origin_node = nodes_.at(origin);
+      origin_node.arrival_range = route_planner_->max_range();
       origin_node.departure_range = route_planner_->max_range();
       route_.push_back(&origin_node);
     }
@@ -133,25 +134,9 @@ namespace supercharger
     double key = candidates.begin()->first;
     Node* const next_node = const_cast<Node* const>(candidates.at(key));
 
-    // If we've arrived at the current node with less than the maximum range
-    // (which should be true for every node that's not the origin), determine
-    // charge time to make it to the next node.
-    // if ( current->arrival_range < route_planner_->max_range() ) {
-    //   current->duration = 
-    //     ComputeChargeTime_(current, next_node);
-
-    //   // Update the total cost at the current node.
-    //   UpdateRouteCost_();
-    // }
-
     // Compute the charge time and the departure range for the current node.
     current->duration = ComputeChargeTime_(current, next_node);
     DEBUG("Charge duration at " << current->name() << ": " << current->duration);
-    // double departure_range = current->arrival_range +
-    //   current->duration * current->charger->rate;
-    // current->departure_range = std::max(current->departure_range, departure_range);
-    // current->departure_range = current->arrival_range +
-    //   current->duration * current->charger->rate;
 
     if ( current->name() != origin ) {
       // Update the departure range for the current node.
