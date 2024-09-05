@@ -75,3 +75,6 @@ enable_testing()
 
 # Add the tests
 add_subdirectory(cpp/test)
+
+# Add the python bindings
+add_subdirectory(cpp/bindings)
