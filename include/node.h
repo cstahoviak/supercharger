@@ -19,23 +19,14 @@ namespace supercharger
    */
   struct Node {
     // NOTE: Must define a ctor to make use of "emplace_back"-like functions.
-    // NOTE: The Niave algorithm will use this constructor because it doesn't
-    // seem like recursion and pass-by-reference play well with one another,
-    // i.e. (I think) the route vector is copied between recursive calls to
-    // PlanRoute, and thus the pointer to the parent Node ends up pointing to an
-    // object that no longer exists.
-    // Node(Charger* charger, double duration, double range) : charger(charger),
-    //   duration(duration), range(range) {};
-
-    // For use with Dijkstra's algorithm.
     Node(Charger* charger) : charger(charger) {};
 
     // Store the charger associated with this node.
     Charger* charger{nullptr};
 
-    // The length of time charging (hrs).
+    // The length of time charging at this node (hrs).
     double duration{0};
-    // The range of the vehicle after arriving at this node.
+    // The range of the vehicle upon arriving at this node.
     double arrival_range{0};
     // The post-charging range of the vehicle when departing this node.
     double departure_range{0}; 
