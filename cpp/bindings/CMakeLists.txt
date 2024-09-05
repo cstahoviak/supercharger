@@ -6,7 +6,11 @@ find_package(pybind11 REQUIRED)
 
 # The SOURCES are the bindings
 set(SOURCES
+  "algorithm/algorithm.cpp"
+  "network.cpp"
+  "node.cpp"
   "planner.cpp"
+
   "module.cpp"
 )
 

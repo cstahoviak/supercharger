@@ -11,7 +11,7 @@
 #include "planner.h"
 
 #include <pybind11/pybind11.h>
-// Required for automatic type conversions between np.ndarray and std::vector
+// Required for automatic type conversions between python lists and std::vector
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
@@ -20,5 +20,17 @@ using namespace supercharger;
 void initRoutePlanner(py::module_& m)
 {
   // string stream operator
-  // m.def("__str__", py::overload_cast)
+  m.def("__str__", 
+    py::overload_cast<std::ostream&, const std::vector<Node>&>(&operator<<),
+    py::arg("os"), py::arg("route"));
+  m.def("__str__", 
+    py::overload_cast<std::ostream&, const std::vector<Node*>&>(&operator<<),
+    py::arg("os"), py::arg("route"));
+
+  // py::class_<RoutePlanner>(m, "RoutePlanner")
+  //   .def(py::init<AlgoType&&, CostFcnType&&>(), py::arg("algo_type"), py::arg("cost_type"))
+  //   .def("plan_route", &RoutePlanner::PlanRoute, py::arg("origin"), py::arg("destination"))
+  //   .def("optimize_route", &RoutePlanner::OptimizeRoute, py::arg("result"))
+  //   ;
+
 }

@@ -47,6 +47,9 @@ set(LIB_HEADERS
 
 # Create the superchargerlib
 add_library(superchargerlib ${LIB_SOURCES} ${LIB_HEADERS})
+# NOTE: This is required by the python bindings (specifically bindings related
+# to overloads of operator<<), but I don't really understand why?
+set_property(TARGET superchargerlib PROPERTY POSITION_INDEPENDENT_CODE ON)  #-fPIC
 
 # Create the supercharger app (add project executable)
 file( GLOB APP_SOURCES cpp/app/*.cpp )
