@@ -17,7 +17,7 @@ namespace supercharger
   class NaiveOptimizer : public Optimizer
   {
     public:
-      NaiveOptimizer() = default;
+      // NaiveOptimizer() = default;
       PlannerResult Optimize(const PlannerResult&) const override;
   };
 } // end namespace supercharger

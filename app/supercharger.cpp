@@ -28,7 +28,7 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Use the "naive" planning algorithm
-  if (false) {
+  if (true) {
     // Create the Route Planner
     RoutePlanner planner(
       AlgoType::NAIVE,
