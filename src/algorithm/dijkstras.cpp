@@ -42,13 +42,12 @@ namespace supercharger
 
       // Skip the current node if it's already been visited.
       if ( current_node->visited ) {
-        DEBUG("Already visited '" << current_node->charger->name << 
-          "'. Skipping.");
+        DEBUG("Already visited '" << current_node.name() << "'. Skipping.");
         continue;
       }
 
       // If the current node is the destination node, we're done!
-      if ( current_node->charger->name == destination) {
+      if ( current_node->name() == destination) {
         DEBUG("Final route cost: " << current_node->cost << " hrs.");
         return { ConstructFinalRoute_(current_node), current_node->cost,
           route_planner_->max_range(), route_planner_->speed() };

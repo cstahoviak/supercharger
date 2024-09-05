@@ -22,8 +22,7 @@ namespace supercharger
 
     // For debug purposes, print the charger rate at each node.
     for ( const Node& node : route ) {
-      DEBUG("'" << node.charger->name << "' charger rate: " <<
-        node.charger->rate);
+      DEBUG("'" << node.name() << "' charger rate: " << node.charger->rate);
     }
     
     // Find the node with the fastest charger in the route (that's not the
@@ -68,8 +67,8 @@ namespace supercharger
 
     // For the max-rate node, update the newly calculated charge duration.
     DEBUG("Charging for " << max_node.duration << " at '" <<
-      max_node.charger->name << "'.");
-    DEBUG("Leaving '" << max_node.charger->name << "' with a range of " <<
+      max_node.name() << "'.");
+    DEBUG("Leaving '" << max_node.name() << "' with a range of " <<
       max_node.departure_range << "km.");
 
     // Update the optimized route from the max-rate node to the end.
@@ -100,7 +99,7 @@ namespace supercharger
           current.duration = 0;
         }
 
-        DEBUG("Updating charge duration at '" << current.charger->name <<
+        DEBUG("Updating charge duration at '" << current.name() <<
           "' from " << route.at(idx).duration << " hrs to " <<
           current.duration << " hrs.");
 

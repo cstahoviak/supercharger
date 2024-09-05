@@ -92,7 +92,7 @@ namespace supercharger
       "'.");
     PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
-    if ( result.route.back().charger->name == destination_->name ) {
+    if ( result.route.back().name() == destination_->name ) {
       DEBUG("Solution found!");
     }
     else {
