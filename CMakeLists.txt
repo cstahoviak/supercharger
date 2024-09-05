@@ -24,7 +24,10 @@ set(LIB_SOURCES
   "src/algorithm/astar.cpp"
   "src/algorithm/dijkstras.cpp"
   "src/algorithm/naive.cpp"
+  "src/optimizer/naive.cpp"
+  "src/optimizer/optimizer.cpp"
   "src/network.cpp"
+  "src/node.cpp"
   "src/planner.cpp"
 )
 
@@ -33,6 +36,8 @@ set(LIB_HEADERS
   "include/algorithm/astar.h"
   "include/algorithm/dijkstras.h"
   "include/algorithm/naive.h"
+  "include/optimizer/naive.h"
+  "include/optimizer/optimizer.h"
   "include/logging.h"
   "include/math.h"
   "include/network.h"

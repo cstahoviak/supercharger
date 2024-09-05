@@ -12,11 +12,19 @@
 
 namespace supercharger
 {
-  void AStar::PlanRoute(std::vector<Node>& route) {
-    return;
+  PlannerResult AStar::PlanRoute(
+    const std::string& origin, const std::string& destination)
+  {
+    return {};
   }
 
-  double AStar::ComputeCost(const Node& current, const Charger* const neighbor) const {
+  double AStar::ComputeCost(
+    const Node* const current, const Node* const neighbor) const
+  {
     return 0;
+  }
+
+  std::vector<Node> AStar::ConstructFinalRoute_(const Node* const final) {
+    return {};
   }
 } // end namespace supercharger

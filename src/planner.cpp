@@ -33,11 +33,20 @@ namespace supercharger
     size_t sz = route.size();
     size_t idx = 0;
     for ( const Node& node : route ) {
-      stream << node.charger->name;
-      // stream << &node;
-      if ( node.duration > 0 ) {
-        stream << ", " << std::setprecision(6) << node.duration;
+      stream << node;
+      if ( idx < sz - 1 ) {
+        stream << ", ";
       }
+      idx++;
+    }
+    return stream;
+  }
+
+  std::ostream& operator<<(std::ostream& stream, const std::vector<Node*>& route) {
+    size_t sz = route.size();
+    size_t idx = 0;
+    for ( const Node* const node : route ) {
+      stream << node;
       if ( idx < sz - 1 ) {
         stream << ", ";
       }
@@ -57,7 +66,7 @@ namespace supercharger
       }
     }
 
-    // Create the planning algorithm
+    // Create the planning algorithm.
     // NOTE: Even though this function accepts 'algo_type' and 'cost_type as 
     // r-value references, once we're within the scope of this function, they
     // become l-values (pretty odd, right?). So we need to use std::move() to 
@@ -66,27 +75,41 @@ namespace supercharger
     planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
       this, std::move(algo_type), std::move(cost_type)
     );
+
+    // Create the optimizer.
+    optimizer_ = Optimizer::GetOptimizer(Optimizer::OptimizerType::NAIVE);
+
   }
 
-  std::vector<Node> RoutePlanner::PlanRoute(const std::string& origin, const std::string& destination) {
+  PlannerResult RoutePlanner::PlanRoute(
+    const std::string& origin, const std::string& destination)
+  {
     // Initialize the route
-    std::vector<Node> route = InitializeRoute_(origin, destination);
+    Initialize_(origin, destination);
 
     // Plan the route
-    DEBUG("Planning route between '" << origin << "' and '" << destination << "'");
-    planning_algo_.get()->PlanRoute(route);
+    DEBUG("Planning route between '" << origin << "' and '" << destination << 
+      "'.");
+    PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
-    if ( route.back().charger->name == destination_->name ) {
+    if ( result.route.back().charger->name == destination_->name ) {
       DEBUG("Solution found!");
     }
     else {
       DEBUG("Search terminated. Solution not found.");
     }
     
-    return route;
+    return result;
   }
 
-  std::vector<Node> RoutePlanner::InitializeRoute_(const std::string& origin, const std::string& destination) {
+  PlannerResult RoutePlanner::OptimizeRoute(const PlannerResult& result) const
+  {
+    return optimizer_->Optimize(result);
+  }
+
+  void RoutePlanner::Initialize_(
+    const std::string& origin, const std::string& destination)
+  {
     // Store the origin and destination chargers
     try {
       origin_ = network_.at(origin); 
@@ -106,9 +129,21 @@ namespace supercharger
       throw std::out_of_range(os.str());
     };
 
-    // Initialize the route and add the origin
-    std::vector<Node> route;
-    route.emplace_back(origin_, 0, max_range_);
-    return route;
+    // TODO: max_range_ should actually be greater than or equal to the
+    // starting node's nearest neighbor.
+    if ( max_range_ <= 0 ) {
+      std::ostringstream os;
+      os << "The vehicle's maximum range value of " << max_range_ << "km " <<
+        "is invalid. The vehicle's max range must be greater than or equal " <<
+        "to the nearest neighbor of the starting node.";
+      throw std::runtime_error(os.str());
+    }
+
+    if ( speed_ <= 0 ) {
+      std::ostringstream os;
+      os << "The vehicle's speed value of " << speed_ << " km/hr is " <<
+      "invalid. The vehicle's speed must be greater than zero.";
+      throw std::runtime_error(os.str());
+    }
   }
 } // end namespace supercharger

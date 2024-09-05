@@ -35,16 +35,20 @@ int main(int argc, char** argv)
       CostFcnType::MINIMIZE_TIME_REMAINING
     );
 
+    // Set the vehicle's speed and max range
+    planner.max_range() = 320;
+    planner.speed() = 105;
+
     // Test to make sure the network getter works.
     const auto& network = planner.network();
 
     // Plan the route with chosen algorithm and cost function
-    std::vector<Node> route = planner.PlanRoute(
+    PlannerResult result = planner.PlanRoute(
       initial_charger_name,
       goal_charger_name
     );
-    INFO("Nainve Planner Final Route (Cost: " << planner.cost() << " hrs)");
-    std::cout << route << std::endl;
+    INFO("Naive Planner Final Route (Cost: " << result.cost << " hrs)");
+    std::cout << result.route << std::endl;
   }
 
   std::cout << "\n";
@@ -54,12 +58,20 @@ int main(int argc, char** argv)
     // Create the Route Planner
     RoutePlanner planner(AlgoType::DIJKSTRAS);
 
-    // Plan the route with chosen algorithm and cost function
-    std::vector<Node> route = planner.PlanRoute(
+    // Set the vehicle's speed and max range
+    planner.max_range() = 320;
+    planner.speed() = 105;
+
+    // Plan the route
+    PlannerResult result = planner.PlanRoute(
       initial_charger_name,
       goal_charger_name
     );
-    INFO("Dijkstra's Final Route (Cost: " << planner.cost() << " hrs)");
-    std::cout << route << std::endl;
+    INFO("Dijkstra's Final Route (Cost: " << result.cost << " hrs)");
+    std::cout << result.route << std::endl;
+
+    PlannerResult optimized = planner.OptimizeRoute(result);
+    INFO("Optimized Route (Cost: " << optimized.cost << " hrs)");
+    std::cout << optimized.route << std::endl;
   }
 }

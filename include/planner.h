@@ -10,6 +10,7 @@
  * 
  */
 #include "algorithm/algorithm.h"
+#include "optimizer/optimizer.h"
 #include "network.h"
 #include "node.h"
 
@@ -32,7 +33,8 @@ namespace supercharger
 
       // TODO: Add ctor that also takes max range and speed.
 
-      std::vector<Node> PlanRoute(const std::string&, const std::string&);
+      PlannerResult PlanRoute(const std::string&, const std::string&);
+      PlannerResult OptimizeRoute(const PlannerResult&) const;
 
       // Getters
       const std::unordered_map<std::string, Charger*>& network() const { return network_; }
@@ -40,8 +42,9 @@ namespace supercharger
       const double max_range() const { return max_range_; }
       const double speed() const { return speed_; }
 
-      // Return the total cost (time in hours) of the planned route.
-      const double cost() const { return planning_algo_->cost(); }
+      // Setters
+      double& max_range() { return max_range_; }
+      double& speed() { return speed_; }
 
     private:
       // TODO: Switch to unique_ptr?
@@ -49,8 +52,8 @@ namespace supercharger
       Charger* destination_{nullptr};
 
       // Store some hard-coded constants.
-      const double max_range_{320};   // [km]
-      const double speed_{105};       // [km/hr]
+      double max_range_{0};   // [km]
+      double speed_{0};       // [km/hr]
 
       // Store the network of chargers.
       std::unordered_map<std::string, Charger*> network_;
@@ -58,10 +61,14 @@ namespace supercharger
       // Store the path planning algorithm.
       std::unique_ptr<PlanningAlgorithm> planning_algo_;
 
-      std::vector<Node> InitializeRoute_(const std::string&, const std::string&);
+      // Store the route optimizer.
+      std::unique_ptr<Optimizer> optimizer_;
+
+      void Initialize_(const std::string&, const std::string&);
   };
 
   // Overload the string stream operator to output the route
   std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<Node*>&);
 
 } // end namespace supercharger

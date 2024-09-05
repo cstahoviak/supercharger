@@ -23,11 +23,17 @@ namespace supercharger
       Naive(RoutePlanner* rp, CostFunctionType type) : 
         PlanningAlgorithm(rp), type_(type) {};
 
-      void PlanRoute(std::vector<Node>&) override;
-      double ComputeCost(const Node&, const Charger* const) const override;
+      PlannerResult PlanRoute(const std::string&, const std::string&) override;
+      double ComputeCost(const Node* const, const Node* const) const override;
+
+    protected:
+      std::vector<Node> ConstructFinalRoute_(const Node* const) override;
 
     private:
       CostFunctionType type_;
+
+      // Store the planned route.
+      std::vector<Node*> route_;
 
       // Store the "naive" cost function weight parameters (weight remaining
       // travel time more heavily than charge time) NOTE: These weights were
@@ -36,9 +42,12 @@ namespace supercharger
       const double weight_time_to_destination_ = 0.75;
       const double weight_time_to_charge_ = 0.25;
 
-      void UpdateRouteCost_(const std::vector<Node>&);
+      // Store the total cost (time in hrs) of the route.
+      double total_cost_{0};
 
-      // The "naive" algorithm cost function
-      double ComputeCost_(const Charger* const, const Charger* const) const;
+      // The "naive" route planner is implemented as a recursive algorithm.
+      void PlanRouteRecursive_(const std::string&, const std::string&);
+      
+      void UpdateRouteCost_();
   };
 } // end namespace supercharger
