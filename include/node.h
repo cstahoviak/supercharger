@@ -43,7 +43,9 @@ namespace supercharger
     // The following were added for Dijkstra's implementation.
     // True if the node has been visited.
     bool visited{false};
-    // The cost (distance for Dijkstra's) from this Node to the route origin.
+    // The cost from this Node to the route origin. For Dijkstra's algorithm,
+    // the cost is the total driving time plus total charging time upon arriving
+    // at this node. It does NOT include the charging time at this node.
     double cost{std::numeric_limits<double>::max()};
     // Store the previous node on the route.
     Node* parent{nullptr};
@@ -57,4 +59,5 @@ namespace supercharger
   };
 
   std::ostream& operator<<(std::ostream&, const Node&);
+  std::ostream& operator<<(std::ostream&, const Node* const);
 } // end namespace supercharger

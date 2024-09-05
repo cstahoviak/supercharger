@@ -15,9 +15,13 @@
 namespace supercharger
 {
   std::ostream& operator<<(std::ostream& stream, const Node& node) {
-    stream << node.charger->name;
-    if ( node.duration > 0 ) {
-      stream << ", " << std::setprecision(6) << node.duration;
+    return stream << std::addressof(node);
+  }
+
+  std::ostream& operator<<(std::ostream& stream, const Node* const node) {
+    stream << node->name();
+    if ( node->duration > 0 ) {
+      stream << ", " << std::setprecision(6) << node->duration;
     }
     return stream;
   }
