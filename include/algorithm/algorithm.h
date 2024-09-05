@@ -32,6 +32,8 @@ namespace supercharger
   {
     std::vector<Node> route;
     double cost{0};
+    double max_range{0};
+    double speed{0};
   };
 
   /**
@@ -62,9 +64,6 @@ namespace supercharger
       virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
       virtual double ComputeCost(const Node* const, const Node* const) const = 0;
 
-      // Getters
-      const double cost() const { return total_cost_; }
-
     protected:
       // Constructs the final route.
       virtual std::vector<Node> ConstructFinalRoute_(const Node* const) = 0;
@@ -74,9 +73,6 @@ namespace supercharger
 
       // Store all of the nodes in the network.
       std::unordered_map<std::string, Node> nodes_;
-
-      // Store the total cost (time in hrs) of the route.
-      double total_cost_{0};
 
       // Utility functions
       double ComputeChargeTime_(const Node* const, const Node* const) const;

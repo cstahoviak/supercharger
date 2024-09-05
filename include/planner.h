@@ -10,6 +10,7 @@
  * 
  */
 #include "algorithm/algorithm.h"
+#include "optimizer/optimizer.h"
 #include "network.h"
 #include "node.h"
 
@@ -33,7 +34,7 @@ namespace supercharger
       // TODO: Add ctor that also takes max range and speed.
 
       PlannerResult PlanRoute(const std::string&, const std::string&);
-      PlannerResult OptimizeRoute(const std::vector<Node>&) const;
+      PlannerResult OptimizeRoute(const PlannerResult&) const;
 
       // Getters
       const std::unordered_map<std::string, Charger*>& network() const { return network_; }
@@ -44,9 +45,6 @@ namespace supercharger
       // Setters
       double& max_range() { return max_range_; }
       double& speed() { return speed_; }
-
-      // Return the total cost (time in hours) of the planned route.
-      const double cost() const { return planning_algo_->cost(); }
 
     private:
       // TODO: Switch to unique_ptr?
@@ -62,6 +60,9 @@ namespace supercharger
 
       // Store the path planning algorithm.
       std::unique_ptr<PlanningAlgorithm> planning_algo_;
+
+      // Store the route optimizer.
+      std::unique_ptr<Optimizer> optimizer_;
 
       void Initialize_(const std::string&, const std::string&);
   };

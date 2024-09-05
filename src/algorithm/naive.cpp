@@ -46,7 +46,8 @@ namespace supercharger
 
     // Plan the route via recursion.
     PlanRouteRecursive_(origin, destination);
-    return { ConstructFinalRoute_(&nodes_.at(destination)), total_cost_ };
+    return { ConstructFinalRoute_(&nodes_.at(destination)), total_cost_,
+      route_planner_->max_range(), route_planner_->speed() };
   }
 
   void Naive::PlanRouteRecursive_(

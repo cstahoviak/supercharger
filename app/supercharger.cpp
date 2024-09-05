@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     INFO("Dijkstra's Final Route (Cost: " << result.cost << " hrs)");
     std::cout << result.route << std::endl;
 
-    PlannerResult optimized = planner.OptimizeRoute(result.route);
+    PlannerResult optimized = planner.OptimizeRoute(result);
     INFO("Optimized Route (Cost: " << optimized.cost << " hrs)");
     std::cout << optimized.route << std::endl;
   }
