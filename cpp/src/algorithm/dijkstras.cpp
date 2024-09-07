@@ -86,7 +86,7 @@ namespace supercharger
           // the charge duration is calculated properly when the neighbor node
           // is considered as the "current" node.
           neighbor->arrival_range = departure_range - 
-            compute_distance(current_node, neighbor);
+            distance(current_node, neighbor);
 
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
@@ -123,7 +123,7 @@ namespace supercharger
     const Node* const current, const Node* const neighbor) const
   {
     return current->cost + ComputeChargeTime_(current, neighbor) +
-      compute_distance(current, neighbor) / route_planner_->speed();
+      distance(current, neighbor) / route_planner_->speed();
   }
 
   /**
@@ -146,7 +146,7 @@ namespace supercharger
     // TODO: Iterate over nodes_ via 'const auto&' rather than 'auto&'. This
     // creates issues with push_back().
     for ( const auto& [name, node] : nodes_ ) {
-      current_to_neighbor = compute_distance(current->charger, node.charger);
+      current_to_neighbor = distance(current->charger, node.charger);
       if ( current_to_neighbor <= route_planner_->max_range() && !node.visited ) {
         neighbors.push_back(const_cast<Node*>(std::addressof(node)));
       }

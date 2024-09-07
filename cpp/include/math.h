@@ -31,10 +31,8 @@ namespace supercharger
    * 
    * @return double 
    */
-  inline double great_circle_distance(const double lat1,
-                                      const double lon1,
-                                      const double lat2,
-                                      const double lon2)
+  inline double great_circle_distance(
+    const double lat1, const double lon1, const double lat2, const double lon2)
   {
     // Convert lat/long to radians
     const double phi1 = lat1 * M_PI / 180;
@@ -63,7 +61,7 @@ namespace supercharger
    * @param charger2
    * @return double 
    */
-  inline double compute_distance(
+  inline double distance(
     const Charger* const charger1, const Charger* const charger2)
   {
     return great_circle_distance(
@@ -78,10 +76,9 @@ namespace supercharger
    * @param node2 A const pointer to a const Node.
    * @return double 
    */
-  inline double compute_distance(
-    const Node* const node1, const Node* const node2)
+  inline double distance(const Node* const node1, const Node* const node2)
   {
-    return compute_distance(node1->charger, node2->charger);
+    return distance(node1->charger, node2->charger);
   }
 
   /**
@@ -92,10 +89,9 @@ namespace supercharger
    * @param node2 A reference to a const Node.
    * @return double 
    */
-  inline double compute_distance(
-    const Node& node1, const Node& node2)
+  inline double distance(const Node& node1, const Node& node2)
   {
-    return compute_distance(node1.charger, node2.charger);
+    return distance(node1.charger, node2.charger);
   }
 
 
