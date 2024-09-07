@@ -18,13 +18,11 @@ using namespace supercharger;
 void initNetwork(py::module_& m)
 {
   py::class_<Charger>(m, "Charger")
-    .def_readonly("name", &Charger::name)
-    .def_readonly("lat", &Charger::lat)
-    .def_readonly("lon", &Charger::lon)
-    .def_readonly("rate", &Charger::rate)
+    .def_readwrite("name", &Charger::name)
+    .def_readwrite("lat", &Charger::lat)
+    .def_readwrite("lon", &Charger::lon)
+    .def_readwrite("rate", &Charger::rate)
     ;
 
-  m.def("__str__", 
-    py::overload_cast<std::ostream&, const Charger&>(&operator<<),
-    py::arg("os"), py::arg("charger"));
+  m.def("__str__", py::overload_cast<std::ostream&, const Charger&>(&operator<<));
 }

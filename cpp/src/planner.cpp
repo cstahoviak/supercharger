@@ -55,7 +55,7 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(AlgoType&& algo_type, CostFcnType&& cost_type) {
+  RoutePlanner::RoutePlanner(AlgoType algo_type, CostFcnType cost_type) {
     // Create the network map (must do this before creating the planning algo).
     for ( Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =

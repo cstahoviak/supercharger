@@ -183,35 +183,6 @@ namespace supercharger
     return;
   }
 
-  std::vector<Node> Naive::ConstructFinalRoute_(const Node* const final) {
-    // Construct the route.
-    std::vector<Node> route;
-    for ( const Node* const node : route_ ) {
-      route.push_back(*node);
-    }
-
-    // Mark the final node as visited and and return the route.
-    const_cast<Node* const>(final)->visited = true;
-    route.push_back(*final);
-    return route;
-  }
-
-  void Naive::UpdateRouteCost_() {
-    // Cost update can only take place for the second node onward.
-    if ( route_.size() > 1 ) {
-      // Get the current and previous nodes
-      const Node* const current = route_.back();
-      const Node* const previous = route_.rbegin()[1];
-
-      // Add the travel time between the previous and current nodes
-      total_cost_ += compute_distance(previous, current) /
-        route_planner_->speed();
-
-      // Add the time to charge at the current node
-      total_cost_ += current->duration;
-    }
-  }
-
   /**
    * @brief The "brute force" algorithm cost function.
    * 
@@ -268,5 +239,34 @@ namespace supercharger
         break;
     }
     return cost;
+  }
+
+  std::vector<Node> Naive::ConstructFinalRoute_(const Node* const final) {
+    // Construct the route.
+    std::vector<Node> route;
+    for ( const Node* const node : route_ ) {
+      route.push_back(*node);
+    }
+
+    // Mark the final node as visited and and return the route.
+    const_cast<Node* const>(final)->visited = true;
+    route.push_back(*final);
+    return route;
+  }
+
+  void Naive::UpdateRouteCost_() {
+    // Cost update can only take place for the second node onward.
+    if ( route_.size() > 1 ) {
+      // Get the current and previous nodes
+      const Node* const current = route_.back();
+      const Node* const previous = route_.rbegin()[1];
+
+      // Add the travel time between the previous and current nodes
+      total_cost_ += compute_distance(previous, current) /
+        route_planner_->speed();
+
+      // Add the time to charge at the current node
+      total_cost_ += current->duration;
+    }
   }
 } // end namespace supercharger

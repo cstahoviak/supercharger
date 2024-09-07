@@ -14,7 +14,7 @@
 namespace supercharger
 {
   // NOTE: Do NOT repeat the 'static' keyword at the cpp file level.
-  std::unique_ptr<Optimizer> Optimizer::GetOptimizer(OptimizerType&& type)
+  std::unique_ptr<Optimizer> Optimizer::GetOptimizer(OptimizerType type)
   {
     switch ( type )
     {

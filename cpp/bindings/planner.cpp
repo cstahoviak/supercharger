@@ -21,16 +21,14 @@ void initRoutePlanner(py::module_& m)
 {
   // string stream operator
   m.def("__str__", 
-    py::overload_cast<std::ostream&, const std::vector<Node>&>(&operator<<),
-    py::arg("os"), py::arg("route"));
+    py::overload_cast<std::ostream&, const std::vector<Node>&>(&operator<<));
   m.def("__str__", 
-    py::overload_cast<std::ostream&, const std::vector<Node*>&>(&operator<<),
-    py::arg("os"), py::arg("route"));
+    py::overload_cast<std::ostream&, const std::vector<Node*>&>(&operator<<));
 
-  // py::class_<RoutePlanner>(m, "RoutePlanner")
-  //   .def(py::init<AlgoType&&, CostFcnType&&>(), py::arg("algo_type"), py::arg("cost_type"))
-  //   .def("plan_route", &RoutePlanner::PlanRoute, py::arg("origin"), py::arg("destination"))
-  //   .def("optimize_route", &RoutePlanner::OptimizeRoute, py::arg("result"))
-  //   ;
+  py::class_<RoutePlanner>(m, "RoutePlanner")
+    .def(py::init<AlgoType, CostFcnType>(), py::arg("algo_type"), py::arg("cost_type"))
+    .def("plan_route", &RoutePlanner::PlanRoute, py::arg("origin"), py::arg("destination"))
+    .def("optimize_route", &RoutePlanner::OptimizeRoute, py::arg("result"))
+    ;
 
 }

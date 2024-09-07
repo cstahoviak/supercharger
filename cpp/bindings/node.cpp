@@ -19,20 +19,16 @@ void initNode(py::module_& m)
 {
   py::class_<Node>(m, "Node")
     .def(py::init<Charger*>(), py::arg("charger"))
-    .def_readonly("charger", &Node::charger)
-    .def_readonly("duration", &Node::duration)
-    .def_readonly("arrival_range", &Node::arrival_range)
-    .def_readonly("departure_range", &Node::departure_range)
-    .def_readonly("visited", &Node::visited)
-    .def_readonly("cost", &Node::cost)
-    .def_readonly("parent", &Node::parent)
+    .def_readwrite("charger", &Node::charger)
+    .def_readwrite("duration", &Node::duration)
+    .def_readwrite("arrival_range", &Node::arrival_range)
+    .def_readwrite("departure_range", &Node::departure_range)
+    .def_readwrite("visited", &Node::visited)
+    .def_readwrite("cost", &Node::cost)
+    .def_readwrite("parent", &Node::parent)
     .def_property_readonly("name", &Node::name)
     ;
 
-  m.def("__str__", 
-    py::overload_cast<std::ostream&, const Node&>(&operator<<),
-    py::arg("os"), py::arg("node"));
-  m.def("__str__", 
-    py::overload_cast<std::ostream&, const Node* const>(&operator<<),
-    py::arg("os"), py::arg("node"));
+  m.def("__str__", py::overload_cast<std::ostream&, const Node&>(&operator<<));
+  m.def("__str__", py::overload_cast<std::ostream&, const Node* const>(&operator<<));
 }
