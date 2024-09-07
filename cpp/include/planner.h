@@ -29,7 +29,10 @@ namespace supercharger
   {
     public:
       // NOTE: Default parameter values must appear in the declaration.
-      RoutePlanner(AlgoType&&, CostFcnType&& = CostFcnType::NONE);
+      // NOTE: Initially, both ctor args were rvalue references, but a more
+      // common pattern is to consume by value and std::move in the initializer
+      // list.
+      RoutePlanner(AlgoType, CostFcnType = CostFcnType::NONE);
 
       // TODO: Add ctor that also takes max range and speed.
 

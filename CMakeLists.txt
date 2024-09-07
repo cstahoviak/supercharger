@@ -13,43 +13,46 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG OR CMAKE_BUILD_TYPE MATCHES Debug)
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "DEBUG_INFO: ${DEBUG_INFO}")
 
-include_directories(include)
+include_directories(cpp/include)
 
 # NOTE: Need to use GLOB_RECURSE to grab files in subdiirectories
-# file(GLOB_RECURSE LIB_SOURCES src/*.cpp)
-# file(GLOB_RECURSE LIB_HEADERS include/*.h)
+# file(GLOB_RECURSE LIB_SOURCES cpp/src/*.cpp)
+# file(GLOB_RECURSE LIB_HEADERS cpp/include/*.h)
 
 set(LIB_SOURCES
-  "src/algorithm/algorithm.cpp"
-  "src/algorithm/astar.cpp"
-  "src/algorithm/dijkstras.cpp"
-  "src/algorithm/naive.cpp"
-  "src/optimizer/naive.cpp"
-  "src/optimizer/optimizer.cpp"
-  "src/network.cpp"
-  "src/node.cpp"
-  "src/planner.cpp"
+  "cpp/src/algorithm/algorithm.cpp"
+  "cpp/src/algorithm/astar.cpp"
+  "cpp/src/algorithm/dijkstras.cpp"
+  "cpp/src/algorithm/naive.cpp"
+  "cpp/src/optimizer/naive.cpp"
+  "cpp/src/optimizer/optimizer.cpp"
+  "cpp/src/network.cpp"
+  "cpp/src/node.cpp"
+  "cpp/src/planner.cpp"
 )
 
 set(LIB_HEADERS
-  "include/algorithm/algorithm.h"
-  "include/algorithm/astar.h"
-  "include/algorithm/dijkstras.h"
-  "include/algorithm/naive.h"
-  "include/optimizer/naive.h"
-  "include/optimizer/optimizer.h"
-  "include/logging.h"
-  "include/math.h"
-  "include/network.h"
-  "include/node.h"
-  "include/planner.h"
+  "cpp/include/algorithm/algorithm.h"
+  "cpp/include/algorithm/astar.h"
+  "cpp/include/algorithm/dijkstras.h"
+  "cpp/include/algorithm/naive.h"
+  "cpp/include/optimizer/naive.h"
+  "cpp/include/optimizer/optimizer.h"
+  "cpp/include/logging.h"
+  "cpp/include/math.h"
+  "cpp/include/network.h"
+  "cpp/include/node.h"
+  "cpp/include/planner.h"
 )
 
 # Create the superchargerlib
 add_library(superchargerlib ${LIB_SOURCES} ${LIB_HEADERS})
+# NOTE: This is required by the python bindings (specifically bindings related
+# to overloads of operator<<), but I don't really understand why?
+set_property(TARGET superchargerlib PROPERTY POSITION_INDEPENDENT_CODE ON)  #-fPIC
 
 # Create the supercharger app (add project executable)
-file( GLOB APP_SOURCES app/*.cpp )
+file( GLOB APP_SOURCES cpp/app/*.cpp )
 add_executable(${PROJECT_NAME} ${APP_SOURCES})
 
 # Link our library against the app
@@ -74,4 +77,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 # Add the tests
-add_subdirectory(test)
+add_subdirectory(cpp/test)
+
+# Add the python bindings
+add_subdirectory(cpp/bindings)

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10.2)
 
 set(TEST_NAME test_${PROJECT_NAME})
 
-file(GLOB TEST_SOURCES
+set(TEST_SOURCES
   "test_math.cpp"
 )
 

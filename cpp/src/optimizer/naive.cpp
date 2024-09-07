@@ -22,8 +22,7 @@ namespace supercharger
 
     // For debug purposes, print the charger rate at each node.
     for ( const Node& node : route ) {
-      DEBUG("'" << node.charger->name << "' charger rate: " <<
-        node.charger->rate);
+      DEBUG("'" << node.name() << "' charger rate: " << node.charger->rate);
     }
     
     // Find the node with the fastest charger in the route (that's not the
@@ -50,7 +49,7 @@ namespace supercharger
     for ( size_t idx = argmax; idx < optimized.size() - 1; idx++ ) {
       const Node& current = optimized.at(idx);
       const Node& next = optimized.at(idx + 1);
-      dist_remaining += compute_distance(current, next);
+      dist_remaining += distance(current, next);
     }
     DEBUG("Distance remaining between '" << max_node.name() << "' and '" << 
       route.back().name() << "': " << dist_remaining << "km.");
@@ -68,8 +67,8 @@ namespace supercharger
 
     // For the max-rate node, update the newly calculated charge duration.
     DEBUG("Charging for " << max_node.duration << " at '" <<
-      max_node.charger->name << "'.");
-    DEBUG("Leaving '" << max_node.charger->name << "' with a range of " <<
+      max_node.name() << "'.");
+    DEBUG("Leaving '" << max_node.name() << "' with a range of " <<
       max_node.departure_range << "km.");
 
     // Update the optimized route from the max-rate node to the end.
@@ -80,17 +79,17 @@ namespace supercharger
       // For all remaining nodes on the route, update the range remaining
       // after arriving at the node.
       current.arrival_range = prev.departure_range - 
-        compute_distance(prev, current);
+        distance(prev, current);
 
       // Update the current node's cost.
       current.cost = prev.cost + prev.duration + 
-        compute_distance(prev, current) / result.speed;
+        distance(prev, current) / result.speed;
 
       if ( idx < optimized.size() - 1 ) {
         // For all nodes not the destination, update the charge duration if
         // the range remaining is less than the distance to the next node.
         const Node& next = optimized.at(idx + 1);
-        double dist_to_next = compute_distance(current, next);
+        double dist_to_next = distance(current, next);
         if ( current.arrival_range < dist_to_next ) {
           // Charge just long enough to make it to the next node.
           current.duration =
@@ -100,7 +99,7 @@ namespace supercharger
           current.duration = 0;
         }
 
-        DEBUG("Updating charge duration at '" << current.charger->name <<
+        DEBUG("Updating charge duration at '" << current.name() <<
           "' from " << route.at(idx).duration << " hrs to " <<
           current.duration << " hrs.");
 

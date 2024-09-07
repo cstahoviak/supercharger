@@ -25,7 +25,7 @@ namespace supercharger
 
       // NOTE: We don't require a default ctor to use std::make_unique()
       // Optimizer() = default;
-      static std::unique_ptr<Optimizer> GetOptimizer(OptimizerType&&);
+      static std::unique_ptr<Optimizer> GetOptimizer(OptimizerType);
       
       virtual PlannerResult Optimize(const PlannerResult&) const = 0;
   };

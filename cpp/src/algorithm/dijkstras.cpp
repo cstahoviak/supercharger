@@ -42,13 +42,12 @@ namespace supercharger
 
       // Skip the current node if it's already been visited.
       if ( current_node->visited ) {
-        DEBUG("Already visited '" << current_node->charger->name << 
-          "'. Skipping.");
+        DEBUG("Already visited '" << current_node.name() << "'. Skipping.");
         continue;
       }
 
       // If the current node is the destination node, we're done!
-      if ( current_node->charger->name == destination) {
+      if ( current_node->name() == destination) {
         DEBUG("Final route cost: " << current_node->cost << " hrs.");
         return { ConstructFinalRoute_(current_node), current_node->cost,
           route_planner_->max_range(), route_planner_->speed() };
@@ -87,7 +86,7 @@ namespace supercharger
           // the charge duration is calculated properly when the neighbor node
           // is considered as the "current" node.
           neighbor->arrival_range = departure_range - 
-            compute_distance(current_node, neighbor);
+            distance(current_node, neighbor);
 
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
@@ -124,7 +123,7 @@ namespace supercharger
     const Node* const current, const Node* const neighbor) const
   {
     return current->cost + ComputeChargeTime_(current, neighbor) +
-      compute_distance(current, neighbor) / route_planner_->speed();
+      distance(current, neighbor) / route_planner_->speed();
   }
 
   /**
@@ -147,7 +146,7 @@ namespace supercharger
     // TODO: Iterate over nodes_ via 'const auto&' rather than 'auto&'. This
     // creates issues with push_back().
     for ( const auto& [name, node] : nodes_ ) {
-      current_to_neighbor = compute_distance(current->charger, node.charger);
+      current_to_neighbor = distance(current->charger, node.charger);
       if ( current_to_neighbor <= route_planner_->max_range() && !node.visited ) {
         neighbors.push_back(const_cast<Node*>(std::addressof(node)));
       }

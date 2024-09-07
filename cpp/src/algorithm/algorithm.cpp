@@ -69,7 +69,7 @@ namespace supercharger
     const Node* const current, const Node* const next) const
   {
     // Compute the distance to the next charger.
-    double current_to_next = compute_distance(current, next);
+    double current_to_next = distance(current, next);
 
     // Compute the charge time required to make it to the next charger.
     // NOTE: we're charging the car only enough to make it to the next node.
@@ -86,7 +86,7 @@ namespace supercharger
   {
     // The range remaining after arriving at the next node is the departure
     // range at the current node - the distance to the next charger.
-    return current->departure_range - compute_distance(current, next);
+    return current->departure_range - distance(current, next);
   }
 
   double PlanningAlgorithm::ComputeDepartureRange_(
