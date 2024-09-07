@@ -13,16 +13,32 @@
 #include "algorithm/naive.h"
 
 #include <pybind11/pybind11.h>
+// NOTE: required because PlannerResult::route is a std::vector.
 // NOTE: When you include any of the optional casters (pybind11/eigen.h, 
 // pybind11/stl.h, etc.), you need to include them consistently in every 
 // translation unit.
 #include <pybind11/stl.h>
+
+#include <sstream>
 
 namespace py = pybind11;
 using namespace supercharger;
 
 using AlgoType = PlanningAlgorithm::AlgorithmType;
 using CostFcnType = PlanningAlgorithm::CostFunctionType;
+
+std::string to_string(const PlannerResult& result) {
+  std::ostringstream os;
+  size_t idx = 0;
+  for ( const Node& node : result.route ) {
+    os << node;
+    if ( idx < result.route.size() - 1 ) {
+        os << ", ";
+      }
+      idx++;
+  }
+  return os.str();
+}
 
 void initPlanningAlgorithm(py::module_& m)
 {
@@ -31,6 +47,17 @@ void initPlanningAlgorithm(py::module_& m)
     .def_readwrite("cost", &PlannerResult::cost)
     .def_readwrite("max_range", &PlannerResult::max_range)
     .def_readwrite("speed", &PlannerResult::speed)
+    // TODO: I haven't figured out how to get the bindings for operator<< to
+    // work yet, so for now, I'm stuck effectively re-writing them.
+    .def("__str__", &to_string)
+    .def("__repr__", [](const PlannerResult& self) {
+      std::ostringstream os;
+      os << "PlannerResult(route='" << to_string(self) << "', ";
+      os << "cost=" << self.cost << ", ";
+      os << "max_range=" << self.max_range << " km, ";
+      os << "speed=" << self.speed << " km/hr)";
+      return os.str();
+    })
   ;
 
   py::enum_<AlgoType>(m, "AlgorithmType")

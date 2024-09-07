@@ -11,7 +11,8 @@
 #include "node.h"
 
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+
+#include <sstream>
 
 namespace py = pybind11;
 using namespace supercharger;
@@ -28,9 +29,16 @@ void initNode(py::module_& m)
     .def_readwrite("cost", &Node::cost)
     .def_readwrite("parent", &Node::parent)
     .def_property_readonly("name", &Node::name)
+    .def("__str__", [](const Node& self) { 
+      std::ostringstream os;
+      os << self;
+      return os.str();
+    })
   ;
     
-  m.def("__repr__", py::overload_cast<std::ostream&, const Node&>(&operator<<));
+  // TODO: It might be cleaner if could bind __str__ and __repr__ to operator<<,
+  // but I haven't been able to make that work yet.
+  // m.def("__repr__", py::overload_cast<std::ostream&, const Node&>(&operator<<));
   // m.def("__repr__", py::overload_cast<std::ostream&, const Node* const>(&operator<<));
   ;
 }

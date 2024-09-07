@@ -8,12 +8,15 @@ from supercharger.pysupercharger import (
 )
 
 if __name__ == "__main__":
+    # Define the route's endpoints
     origin = "Council_Bluffs_IA"
     destination = "Cadillac_MI"
 
     # Create the route planner using the "naive" planning algorithm
-    naive_planner = RoutePlanner(AlgorithmType.NAIVE,
-                           CostFunctionType.MINIMIZE_TIME_REMAINING)
+    naive_planner = RoutePlanner(
+        algo_type=AlgorithmType.NAIVE,
+        cost_type=CostFunctionType.MINIMIZE_TIME_REMAINING
+    )
 
     # Set the vehicle's speed and max range
     naive_planner.max_range = 320
@@ -26,10 +29,10 @@ if __name__ == "__main__":
     # Plan the route with the "naive" route planner
     result = naive_planner.plan_route(origin, destination)
     print(f"Naive Planner Final Route (Cost: {result.cost:.4f} hrs)")
-    print(result.route)
+    print(result)
 
     # Create the route planner using Dijkstra's planning algorithm
-    dijkstras_planner = RoutePlanner(AlgorithmType.DIJKSTRAS)
+    dijkstras_planner = RoutePlanner(algo_type=AlgorithmType.DIJKSTRAS)
 
     # Set the vehicle's speed and max range
     dijkstras_planner.max_range = 320
@@ -38,9 +41,9 @@ if __name__ == "__main__":
     # Plan the route with Dijkstra's algorithm
     result2 = dijkstras_planner.plan_route(origin, destination)
     print(f"Dijkstra's Planner Final Route (Cost: {result2.cost:.4f} hrs)")
-    print(result2.route)
+    print(result2)
 
     # Optimize the route
     result3 = dijkstras_planner.optimize_route(result2)
     print(f"Optimized Final Route (Cost: {result3.cost:.4f} hrs)")
-    print(result3.route)
+    print(result3)
