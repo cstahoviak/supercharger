@@ -11,6 +11,7 @@
 #include "node.h"
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 using namespace supercharger;
@@ -27,8 +28,9 @@ void initNode(py::module_& m)
     .def_readwrite("cost", &Node::cost)
     .def_readwrite("parent", &Node::parent)
     .def_property_readonly("name", &Node::name)
-    ;
-
-  m.def("__str__", py::overload_cast<std::ostream&, const Node&>(&operator<<));
-  m.def("__str__", py::overload_cast<std::ostream&, const Node* const>(&operator<<));
+  ;
+    
+  m.def("__repr__", py::overload_cast<std::ostream&, const Node&>(&operator<<));
+  // m.def("__repr__", py::overload_cast<std::ostream&, const Node* const>(&operator<<));
+  ;
 }

@@ -41,10 +41,10 @@ void initPlanningAlgorithm(py::module_& m)
   ;
 
   py::enum_<CostFcnType>(m, "CostFunctionType")
-    .value("ASTAR", CostFcnType::MINIMIZE_DIST_TO_NEXT)
-    .value("DIJKSTRAS", CostFcnType::MINIMIZE_DIST_REMAINING)
-    .value("NAIVE", CostFcnType::MINIMIZE_TIME_REMAINING)
-    .value("NODE", CostFcnType::NONE)
+    .value("MINIMIZE_DIST_TO_NEXT", CostFcnType::MINIMIZE_DIST_TO_NEXT)
+    .value("MINIMIZE_DIST_REMAINING", CostFcnType::MINIMIZE_DIST_REMAINING)
+    .value("MINIMIZE_TIME_REMAINING", CostFcnType::MINIMIZE_TIME_REMAINING)
+    .value("NONE", CostFcnType::NONE)
     .export_values()
   ;
   
