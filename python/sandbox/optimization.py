@@ -1,9 +1,11 @@
 """
 A sandbox script for exploring optimization in python.
 """
+from copy import copy, deepcopy
 from functools import partial
+from pickletools import read_uint1
 from time import perf_counter
-from typing import List
+from typing import List, Optional, Sequence
 
 import numpy as np
 from scipy import optimize
@@ -60,6 +62,57 @@ def constraint(x: List[float], rates: List[float], distances: List[float],
 
 
     return arrival_ranges
+
+def update_planner_result(result: PlannerResult,
+                          durations: Sequence[float]) -> PlannerResult:
+    """
+
+    Args:
+        result: The initial route planner result.
+        durations: The updated set of charging durations at each node, not
+            including the first and last nodes.
+
+    Returns:
+        The updated planner result.
+    """
+    if len(durations) != len(result.route) - 2:
+        raise ValueError(
+            f"The length of the 'new_durations' array must be equal to two "
+            f"less than len(PlannerResult.route) ({len(result.route) - 2}). "
+            f"Actual length is {len(durations)}.")
+
+    # TODO: I think I need to write a copy constructor and copy assignment
+    #  operator for the PlannerResult class.
+    updated = result
+    for idx, (node, duration) in (
+            enumerate(zip(updated.route[1:], durations))):
+        # TODO: The line below segfaults for reasons that I don't fully
+        #  understand yet. I thought I was going to be able to solve it by
+        #  applying a "return value policy" to PlannerResult::route, but that
+        #  didn't seem to work.
+        # prev_node = updated.route[idx]
+
+        # Update the arrival range at the current node
+        node.arrival_range = \
+            updated.route[idx].arrival_range + \
+            updated.route[idx].duration * updated.route[idx].charger.rate - \
+            distance(updated.route[idx], node)
+
+        # Update the cost at the current node
+        node.cost = updated.route[idx].cost + updated.route[idx].duration + \
+                    distance(updated.route[idx], node) / result.speed
+
+        # For all nodes but the final node, update the charging duration and
+        # the departure range
+        if idx < len(result.route) - 1:
+            node.duration = duration
+            node.departure_range = node.arrival_range + \
+                node.duration * node.charger.rate
+
+    # Finally, update the total cost of the route
+    updated.cost = updated.route[-1].cost
+    return updated
+
 
 
 if __name__ == "__main__":
@@ -151,9 +204,8 @@ if __name__ == "__main__":
         print(optimization_result.message)
 
     # Create the newly-optimized route
-    optimized2 = result
-    for node, new_duration in zip(optimized2.route[1:-1], optimization_result.x):
-        node.duration = new_duration
-        # node.__repr__()
-    optimized2.cost = sum([node.duration for node in optimized2.route])
-    print(optimized2)
+    optimized = update_planner_result(result, optimization_result.x)
+    for node in optimized.route:
+        print(node.__repr__())
+    print(f"Optimized Final Route (Cost: {result.cost:.4f} hrs)")
+    print(optimized)

@@ -6,8 +6,9 @@
 namespace supercharger
 {
   std::ostream& operator<<(std::ostream& stream, const Charger& charger) {
-    return stream << "Charger(" << charger.name << ", lat: " << charger.lat <<
-      ", lon: " << charger.lon << ", rate: " << charger.rate << ")";
+    return stream << "Charger(name: '" << charger.name << "' , lat: " << 
+      charger.lat << ", lon: " << charger.lon << ", rate: " << 
+      charger.rate << " km/hr)";
   }
 
   std::array<Charger, 303> network = 

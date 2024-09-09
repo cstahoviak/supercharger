@@ -78,8 +78,7 @@ namespace supercharger
 
       // For all remaining nodes on the route, update the range remaining
       // after arriving at the node.
-      current.arrival_range = prev.departure_range - 
-        distance(prev, current);
+      current.arrival_range = prev.departure_range - distance(prev, current);
 
       // Update the current node's cost.
       current.cost = prev.cost + prev.duration + 

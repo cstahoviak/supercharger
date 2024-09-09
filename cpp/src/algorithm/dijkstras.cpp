@@ -42,7 +42,7 @@ namespace supercharger
 
       // Skip the current node if it's already been visited.
       if ( current_node->visited ) {
-        DEBUG("Already visited '" << current_node.name() << "'. Skipping.");
+        DEBUG("Already visited '" << current_node->name() << "'. Skipping.");
         continue;
       }
 

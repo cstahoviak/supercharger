@@ -34,6 +34,18 @@ void initNode(py::module_& m)
       os << self;
       return os.str();
     })
+    .def("__repr__", [](const Node& self) {
+      std::ostringstream os;
+      os << "Node(name: '" << self.name() << "', ";
+      os << "rate: " << self.charger->rate << ", ";
+      os << "duration: " << self.duration << ", ";
+      os << "arrival_range: " << self.arrival_range << ", ";
+      os << "departure_range: " << self.departure_range << ", ";
+      os << "cost: " << self.cost << ", ";
+      os << "visited: " << self.visited;
+      os << "parent: '" << self.parent->name() << "')";
+      return os.str();
+    })
   ;
     
   // TODO: It might be cleaner if could bind __str__ and __repr__ to operator<<,
