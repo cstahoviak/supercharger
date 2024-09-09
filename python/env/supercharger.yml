@@ -6,3 +6,4 @@ dependencies:
   - numpy
   - pybind11
   - pytest
+  - scipy
