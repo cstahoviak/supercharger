@@ -82,25 +82,32 @@ def update_planner_result(result: PlannerResult,
             f"Actual length is {len(durations)}.")
 
     # TODO: I think I need to write a copy constructor and copy assignment
-    #  operator for the PlannerResult class.
+    #  operator for the PlannerResult class?
     updated = result
-    for idx, (node, duration) in (
-            enumerate(zip(updated.route[1:], durations))):
+    for idx, (node, duration) in (enumerate(zip(updated.route[1:], durations))):
         # TODO: The line below segfaults for reasons that I don't fully
         #  understand yet. I thought I was going to be able to solve it by
         #  applying a "return value policy" to PlannerResult::route, but that
         #  didn't seem to work.
-        # prev_node = updated.route[idx]
+        previous = updated.route[idx]
 
         # Update the arrival range at the current node
-        node.arrival_range = \
-            updated.route[idx].arrival_range + \
-            updated.route[idx].duration * updated.route[idx].charger.rate - \
-            distance(updated.route[idx], node)
+        node.arrival_range = previous.arrival_range + \
+            previous.duration * previous.charger.rate - distance(previous, node)
 
         # Update the cost at the current node
-        node.cost = updated.route[idx].cost + updated.route[idx].duration + \
-                    distance(updated.route[idx], node) / result.speed
+        node.cost = previous.cost + previous.duration + \
+            distance(previous, node) / result.speed
+
+        # # Update the arrival range at the current node
+        # node.arrival_range = \
+        #     updated.route[idx].arrival_range + \
+        #     updated.route[idx].duration * updated.route[idx].charger.rate - \
+        #     distance(updated.route[idx], node)
+        #
+        # # Update the cost at the current node
+        # node.cost = updated.route[idx].cost + updated.route[idx].duration + \
+        #             distance(updated.route[idx], node) / result.speed
 
         # For all nodes but the final node, update the charging duration and
         # the departure range

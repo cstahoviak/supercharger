@@ -17,7 +17,7 @@ namespace supercharger
     const std::vector<Node>& route = result.route;
     if ( route.size() < 4 ) {
       INFO("The route contains 3 nodes or fewer and cannot be optimized.");
-      return { route, route.back().cost };
+      return result;
     }
 
     // For debug purposes, print the charger rate at each node.
@@ -107,6 +107,7 @@ namespace supercharger
           current.duration * current.charger->rate;
       }
     }
-    return { optimized, optimized.back().cost };
+    
+    return { optimized, optimized.back().cost, result.max_range, result.speed };
   }
 } // end namespace supercharger
