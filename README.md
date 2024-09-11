@@ -101,3 +101,17 @@ Run the `supercharger` application by passing any two valid Supercharger locatio
 ```
 ./supercharger Council_Bluffs_IA Cadillac_MI
 ```
+
+### Results
+So far, the following results have been obtained. The _reference result_ provided by the `checker_linux` application is also included for comparison. The last two columns indicate the percent improvement over the reference result, and the time saved compared to the reference result.
+
+TODO: Add profiling for each algorithm.
+
+| Algorithm                           | Cost      | Runtime     | Pct Imprv. | Time Saved      |
+|:------------------------------------|:---------:|:-----------:|:----------:|:---------------:|
+|                                     | __[hrs]__ | __[msecs]__ | __[%]__    | __[mins:secs]__ |
+| _Naive_ Route Planner               | 18.1017   | -           | -2.9185    | +50:55          |
+| Dijkstra's Algorithm                | 17.2548   | -           | -0.0096    | +00:06          |
+| _Reference_ Result                  | 17.2531   | -           | -          | -               |
+| Dijkstra's + _Naive_ Optimizer      | 17.0697   | -           | 1.0630     | -11:00          | 
+| Dijkstra's + Nonlinear Optimization | 16.8438   | -           | 2.3723     | -24:33          |

@@ -44,5 +44,4 @@ void initRoutePlanner(py::module_& m)
       [](RoutePlanner& self, double value) { self.speed() = value; }
     )
   ;
-
 }

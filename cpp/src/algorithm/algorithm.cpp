@@ -20,10 +20,17 @@
 
 namespace supercharger
 {
+  PlannerResult::PlannerResult(
+    std::vector<Node> route, double cost, double max_range, double speed) :
+    route(std::move(route)), cost(cost), max_range(max_range), speed(speed) {}
+
   PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
     // Create a set of nodes from the route planner's charger network.
     for (const auto& [name, charger] : route_planner_->network() ) {
-      nodes_.try_emplace(name, charger);
+      // TODO: I should be able to use try_emplace to construct the shared_ptr
+      // in place rather than moving it, but I haven't gotten it to work.
+      std::shared_ptr<Node> node = std::make_shared<Node>(*charger);
+      nodes_.try_emplace(name, std::move(node));
     }
   }
 
@@ -66,7 +73,7 @@ namespace supercharger
    * @return double 
    */
   double PlanningAlgorithm::ComputeChargeTime_(
-    const Node* const current, const Node* const next) const
+    const Node& current, const Node& next) const
   {
     // Compute the distance to the next charger.
     double current_to_next = distance(current, next);
@@ -74,7 +81,7 @@ namespace supercharger
     // Compute the charge time required to make it to the next charger.
     // NOTE: we're charging the car only enough to make it to the next node.
     double charge_time = 
-      (current_to_next - current->arrival_range) / current->charger->rate;
+      (current_to_next - current.arrival_range) / current.charger().rate;
 
     // If the charge time is negative, we have sufficient range without
     // additional charging to reach the next node.
@@ -82,18 +89,16 @@ namespace supercharger
   }
 
   double PlanningAlgorithm::ComputeArrivalRange_(
-    const Node* const current, const Node* const next) const
+    const Node& current, const Node& next) const
   {
     // The range remaining after arriving at the next node is the departure
     // range at the current node - the distance to the next charger.
-    return current->departure_range - distance(current, next);
+    return current.departure_range - distance(current, next);
   }
 
-  double PlanningAlgorithm::ComputeDepartureRange_(
-    const Node* const current) const
-  {
+  double PlanningAlgorithm::ComputeDepartureRange_(const Node& current) const {
     // The departure range at the current node is the arrival range at the
     // current node + range added by charging.
-    return current->arrival_range + current->duration * current->charger->rate;
+    return current.arrival_range + current.duration * current.charger().rate;
   }
 } // end namespace supercharger

@@ -40,8 +40,11 @@ namespace supercharger
       PlannerResult OptimizeRoute(const PlannerResult&) const;
 
       // Getters
-      const std::unordered_map<std::string, Charger*>& network() const { return network_; }
-      const Charger* const destination() const { return destination_; }
+      const std::unordered_map<std::string, const Charger*>& network() const
+      { 
+        return network_;
+      }
+      const Charger& destination() const { return destination_; }
       const double max_range() const { return max_range_; }
       const double speed() const { return speed_; }
 
@@ -50,16 +53,15 @@ namespace supercharger
       double& speed() { return speed_; }
 
     private:
-      // TODO: Switch to unique_ptr?
-      Charger* origin_{nullptr};
-      Charger* destination_{nullptr};
+      Charger origin_;
+      Charger destination_;
 
       // Store some hard-coded constants.
       double max_range_{0};   // [km]
       double speed_{0};       // [km/hr]
 
       // Store the network of chargers.
-      std::unordered_map<std::string, Charger*> network_;
+      std::unordered_map<std::string, const Charger*> network_;
 
       // Store the path planning algorithm.
       std::unique_ptr<PlanningAlgorithm> planning_algo_;
@@ -72,6 +74,6 @@ namespace supercharger
 
   // Overload the string stream operator to output the route
   std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
-  std::ostream& operator<<(std::ostream&, const std::vector<Node*>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
 
 } // end namespace supercharger

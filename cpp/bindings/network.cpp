@@ -12,17 +12,24 @@
 
 #include <pybind11/pybind11.h>
 
+#include <sstream>
+
 namespace py = pybind11;
 using namespace supercharger;
 
 void initNetwork(py::module_& m)
 {
   py::class_<Charger>(m, "Charger")
-    .def_readwrite("name", &Charger::name)
-    .def_readwrite("lat", &Charger::lat)
-    .def_readwrite("lon", &Charger::lon)
-    .def_readwrite("rate", &Charger::rate)
+    .def_readonly("name", &Charger::name)
+    .def_readonly("lat", &Charger::lat)
+    .def_readonly("lon", &Charger::lon)
+    .def_readonly("rate", &Charger::rate)
+    .def("__str__", [](const  Charger& self) { 
+      std::ostringstream os;
+      os << self;
+      return os.str();
+    })
     ;
 
-  m.def("__str__", py::overload_cast<std::ostream&, const Charger&>(&operator<<));
+  // m.def("__str__", py::overload_cast<std::ostream&, const Charger&>(&operator<<));
 }

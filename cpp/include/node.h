@@ -11,18 +11,22 @@
 #include "network.h"
 
 #include <limits>
+#include <memory>
 
 namespace supercharger
 {
   /**
    * @brief Represents a single node along the route.
+   * 
+   * See the following StackOverflow page on info related to implementing a
+   * graph node using weak_ptr to store the parent node:
+   * 
+   * https://stackoverflow.com/questions/61723200/returning-a-weak-ptr-member-variable
    */
-  struct Node {
+  struct Node : public std::enable_shared_from_this<Node>
+  {
     // NOTE: Must define a ctor to make use of "emplace_back"-like functions.
-    Node(Charger* charger) : charger(charger) {};
-
-    // Store the charger associated with this node.
-    Charger* charger{nullptr};
+    Node(Charger charger) : charger_(std::move(charger)) {};
 
     // The length of time charging at this node (hrs).
     double duration{0};
@@ -38,15 +42,21 @@ namespace supercharger
     // the cost is the total driving time plus total charging time upon arriving
     // at this node. It does NOT include the charging time at this node.
     double cost{std::numeric_limits<double>::max()};
-    // Store the previous node on the route.
-    Node* parent{nullptr};
+    
+    // "identity oriented" getters
+    const Charger& charger() const { return charger_; }
+    const std::string& name() const { return charger_.name; }
 
-    // Getters
-    const std::string& name() const { 
-      return ( charger ) ? charger->name : default_name_; }
+    // "value oriented" getter and setter
+    std::weak_ptr<Node> parent() const { return parent_; }
+    void parent(std::shared_ptr<Node> parent) { parent_ = std::move(parent); }
 
-  private:
-    std::string default_name_{"NULL"};
+    private:
+      // Store the charger associated with this node.
+      Charger charger_;
+      
+      // Store the previous node on the route.
+      std::weak_ptr<Node> parent_;
   };
 
   std::ostream& operator<<(std::ostream&, const Node&);

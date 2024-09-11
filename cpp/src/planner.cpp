@@ -42,11 +42,13 @@ namespace supercharger
     return stream;
   }
 
-  std::ostream& operator<<(std::ostream& stream, const std::vector<Node*>& route) {
+  std::ostream& operator<<(
+    std::ostream& stream, const std::vector<std::shared_ptr<Node>>& route)
+  {
     size_t sz = route.size();
     size_t idx = 0;
-    for ( const Node* const node : route ) {
-      stream << node;
+    for ( const std::shared_ptr<Node>& node : route ) {
+      stream << *node;
       if ( idx < sz - 1 ) {
         stream << ", ";
       }
@@ -57,7 +59,7 @@ namespace supercharger
 
   RoutePlanner::RoutePlanner(AlgoType algo_type, CostFcnType cost_type) {
     // Create the network map (must do this before creating the planning algo).
-    for ( Charger& charger : supercharger::network ) {
+    for ( const Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
       const auto& pair = network_.try_emplace(charger.name, &charger);
       if ( !pair.second ) {
@@ -92,7 +94,7 @@ namespace supercharger
       "'.");
     PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
-    if ( result.route.back().name() == destination_->name ) {
+    if ( result.route.back().name() == destination_.name ) {
       DEBUG("Solution found!");
     }
     else {
@@ -110,20 +112,20 @@ namespace supercharger
   void RoutePlanner::Initialize_(
     const std::string& origin, const std::string& destination)
   {
-    // Store the origin and destination chargers
-    try {
-      origin_ = network_.at(origin); 
+    // Store the origin and destination chargers.
+    try { 
+      origin_ = *network_.at(origin); 
     }
-    catch( const std::out_of_range& e) {
+    catch( const std::out_of_range& e ) {
       std::ostringstream os;
       os << "Initial charger '" << origin << "' not in network.";
       throw std::out_of_range(os.str());
     };
 
     try {
-      destination_ = network_.at(destination); 
+      destination_ = *network_.at(destination); 
     }
-    catch( const std::out_of_range& e) {
+    catch( const std::out_of_range& e ) {
       std::ostringstream os;
       os << "Destination charger '" << destination << "' not in network.";
       throw std::out_of_range(os.str());

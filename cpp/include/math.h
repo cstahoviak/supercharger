@@ -61,24 +61,10 @@ namespace supercharger
    * @param charger2
    * @return double 
    */
-  inline double distance(
-    const Charger* const charger1, const Charger* const charger2)
+  inline double distance(const Charger& charger1, const Charger& charger2)
   {
     return great_circle_distance(
-      charger1->lat, charger1->lon, charger2->lat, charger2->lon);
-  }
-
-  /**
-   * @brief Effectively a wrapper around the great_circle_distance() function
-   * for use with the Node type.
-   * 
-   * @param node1 A const pointer to a const Node.
-   * @param node2 A const pointer to a const Node.
-   * @return double 
-   */
-  inline double distance(const Node* const node1, const Node* const node2)
-  {
-    return distance(node1->charger, node2->charger);
+      charger1.lat, charger1.lon, charger2.lat, charger2.lon);
   }
 
   /**
@@ -91,7 +77,7 @@ namespace supercharger
    */
   inline double distance(const Node& node1, const Node& node2)
   {
-    return distance(node1.charger, node2.charger);
+    return distance(node1.charger(), node2.charger());
   }
 
 

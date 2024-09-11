@@ -52,10 +52,10 @@ void initPlanningAlgorithm(py::module_& m)
     .def("__str__", &to_string)
     .def("__repr__", [](const PlannerResult& self) {
       std::ostringstream os;
-      os << "PlannerResult(route='" << to_string(self) << "', ";
-      os << "cost=" << self.cost << ", ";
-      os << "max_range=" << self.max_range << " km, ";
-      os << "speed=" << self.speed << " km/hr)";
+      os << "PlannerResult(route: '" << to_string(self) << "', ";
+      os << "cost: " << self.cost << ", ";
+      os << "max_range: " << self.max_range << " km, ";
+      os << "speed: " << self.speed << " km/hr)";
       return os.str();
     })
   ;

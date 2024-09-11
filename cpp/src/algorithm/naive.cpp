@@ -39,14 +39,16 @@ namespace supercharger
   {
     // Initially, populate the route with the origin node.
     if ( route_.empty() ) {
-      Node& origin_node = nodes_.at(origin);
-      origin_node.arrival_range = route_planner_->max_range();
-      route_.push_back(&origin_node);
+      // TODO: Should I treat this as a Node&, shared_ptr<Node>, or 
+      // shared_ptr<Node>&?
+      std::shared_ptr<Node>& origin_node = nodes_.at(origin);
+      origin_node->arrival_range = route_planner_->max_range();
+      route_.push_back(origin_node);
     }
 
     // Plan the route via recursion.
     PlanRouteRecursive_(origin, destination);
-    return { ConstructFinalRoute_(&nodes_.at(destination)), total_cost_,
+    return { ConstructFinalRoute_(*nodes_.at(destination)), total_cost_,
       route_planner_->max_range(), route_planner_->speed() };
   }
 
@@ -54,19 +56,19 @@ namespace supercharger
     const std::string& origin, const std::string& destination)
   {
     // Get the current node and mark it as visited.
-    Node* const current = route_.back();
+    std::shared_ptr<Node>& current = route_.back();
     current->visited = true;
     DEBUG("Current route: " << route_);
     DEBUG("Arrival range at " << current->name() << ": " <<
       current->arrival_range);
 
     // Create a local alias for the destination node.
-    const Node* const end_node = std::addressof(nodes_.at(destination));
+    const::std::shared_ptr<Node>& end_node = nodes_.at(destination);
 
     // Use a map to store the candidate nodes, i.e. the next possible nodes on
     // the route, sorted by distance to the destination.
     // TODO: Could use a priority queue instead? 
-    std::map<double, const Node*> candidates;
+    std::map<double, std::shared_ptr<const Node>> candidates;
     std::vector<std::string> candidate_names;
     bool is_reachable{false};
     bool is_closer{false};
@@ -81,9 +83,9 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances.
-      current_to_candidate = distance(current, std::addressof(node));
-      current_to_dest = distance(current, end_node);
-      candidate_to_dest = distance(std::addressof(node), end_node);
+      current_to_candidate = distance(*current, *node);
+      current_to_dest = distance(*current, *end_node);
+      candidate_to_dest = distance(*node, *end_node);
 
       // If candidate node is within the maximum range of the vehicle, add the
       // candidate node to "reachable" set.
@@ -101,10 +103,10 @@ namespace supercharger
       // the current node, add it to map of candidate nodes.
       if ( is_reachable && is_closer ) {
         // Compute the cost for the candidate charger.
-        double cost = ComputeCost(current, std::addressof(node));
+        double cost = ComputeCost(*current, *node);
 
         // Add the charger to the map of candidate chargers.
-        const auto& pair = candidates.try_emplace(cost, std::addressof(node));
+        const auto& pair = candidates.try_emplace(cost, node);
         candidate_names.push_back(name);
       }
     }
@@ -121,13 +123,13 @@ namespace supercharger
       != candidate_names.end() )
     {
       // Compute the charge time to make it to the final destination
-      current->duration = ComputeChargeTime_(current, end_node);
+      current->duration = ComputeChargeTime_(*current, *end_node);
 
       // Update the total route cost at the current node.
       UpdateRouteCost_();
 
       // Finally, add the travel time to the destination to the total cost.
-      total_cost_ += distance(current, end_node) / route_planner_->speed();
+      total_cost_ += distance(*current, *end_node) / route_planner_->speed();
 
       // Construct the final route and return the planner result.
       return;
@@ -135,24 +137,25 @@ namespace supercharger
 
     // Choose the next node such that it minimizes the cost.
     double key = candidates.begin()->first;
-    Node* const next_node = const_cast<Node* const>(candidates.at(key));
+    std::shared_ptr<Node> next_node = 
+      std::const_pointer_cast<Node>(candidates.at(key));
 
     // TODO: Maybe make this whole block its own function (UpdateCurrentNode_?)
     {
       // Compute the charge time and the departure range for the current node.
-      current->duration = ComputeChargeTime_(current, next_node);
+      current->duration = ComputeChargeTime_(*current, *next_node);
       DEBUG("Charge duration at " << current->name() << ": " << 
         current->duration);
 
       // Update the departure range for the current node.
-      current->departure_range = ComputeDepartureRange_(current);
+      current->departure_range = ComputeDepartureRange_(*current);
 
       // Update the total cost at the current node.
       UpdateRouteCost_();
     }
 
     // Compute the range remaining after arriving at the next node.
-    next_node->arrival_range = ComputeArrivalRange_(current, next_node);
+    next_node->arrival_range = ComputeArrivalRange_(*current, *next_node);
 
     // Add the next node to the route and continue iteration. Note that the
     // charge duration at the next node will be computed on the next iteration.
@@ -191,8 +194,7 @@ namespace supercharger
    * @param candidate 
    * @return double 
    */
-  double Naive::ComputeCost(
-    const Node* const current, const Node* const candidate) const 
+  double Naive::ComputeCost(const Node& current, const Node& candidate) const 
   {
     // Define the cost
     double cost{0};
@@ -210,22 +212,21 @@ namespace supercharger
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
-        cost = distance(candidate->charger,
-          const_cast<const Charger* const>(route_planner_->destination()));
+        cost = distance(candidate.charger(), route_planner_->destination());
         break;
       }
       
       case CostFcnType::MINIMIZE_TIME_REMAINING:
       {
         // Compute distances
-        double candidate_to_destination = distance(candidate->charger,
-          const_cast<const Charger* const>(route_planner_->destination()));
+        double candidate_to_destination = 
+          distance(candidate.charger(), route_planner_->destination());
         double current_to_candidate = distance(current, candidate);
 
         // Compute times
         double time_to_destination = 
           candidate_to_destination / route_planner_->speed();
-        double time_to_charge = current_to_candidate / candidate->charger->rate;
+        double time_to_charge = current_to_candidate / candidate.charger().rate;
 
         // The cost is the total time to drive the remaining distance between
         // the candidate charger and the destination + the time to fully charge
@@ -242,16 +243,16 @@ namespace supercharger
     return cost;
   }
 
-  std::vector<Node> Naive::ConstructFinalRoute_(const Node* const final) {
+  std::vector<Node> Naive::ConstructFinalRoute_(const Node& final) {
     // Construct the route.
     std::vector<Node> route;
-    for ( const Node* const node : route_ ) {
+    for ( const std::shared_ptr<const Node>& node : route_ ) {
       route.push_back(*node);
     }
 
     // Mark the final node as visited and and return the route.
-    const_cast<Node* const>(final)->visited = true;
-    route.push_back(*final);
+    const_cast<Node&>(final).visited = true;
+    route.push_back(final);
     return route;
   }
 
@@ -259,11 +260,11 @@ namespace supercharger
     // Cost update can only take place for the second node onward.
     if ( route_.size() > 1 ) {
       // Get the current and previous nodes
-      const Node* const current = route_.back();
-      const Node* const previous = route_.rbegin()[1];
+      const std::shared_ptr<Node>& current = route_.back();
+      const std::shared_ptr<Node>& previous = route_.rbegin()[1];
 
       // Add the travel time between the previous and current nodes
-      total_cost_ += distance(previous, current) / route_planner_->speed();
+      total_cost_ += distance(*previous, *current) / route_planner_->speed();
 
       // Add the time to charge at the current node
       total_cost_ += current->duration;
