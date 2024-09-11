@@ -17,6 +17,11 @@ namespace supercharger
 {
   /**
    * @brief Represents a single node along the route.
+   * 
+   * See the following StackOverflow page on info related to implementing a
+   * graph node using weak_ptr to store the parent node:
+   * 
+   * https://stackoverflow.com/questions/61723200/returning-a-weak-ptr-member-variable
    */
   struct Node : public std::enable_shared_from_this<Node>
   {

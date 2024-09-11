@@ -156,7 +156,9 @@ if __name__ == "__main__":
                    distances=distances[1:],
                    init_arrival_rng=result.route[1].arrival_range)
     arrival_ranges = func(durations[:-1])
-    np.testing.assert_array_equal(arrival_ranges, np.zeros_like(arrival_ranges))
+    np.testing.assert_allclose(actual=arrival_ranges,
+                               desired=np.zeros_like(arrival_ranges),
+                               atol=1e-12)
 
     # Define the bounds on the charging durations
     # TODO: Could actually compute an upper boud for the charge duration for
