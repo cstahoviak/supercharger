@@ -24,16 +24,16 @@ namespace supercharger
         PlanningAlgorithm(rp), type_(type) {};
 
       PlannerResult PlanRoute(const std::string&, const std::string&) override;
-      double ComputeCost(const Node* const, const Node* const) const override;
+      double ComputeCost(const Node&, const Node&) const override;
 
     protected:
-      std::vector<Node> ConstructFinalRoute_(const Node* const) override;
+      std::vector<Node> ConstructFinalRoute_(const Node&) override;
 
     private:
       CostFunctionType type_;
 
       // Store the planned route.
-      std::vector<Node*> route_;
+      std::vector<std::shared_ptr<Node>> route_;
 
       // Store the "naive" cost function weight parameters (weight remaining
       // travel time more heavily than charge time) NOTE: These weights were

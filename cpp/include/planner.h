@@ -73,5 +73,6 @@ namespace supercharger
   // Overload the string stream operator to output the route
   std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
   std::ostream& operator<<(std::ostream&, const std::vector<Node*>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
 
 } // end namespace supercharger

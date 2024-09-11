@@ -34,6 +34,14 @@ namespace supercharger
     double cost{0};
     double max_range{0};
     double speed{0};
+
+    PlannerResult() = default;
+    PlannerResult(std::vector<Node>, double, double, double);
+
+    // // Copy constructor
+    // PlannerResult(const PlannerResult& other);
+    // // Copy assignment operator
+    // PlannerResult& operator=(const PlannerResult& other);
   };
 
   /**
@@ -62,21 +70,21 @@ namespace supercharger
         RoutePlanner*, AlgorithmType&&, CostFunctionType&&);
       
       virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
-      virtual double ComputeCost(const Node* const, const Node* const) const = 0;
+      virtual double ComputeCost(const Node&, const Node&) const = 0;
 
     protected:
       // Constructs the final route.
-      virtual std::vector<Node> ConstructFinalRoute_(const Node* const) = 0;
+      virtual std::vector<Node> ConstructFinalRoute_(const Node&) = 0;
 
       // Store a reference to the top-level RoutePlanner instance.
       RoutePlanner* route_planner_{nullptr};
 
       // Store all of the nodes in the network.
-      std::unordered_map<std::string, Node> nodes_;
+      std::unordered_map<std::string, std::shared_ptr<Node>> nodes_;
 
       // Utility functions
-      double ComputeChargeTime_(const Node* const, const Node* const) const;
-      double ComputeArrivalRange_(const Node* const, const Node* const) const;
-      double ComputeDepartureRange_(const Node* const) const;
+      double ComputeChargeTime_(const Node&, const Node&) const;
+      double ComputeArrivalRange_(const Node&, const Node&) const;
+      double ComputeDepartureRange_(const Node&) const;
   };
 } // end namespace supercharger

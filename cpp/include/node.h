@@ -11,13 +11,15 @@
 #include "network.h"
 
 #include <limits>
+#include <memory>
 
 namespace supercharger
 {
   /**
    * @brief Represents a single node along the route.
    */
-  struct Node {
+  struct Node : public std::enable_shared_from_this<Node>
+  {
     // NOTE: Must define a ctor to make use of "emplace_back"-like functions.
     Node(Charger* charger) : charger(charger) {};
 
@@ -38,15 +40,16 @@ namespace supercharger
     // the cost is the total driving time plus total charging time upon arriving
     // at this node. It does NOT include the charging time at this node.
     double cost{std::numeric_limits<double>::max()};
-    // Store the previous node on the route.
-    Node* parent{nullptr};
-
+    
     // Getters
-    const std::string& name() const { 
-      return ( charger ) ? charger->name : default_name_; }
+    const std::string& name() const { return charger->name; }
 
-  private:
-    std::string default_name_{"NULL"};
+    std::weak_ptr<Node> parent() const { return parent_; }
+    void parent(std::shared_ptr<Node> parent) { parent_ = std::move(parent); }
+
+    private:
+      // Store the previous node on the route.
+      std::weak_ptr<Node> parent_;
   };
 
   std::ostream& operator<<(std::ostream&, const Node&);

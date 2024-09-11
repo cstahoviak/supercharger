@@ -55,6 +55,21 @@ namespace supercharger
     return stream;
   }
 
+  std::ostream& operator<<(
+    std::ostream& stream, const std::vector<std::shared_ptr<Node>>& route)
+  {
+    size_t sz = route.size();
+    size_t idx = 0;
+    for ( const std::shared_ptr<Node>& node : route ) {
+      stream << *node;
+      if ( idx < sz - 1 ) {
+        stream << ", ";
+      }
+      idx++;
+    }
+    return stream;
+  }
+
   RoutePlanner::RoutePlanner(AlgoType algo_type, CostFcnType cost_type) {
     // Create the network map (must do this before creating the planning algo).
     for ( Charger& charger : supercharger::network ) {

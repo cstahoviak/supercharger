@@ -18,13 +18,13 @@ namespace supercharger
     return {};
   }
 
-  double AStar::ComputeCost(
-    const Node* const current, const Node* const neighbor) const
+  double AStar::ComputeCost(const Node& current, const Node& neighbor) const 
   {
     return 0;
   }
 
-  std::vector<Node> AStar::ConstructFinalRoute_(const Node* const final) {
+  std::vector<Node> AStar::ConstructFinalRoute_(const Node& final)
+  {
     return {};
   }
 } // end namespace supercharger
