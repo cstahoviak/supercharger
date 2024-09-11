@@ -22,7 +22,7 @@ namespace supercharger
 
     // For debug purposes, print the charger rate at each node.
     for ( const Node& node : route ) {
-      DEBUG("'" << node.name() << "' charger rate: " << node.charger->rate);
+      DEBUG(node.name() << " charger rate: " << node.charger().rate);
     }
     
     // Find the node with the fastest charger in the route (that's not the
@@ -30,8 +30,8 @@ namespace supercharger
     double max_rate{0};
     size_t argmax{0};
     for ( size_t idx = 1; idx < route.size() - 2; idx++) {
-      if ( route.at(idx).charger->rate > max_rate ) {
-        max_rate = route.at(idx).charger->rate;
+      if ( route.at(idx).charger().rate > max_rate ) {
+        max_rate = route.at(idx).charger().rate;
         argmax = idx;
       }
     }
@@ -40,8 +40,8 @@ namespace supercharger
     std::vector<Node> optimized = route;
     Node& max_node = optimized.at(argmax);
 
-    DEBUG("Charger at '" << max_node.name() << "' with a rate of " <<
-      max_node.charger->rate << " km/hr is the fastest charger on the route.");
+    DEBUG("Charger at " << max_node.name() << " with a rate of " <<
+      max_node.charger().rate << " km/hr is the fastest charger on the route.");
 
     // The charge time at the "max-rate" node will be a function of the
     // distance remaining to the destination.
@@ -51,8 +51,8 @@ namespace supercharger
       const Node& next = optimized.at(idx + 1);
       dist_remaining += distance(current, next);
     }
-    DEBUG("Distance remaining between '" << max_node.name() << "' and '" << 
-      route.back().name() << "': " << dist_remaining << "km.");
+    DEBUG("Distance remaining between " << max_node.name() << " and " << 
+      route.back().name() << ": " << dist_remaining << " km.");
 
     // If the distance remaining is less than the max range of the vehicle, only
     // charge the vehicle enough at the max-rate node to make it the
@@ -63,13 +63,13 @@ namespace supercharger
 
     // Compute the charging duration at the max-rate node.
     max_node.duration = (max_node.departure_range - max_node.arrival_range) / 
-      max_node.charger->rate;
+      max_node.charger().rate;
 
     // For the max-rate node, update the newly calculated charge duration.
-    DEBUG("Charging for " << max_node.duration << " at '" <<
-      max_node.name() << "'.");
-    DEBUG("Leaving '" << max_node.name() << "' with a range of " <<
-      max_node.departure_range << "km.");
+    DEBUG("Charging for " << max_node.duration << " hrs at " <<
+      max_node.name() << ".");
+    DEBUG("Leaving " << max_node.name() << " with a range of " <<
+      max_node.departure_range << " km.");
 
     // Update the optimized route from the max-rate node to the end.
     for ( size_t idx = argmax + 1; idx < optimized.size(); idx++ ) {
@@ -92,19 +92,19 @@ namespace supercharger
         if ( current.arrival_range < dist_to_next ) {
           // Charge just long enough to make it to the next node.
           current.duration =
-            (dist_to_next - current.arrival_range) / current.charger->rate;
+            (dist_to_next - current.arrival_range) / current.charger().rate;
         }
         else {
           current.duration = 0;
         }
 
-        DEBUG("Updating charge duration at '" << current.name() <<
-          "' from " << route.at(idx).duration << " hrs to " <<
+        DEBUG("Updating charge duration at " << current.name() <<
+          " from " << route.at(idx).duration << " hrs to " <<
           current.duration << " hrs.");
 
         // Update the departure range
         current.departure_range = current.arrival_range +
-          current.duration * current.charger->rate;
+          current.duration * current.charger().rate;
       }
     }
     

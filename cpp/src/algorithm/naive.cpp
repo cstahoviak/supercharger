@@ -212,22 +212,21 @@ namespace supercharger
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
-        cost = distance(candidate.charger,
-          const_cast<const Charger* const>(route_planner_->destination()));
+        cost = distance(candidate.charger(), route_planner_->destination());
         break;
       }
       
       case CostFcnType::MINIMIZE_TIME_REMAINING:
       {
         // Compute distances
-        double candidate_to_destination = distance(candidate.charger,
-          const_cast<const Charger* const>(route_planner_->destination()));
+        double candidate_to_destination = 
+          distance(candidate.charger(), route_planner_->destination());
         double current_to_candidate = distance(current, candidate);
 
         // Compute times
         double time_to_destination = 
           candidate_to_destination / route_planner_->speed();
-        double time_to_charge = current_to_candidate / candidate.charger->rate;
+        double time_to_charge = current_to_candidate / candidate.charger().rate;
 
         // The cost is the total time to drive the remaining distance between
         // the candidate charger and the destination + the time to fully charge

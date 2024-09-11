@@ -46,7 +46,7 @@ namespace supercharger
 
       // Skip the current node if it's already been visited.
       if ( current_node->visited ) {
-        DEBUG("Already visited '" << current_node->name() << "'. Skipping.");
+        DEBUG("Already visited " << current_node->name() << ". Skipping.");
         continue;
       }
 
@@ -84,7 +84,7 @@ namespace supercharger
 
           // Compute the departure range at the current node.
           double departure_range = current_node->arrival_range + 
-            duration * current_node->charger->rate;
+            duration * current_node->charger().rate;
 
           // Updating the arrival range at the neighbor node ensures that
           // the charge duration is calculated properly when the neighbor node
@@ -165,18 +165,8 @@ namespace supercharger
     std::vector<Node> route;
     route.push_back(final);
 
-    DEBUG("Constructing final route.");
-
     // Iterate over the parents of each node to construct the complete path.
     std::shared_ptr<const Node> current_node = final.shared_from_this();
-    if ( auto parent = current_node->parent().lock() ) {
-      DEBUG("Current node " << current_node->name() << " has parent "
-        << parent->name());
-    }
-    else {
-      DEBUG("Current node " << current_node->name() << " has no parent.");
-    }
-
     while ( std::shared_ptr<const Node> parent = current_node->parent().lock() )
     {
       DEBUG(current_node->name() << " cost: " << current_node->cost << " hrs");
