@@ -37,11 +37,6 @@ namespace supercharger
 
     PlannerResult() = default;
     PlannerResult(std::vector<Node>, double, double, double);
-
-    // // Copy constructor
-    // PlannerResult(const PlannerResult& other);
-    // // Copy assignment operator
-    // PlannerResult& operator=(const PlannerResult& other);
   };
 
   /**

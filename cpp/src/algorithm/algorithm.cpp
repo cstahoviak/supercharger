@@ -24,49 +24,6 @@ namespace supercharger
     std::vector<Node> route, double cost, double max_range, double speed) :
     route(std::move(route)), cost(cost), max_range(max_range), speed(speed) {}
 
-  /**
-   * @brief Copy constructor.
-   * 
-   * @param other 
-   */
-  // PlannerResult::PlannerResult(const PlannerResult& other) : 
-  //   cost(other.cost), max_range(other.max_range), speed(other.speed)
-  // {
-  //   // Copy the nodes in the route.
-  //   for ( const Node& node : other.route ) {
-  //     route.push_back(node);
-  //   }
-
-  //   // Ensure that the parent pointer is correct.
-  //   for ( auto iter = route.begin() + 1; iter != route.end(); ++iter) {
-  //     iter->parent = std::addressof(*(iter - 1));
-  //   }
-  // }
-
-  /**
-   * @brief Copy assignment operator.
-   * 
-   * @param other 
-   * @return * PlannerResult& 
-   */
-  // PlannerResult& PlannerResult::operator=(const PlannerResult& other) {
-  //   cost = other.cost;
-  //   max_range = other.max_range;
-  //   speed = other.speed;
-
-  //   // Copy the nodes in the route.
-  //   for ( const Node& node : other.route ) {
-  //     route.push_back(node);
-  //   }
-
-  //   // Ensure that the parent pointer is correct.
-  //   for ( auto iter = route.begin() + 1; iter != route.end(); ++iter) {
-  //     iter->parent = std::addressof(*(iter - 1));
-  //   }
-
-  //   return *this;
-  // }
-
   PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
     // Create a set of nodes from the route planner's charger network.
     for (const auto& [name, charger] : route_planner_->network() ) {

@@ -50,15 +50,15 @@ namespace supercharger
         continue;
       }
 
+      // Mark the current node as visited prior to getting neighbors.
+      current_node->visited = true;
+
       // If the current node is the destination node, we're done!
       if ( current_node->name() == destination) {
         DEBUG("Final route cost: " << current_node->cost << " hrs.");
         return { ConstructFinalRoute_(*current_node), current_node->cost,
           route_planner_->max_range(), route_planner_->speed() };
       }
-
-      // Mark the current node as visited prior to getting neighbors.
-      current_node->visited = true;
 
       // For the current node, consider all of its unvisited neighbors and
       // update their cost through the current node.

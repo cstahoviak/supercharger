@@ -1,11 +1,9 @@
 """
 A sandbox script for exploring optimization in python.
 """
-from copy import copy, deepcopy
 from functools import partial
-from pickletools import read_uint1
 from time import perf_counter
-from typing import List, Optional, Sequence
+from typing import List, Sequence
 
 import numpy as np
 from scipy import optimize
@@ -57,9 +55,6 @@ def constraint(x: List[float], rates: List[float], distances: List[float],
 
         # Compute the arrival range at the current node.
         arrival_ranges[idx] = prev_arrival_rng + duration * rate - dist
-        # print(f"arrival_range = {prev_arrival_rng:.4f} + {duration:.4f} * "
-        #       f"{rate:.4f} - {dist:.4f} = {arrival_ranges[idx]:.4f}")
-
 
     return arrival_ranges
 
@@ -81,14 +76,13 @@ def update_planner_result(result: PlannerResult,
             f"less than len(PlannerResult.route) ({len(result.route) - 2}). "
             f"Actual length is {len(durations)}.")
 
-    # TODO: I think I need to write a copy constructor and copy assignment
-    #  operator for the PlannerResult class?
+    # Update the charging duration for all nodes between the start and end.
     updated = result
-    for idx, (node, duration) in (enumerate(zip(updated.route[1:], durations))):
-        # TODO: The line below segfaults for reasons that I don't fully
-        #  understand yet. I thought I was going to be able to solve it by
-        #  applying a "return value policy" to PlannerResult::route, but that
-        #  didn't seem to work.
+    for node, duration in zip(updated.route[1:-1], durations):
+        node.duration = duration
+
+    # Update the arrival and departure ranges and the cost at each node
+    for idx, node in enumerate(updated.route[1:]):
         previous = updated.route[idx]
 
         # Update the arrival range at the current node
@@ -99,27 +93,14 @@ def update_planner_result(result: PlannerResult,
         node.cost = previous.cost + previous.duration + \
             distance(previous, node) / result.speed
 
-        # # Update the arrival range at the current node
-        # node.arrival_range = \
-        #     updated.route[idx].arrival_range + \
-        #     updated.route[idx].duration * updated.route[idx].charger.rate - \
-        #     distance(updated.route[idx], node)
-        #
-        # # Update the cost at the current node
-        # node.cost = updated.route[idx].cost + updated.route[idx].duration + \
-        #             distance(updated.route[idx], node) / result.speed
-
-        # For all nodes but the final node, update the charging duration and
-        # the departure range
+        # For all nodes but the final node, update the departure range
         if idx < len(result.route) - 1:
-            node.duration = duration
             node.departure_range = node.arrival_range + \
                 node.duration * node.charger.rate
 
     # Finally, update the total cost of the route
     updated.cost = updated.route[-1].cost
     return updated
-
 
 
 if __name__ == "__main__":
@@ -178,7 +159,8 @@ if __name__ == "__main__":
     np.testing.assert_array_equal(arrival_ranges, np.zeros_like(arrival_ranges))
 
     # Define the bounds on the charging durations
-    # TODO: Could be more specific than np.inf
+    # TODO: Could actually compute an upper boud for the charge duration for
+    #  each node.
     bounds = optimize.Bounds(lb=0, ub=np.inf)
 
     # Define the nonlinear constraint

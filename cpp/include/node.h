@@ -48,8 +48,8 @@ namespace supercharger
 
     private:
       // Store the charger associated with this node.
-      Charger charger_
-      ;
+      Charger charger_;
+      
       // Store the previous node on the route.
       std::weak_ptr<Node> parent_;
   };
