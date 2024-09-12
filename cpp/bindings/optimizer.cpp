@@ -30,7 +30,7 @@ namespace supercharger
     PYBIND11_OVERRIDE_PURE(
       PlannerResult,  // Return type
       Optimizer,      // Parent class
-      Optimize,       // Name of C++ function (must mathc python name)
+      Optimize,       // Name of C++ function (must match python name)
       result          // Argument(s)
     );
   }
