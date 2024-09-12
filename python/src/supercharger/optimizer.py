@@ -60,17 +60,30 @@ class NonlinearOptimizer(Optimizer):
     """
     Implements nonlinear optimization of a given route.
     """
-    def __init__(self):
-        Optimizer.__init__(self)
+    # def __init__(self):
+    #     # If we want to define our own constructor, we must first call the
+    #     # bound C++ constructor.
+    #     Optimizer.__init__(self)
+
+    def optimize(self, result: PlannerResult) -> PlannerResult:
+        """
+        The public interface of the Python optimization class.
+
+        Args:
+            result: The planning algorithm result to be optimized.
+
+        Returns:
+            The optimized route.
+        """
+        return self.Optimize(result)
 
     def Optimize(self, result: PlannerResult) -> PlannerResult:
         """
-
         Args:
-            route:
+            result: The planning algorithm result to be optimized.
 
         Returns:
-
+            The optimized route.
         """
         # Define some arrays for route optimization
         distances = []
@@ -130,7 +143,6 @@ class NonlinearOptimizer(Optimizer):
                                  new_durations: Sequence[float]) \
             -> PlannerResult:
         """
-
         Args:
             result: The initial route planner result.
             new_durations: The updated set of charging durations at each
@@ -145,8 +157,17 @@ class NonlinearOptimizer(Optimizer):
                 f"less than len(PlannerResult.route) ({len(result.route) - 2}). "
                 f"Actual length is {len(new_durations)}.")
 
+        # TODO: Creating a copy of the route doesn't work (updated ends up
+        #  becoming an alias of result. Do I need to implement a copy
+        #  constructor for the PlannerResult class to fix this or is this
+        #  just how python works?
+        # updated = result
+        updated = PlannerResult()
+        updated.route = result.route
+        updated.max_range = result.max_range
+        updated.speed = result.speed
+
         # Update the charging duration for all nodes between the start and end.
-        updated = result
         for node, duration in zip(updated.route[1:-1], new_durations):
             node.duration = duration
 

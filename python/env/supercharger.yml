@@ -4,6 +4,7 @@ channels:
 dependencies:
   - python=3.10
   - numpy
+  - plotly
   - pybind11
   - pytest
   - scipy
