@@ -116,6 +116,6 @@ TODO: Add profiling for each algorithm.
 | Dijkstra's + _Naive_ Optimizer      | 17.0697  | -       | 1.0630     | -11:00      | 
 | Dijkstra's + Nonlinear Optimization | 16.8438  | -       | 2.3723     | -24:33      |
 
-The following chart shows how the optimization scheme maximizes the charging time at the nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
+The following figure illustrates how the nonlinear optimization scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
 
 ![charging durations](/figs/charging_durations.png "Charging Durations")
