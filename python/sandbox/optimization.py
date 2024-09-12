@@ -1,5 +1,7 @@
 """
 A sandbox script for exploring optimization in python.
+
+Date: 10/09/2024
 """
 from functools import partial
 from time import perf_counter
@@ -10,9 +12,7 @@ from scipy import optimize
 
 from supercharger.pysupercharger import (
     AlgorithmType,
-    CostFunctionType,
     distance,
-    Node,
     PlannerResult,
     RoutePlanner
 )

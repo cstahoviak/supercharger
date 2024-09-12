@@ -43,6 +43,9 @@ std::string to_string(const PlannerResult& result) {
 void initPlanningAlgorithm(py::module_& m)
 {
   py::class_<PlannerResult>(m, "PlannerResult")
+    .def(py::init<>())
+    .def(py::init<std::vector<Node>, double, double, double>(),
+      py::arg("route"), py::arg("cost"), py::arg("max_range"), py::arg("speed"))
     .def_readwrite("route", &PlannerResult::route)
     .def_readwrite("cost", &PlannerResult::cost)
     .def_readwrite("max_range", &PlannerResult::max_range)
