@@ -4,8 +4,8 @@
 
 1. (__DONE__) Add [Dijkstra's algorithm](https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/) for route planning.
 2. Add [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
-3. Create python bindings ([`pybind11`](https://pybind11.readthedocs.io/en/stable/)) for the `RoutePlanner` class.
-4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Brute Force" algorithm cost function.
+3. (__DONE__) Create python bindings ([`pybind11`](https://pybind11.readthedocs.io/en/stable/)) for the `RoutePlanner` class.
+4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
 5. Add benchmarking to `PlanningAlgorithm::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c).
 6. Design an optimization problem to further refine the solution provided by Dijkstra's and/or A*.
 
@@ -103,15 +103,15 @@ Run the `supercharger` application by passing any two valid Supercharger locatio
 ```
 
 ### Results
-So far, the following results have been obtained. The _reference result_ provided by the `checker_linux` application is also included for comparison. The last two columns indicate the percent improvement over the reference result, and the time saved compared to the reference result.
+So far, the following results have been obtained. The _reference result_ provided by the `checker_linux` application is included for comparison. The last two columns indicate the percent improvement over the reference result, and the time saved compared to the reference result.
 
 TODO: Add profiling for each algorithm.
 
-| Algorithm                           | Cost      | Runtime     | Pct Imprv. | Time Saved      |
-|:------------------------------------|:---------:|:-----------:|:----------:|:---------------:|
-|                                     | __[hrs]__ | __[msecs]__ | __[%]__    | __[mins:secs]__ |
-| _Naive_ Route Planner               | 18.1017   | -           | -2.9185    | +50:55          |
-| Dijkstra's Algorithm                | 17.2548   | -           | -0.0096    | +00:06          |
-| _Reference_ Result                  | 17.2531   | -           | -          | -               |
-| Dijkstra's + _Naive_ Optimizer      | 17.0697   | -           | 1.0630     | -11:00          | 
-| Dijkstra's + Nonlinear Optimization | 16.8438   | -           | 2.3723     | -24:33          |
+| Algorithm                           | Cost     | Runtime | Pct Imprv. | Time Saved  |
+|:------------------------------------|:--------:|:-------:|:----------:|:-----------:|
+|                                     | [hrs]    | [msecs] | [%]        | [mins:secs] |
+| _Naive_ Route Planner               | 18.1017  | -       | -2.9185    | +50:55      |
+| Dijkstra's Algorithm                | 17.2548  | -       | -0.0096    | +00:06      |
+| _Reference_ Result                  | 17.2531  | -       | -          | -           |
+| Dijkstra's + _Naive_ Optimizer      | 17.0697  | -       | 1.0630     | -11:00      | 
+| Dijkstra's + Nonlinear Optimization | 16.8438  | -       | 2.3723     | -24:33      |
