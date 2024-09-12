@@ -55,6 +55,7 @@ def plot_charging_durations(baseline: PlannerResult, optimized: PlannerResult):
     )
     fig.show()
 
+
 def plot_ranges(baseline: PlannerResult, optimized: PlannerResult):
     """
     Args:
