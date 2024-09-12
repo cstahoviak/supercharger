@@ -9,7 +9,7 @@
 5. Add benchmarking to `PlanningAlgorithm::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c).
 6. Design an optimization problem to further refine the solution provided by Dijkstra's and/or A*.
 
-## Problem Statment
+## Problem Statement
 Your objective is to construct a search algorithm to find the minimum time path through the tesla network of supercharging stations. Each supercharger will refuel the vehicle at a different rate given in km/hr of charge time. Your route does not have to fully charge at every visited charger, so long as it never runs out of charge between two chargers. You should expect to need __no more than 4-6 hours__ to solve this problem. We suggest implementing a quick brute force method before attempting to find an optimal routine.
 
 You will be provided with a code skeleton which includes a header with the
