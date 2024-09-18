@@ -83,26 +83,43 @@ class NonlinearOptimizer(Optimizer):
     """
     Implements nonlinear optimization of a given route.
     """
-    # def __init__(self):
-    #     # If we want to define our own constructor, we must first call the
-    #     # bound C++ constructor.
-    #     Optimizer.__init__(self)
+    def __init__(self):
+        # If we want to define our own constructor, we must first call the
+        # bound C++ constructor.
+        Optimizer.__init__(self)
 
-    def optimize(self, result: PlannerResult) -> PlannerResult:
+        # Store the optimization method
+        self._available_methods = ['COBYQA', 'SLSQP', 'trust-constr']
+        self._method = None
+
+    def optimize(self, result: PlannerResult, method: str = 'SLSQP') -> \
+            PlannerResult:
         """
         The public interface of the Python optimization class.
 
         Args:
             result: The planning algorithm result to be optimized.
+            method: The type of optimization solver used by scipy.minimize.
+            Available methods for constrained, nonlinear optimization are
+            'COBYQA', 'SLSQP' and 'trust-constr'.
 
         Returns:
             The optimized route.
         """
+        if method in self._available_methods:
+            self._method = method
+        else:
+            warn(f"Cannot perform constrained, nonlinear optimization via the "
+                 f"'{method}' method. Available methods are "
+                 f"{self._available_methods}. Proceeding with 'SLSQP'.")
+            self._method = 'SLSQP'
+
         return self.Optimize(result)
 
     def Optimize(self, result: PlannerResult) -> PlannerResult:
         """
-        Optimize the route via SLSQP constrained, nonlinear optimization.
+        Optimize the route via constrained, nonlinear optimization.
+
         Args:
             result: The planning algorithm result to be optimized.
 
@@ -158,6 +175,7 @@ class NonlinearOptimizer(Optimizer):
         optimization_result = optimize.minimize(
             fun=cost_fcn,
             x0=np.array([node.duration for node in result.route[1:-1]]),
+            method=self._method,
             bounds=bounds,
             constraints=constraints)
 
