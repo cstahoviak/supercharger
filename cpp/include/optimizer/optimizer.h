@@ -20,7 +20,9 @@ namespace supercharger
   {
     public:
       enum class OptimizerType {
-        NAIVE
+        NAIVE,
+        NLOPT,
+        NONE
       };
 
       // NOTE: We don't require a default ctor to use std::make_unique()

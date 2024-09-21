@@ -13,11 +13,11 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG OR CMAKE_BUILD_TYPE MATCHES Debug)
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "DEBUG_INFO: ${DEBUG_INFO}")
 
-include_directories(cpp/include)
-
 # NOTE: Need to use GLOB_RECURSE to grab files in subdiirectories
 # file(GLOB_RECURSE LIB_SOURCES cpp/src/*.cpp)
 # file(GLOB_RECURSE LIB_HEADERS cpp/include/*.h)
+
+include_directories("cpp/include")
 
 set(LIB_SOURCES
   "cpp/src/algorithm/algorithm.cpp"
@@ -25,6 +25,7 @@ set(LIB_SOURCES
   "cpp/src/algorithm/dijkstras.cpp"
   "cpp/src/algorithm/naive.cpp"
   "cpp/src/optimizer/naive.cpp"
+  "cpp/src/optimizer/nloptimizer.cpp"
   "cpp/src/optimizer/optimizer.cpp"
   "cpp/src/network.cpp"
   "cpp/src/node.cpp"
@@ -37,6 +38,7 @@ set(LIB_HEADERS
   "cpp/include/algorithm/dijkstras.h"
   "cpp/include/algorithm/naive.h"
   "cpp/include/optimizer/naive.h"
+  "cpp/include/optimizer/nloptimizer.h"
   "cpp/include/optimizer/optimizer.h"
   "cpp/include/logging.h"
   "cpp/include/math.h"
@@ -45,6 +47,8 @@ set(LIB_HEADERS
   "cpp/include/planner.h"
 )
 
+find_package(NLopt REQUIRED)
+
 # Create the superchargerlib
 add_library(superchargerlib ${LIB_SOURCES} ${LIB_HEADERS})
 # NOTE: This is required by the python bindings (specifically bindings related
@@ -52,11 +56,24 @@ add_library(superchargerlib ${LIB_SOURCES} ${LIB_HEADERS})
 set_property(TARGET superchargerlib PROPERTY POSITION_INDEPENDENT_CODE ON)  #-fPIC
 
 # Create the supercharger app (add project executable)
-file( GLOB APP_SOURCES cpp/app/*.cpp )
-add_executable(${PROJECT_NAME} ${APP_SOURCES})
+add_executable(${PROJECT_NAME} "cpp/app/supercharger.cpp")
+
+# target_include_directories(${PROJECT_NAME} PUBLIC "cpp/include")
+
+# Add NLOpt
+# TODO: Haven't gotten it to work with FetchContent yet.
+# include(FetchContent)
+# FetchContent_Declare(
+#   NLopt
+#   URL https://github.com/stevengj/nlopt/archive/refs/tags/v2.8.0.tar.gz
+# )
+# FetchContent_MakeAvailable(NLopt)
 
 # Link our library against the app
-target_link_libraries(${PROJECT_NAME} superchargerlib)
+target_link_libraries(${PROJECT_NAME}
+  superchargerlib
+  nlopt
+)
 
 if( DEBUG_INFO )
   # Add Debug info to both library and app
@@ -68,9 +85,9 @@ endif()
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  # URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz
 )
-
 FetchContent_MakeAvailable(googletest)
 
 # Tell CMake that we'll have unit tests 

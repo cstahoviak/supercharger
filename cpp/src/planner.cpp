@@ -57,7 +57,10 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(AlgoType algo_type, CostFcnType cost_type) {
+  RoutePlanner::RoutePlanner(
+    AlgoType algo_type,
+    CostFcnType cost_type,
+    OptimizerType optimizer_type) {
     // Create the network map (must do this before creating the planning algo).
     for ( const Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
@@ -79,7 +82,7 @@ namespace supercharger
     );
 
     // Create the optimizer.
-    optimizer_ = Optimizer::GetOptimizer(Optimizer::OptimizerType::NAIVE);
+    optimizer_ = Optimizer::GetOptimizer(optimizer_type);
 
   }
 
@@ -106,7 +109,13 @@ namespace supercharger
 
   PlannerResult RoutePlanner::OptimizeRoute(const PlannerResult& result) const
   {
-    return optimizer_->Optimize(result);
+    if ( optimizer_ ) {
+      INFO("Optimizing route.");
+      return optimizer_->Optimize(result);
+    }
+
+    INFO("No optimizer set. Unable to optimize route.");
+    return result;
   }
 
   void RoutePlanner::Initialize_(

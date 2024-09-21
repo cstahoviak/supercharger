@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     std::cout << "\n";
 
     PlannerResult optimized = planner.OptimizeRoute(result);
-    INFO("Optimized Route (Cost: " << optimized.cost << " hrs)");
+    INFO("Naively Optimized Route (Cost: " << optimized.cost << " hrs)");
     std::cout << optimized.route << std::endl;
   }
 }
