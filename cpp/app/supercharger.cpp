@@ -28,7 +28,7 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Use the "naive" planning algorithm
-  if (true) {
+  if (false) {
     // Create the Route Planner
     RoutePlanner planner(
       AlgoType::NAIVE,
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   std::cout << "\n";
 
   // Dijkstra's Algorithm
-  if (true) {
+  if (false) {
     // Create the Route Planner
     RoutePlanner planner(AlgoType::DIJKSTRAS);
 
@@ -73,6 +73,28 @@ int main(int argc, char** argv)
 
     PlannerResult optimized = planner.OptimizeRoute(result);
     INFO("Naively Optimized Route (Cost: " << optimized.cost << " hrs)");
+    std::cout << optimized.route << std::endl;
+  }
+
+    if (true) {
+    // Create the Route Planner
+    RoutePlanner planner(AlgoType::DIJKSTRAS, OptimizerType::NLOPT);
+
+    // Set the vehicle's speed and max range
+    planner.max_range() = 320;
+    planner.speed() = 105;
+
+    // Plan the route
+    PlannerResult result = planner.PlanRoute(
+      initial_charger_name,
+      goal_charger_name
+    );
+    INFO("Dijkstra's Final Route (Cost: " << result.cost << " hrs)");
+    std::cout << result.route << std::endl;
+    std::cout << "\n";
+
+    PlannerResult optimized = planner.OptimizeRoute(result);
+    INFO("NLOpt Optimized Route (Cost: " << optimized.cost << " hrs)");
     std::cout << optimized.route << std::endl;
   }
 }

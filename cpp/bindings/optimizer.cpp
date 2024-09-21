@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
+// #include "optimizer/nloptimizer.h"
 #include "optimizer/naive.h"
 
 #include <pybind11/pybind11.h>
@@ -56,4 +57,8 @@ void initOptimizer(py::module_& m)
   py::class_<NaiveOptimizer, Optimizer>(m, "NaiveOptimizer")
     .def(py::init<>())
   ;
+
+  // py::class_<NLOptimizer, Optimizer>(m, "NLOptimizer")
+  //   .def(py::init<>())
+  // ;
 }

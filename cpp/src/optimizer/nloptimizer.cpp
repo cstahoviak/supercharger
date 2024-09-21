@@ -7,6 +7,9 @@
  * 
  * @copyright Copyright (c) 2024
  * 
+ * TODO: Fix the "free(): invalid size" error.
+ *  1. Implement the equality constraint via a C-style function.
+ *  2. Completely switch to the C-style implementation.
  */
 
 #include "optimizer/nloptimizer.h"
@@ -212,7 +215,7 @@ namespace supercharger
 
     // Define the optimization constraint data and the initial guess.
     ConstraintData constr_data;
-    std::vector<double> x(dim, 0.0);
+    std::vector<double> x;
     for ( auto iter = result.route.cbegin() + 1; iter != result.route.cend(); ++iter )
     {
       const Node& current = *iter;
@@ -236,17 +239,16 @@ namespace supercharger
 
     // Set the upper bounds on the charging rates.
     std::vector<double> ub = std::vector<double>(dim, HUGE_VAL);
-    size_t idx {1};
+    size_t idx {0};
     for (const double& rate : constr_data.rates ) {
-      ub.push_back( 
-        (result.max_range - result.route.at(idx).arrival_range) / rate
-      );
+      ub[idx] = 
+        (result.max_range - result.route.at(idx + 1).arrival_range) / rate;
       idx++;
     }
     opt.set_upper_bounds(ub);
 
     // Set the objective function
-    opt.set_min_objective(cost_fcn, nullptr);
+    opt.set_min_objective(cost_fcn, NULL);
 
     // Add the inequality constraints on the arrival ranges, [3, N-1].
     unsigned m = dim - 1;
@@ -263,12 +265,13 @@ namespace supercharger
 
     // Run the optimization!
     double minf{0};
-    try{
-    nlopt::result new_durations = opt.optimize(x, minf);
-    INFO("Found minimum at f(x) = " << std::setprecision(10) << minf);
+    try {
+      DEBUG("Optimizing via NLOpt.");
+      nlopt::result new_durations = opt.optimize(x, minf);
+      INFO("Found minimum at f(x) = " << std::setprecision(10) << minf);
     }
-    catch(std::exception &e) {
-        INFO("nlopt failed: " << e.what());
+    catch( std::exception &e ) {
+      INFO("nlopt failed: " << e.what());
     }
 
     return result;

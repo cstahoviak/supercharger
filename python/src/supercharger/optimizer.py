@@ -17,7 +17,6 @@ from supercharger.pysupercharger import (
 
 def cost_fcn(x: Sequence[float]) -> float:
     """
-
     Args:
         x: (n-2,) A list of charging durations for all nodes but the first and
             last node.
