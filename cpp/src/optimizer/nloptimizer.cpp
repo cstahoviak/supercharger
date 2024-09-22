@@ -90,7 +90,7 @@ namespace supercharger
   {
     // Cast pointers to other types
     ConstraintData* data_ptr = reinterpret_cast<ConstraintData*>(data);
-    std::vector<double> durations(x, x + sizeof(x) / sizeof(x[0]));
+    std::vector<double> durations(x, x + n);
 
     // Compute the arrival ranges for all nodes [2, n]
     std::vector<double> arrival_ranges = get_arrival_ranges(durations, data_ptr);
@@ -269,7 +269,7 @@ namespace supercharger
     opt.set_xtol_rel(1e-4);
 
     // Set the initial guess, i.e. the charging duration at all nodes not
-    // including the first and last nodes
+    // including the first and last nodes.
     std::vector<double> x;
     for (auto iter = result.route.cbegin() + 1; iter != result.route.cend() - 1; ++iter)
     {
