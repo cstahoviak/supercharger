@@ -36,26 +36,28 @@ class NLOptimizerTestFixture : public testing::Test
       planner.speed() = 105;
 
       // Plan the route
-      result = planner.PlanRoute(
+      planner_result = planner.PlanRoute(
         initial_charger_name,
         goal_charger_name
       );
 
       // Define the optimization problem dimensionality and create the
       // constraint data
-      n = result.route.size() - 2;
-      constr_data = NLOptimizer::CreateConstraintData(result);
+      n = planner_result.route.size() - 2;
+      constr_data = NLOptimizer::CreateConstraintData(planner_result);
 
       // Define the initial guess, i.e. the charging duration at all nodes not
       // including the first and last nodes.
-      for (auto iter = result.route.cbegin() + 1;
-          iter != result.route.cend() - 1; ++iter) {
+      for (auto iter = planner_result.route.cbegin() + 1;
+          iter != planner_result.route.cend() - 1; ++iter) {
         x0.push_back(iter->duration);
       }
     }
 
-    PlannerResult result;
+    // Store the result of Dijkstra's planning algorithm.
+    PlannerResult planner_result;
 
+    // Store data related to the optimization problem.
     unsigned n;
     ConstraintData constr_data;
     std::vector<double> x0;
@@ -71,7 +73,7 @@ TEST_F(NLOptimizerTestFixture, TestGetArrivalRanges)
   // nodes from node 3 onward.
   for (size_t idx = 0; idx < arrival_ranges.size(); idx++) {
     EXPECT_DOUBLE_EQ(
-      arrival_ranges.at(idx), result.route.at(idx + 2).arrival_range);
+      arrival_ranges.at(idx), planner_result.route.at(idx + 2).arrival_range);
   }
 }
 
@@ -99,8 +101,38 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintLHS)
   ineq_constraint_lhs(
     m, result, n, const_cast<const double*>(x), grad, &constr_data);
   for ( size_t idx = 0; idx < m; idx++ ) {
-    double val = result[idx];
     EXPECT_DOUBLE_EQ(result[idx], 0.0);
+  }
+
+  // Clean up
+  delete x, grad, result;
+}
+
+TEST_F(NLOptimizerTestFixture, TestIneqConstraintRHS)
+{
+  // Define the arguments
+  unsigned m = n - 1;
+  double* x = new double[n];
+  double* grad = new double[n];
+  double* result = new double[n];
+
+  // Create the initial guess
+  for ( size_t idx = 0; idx < n; idx++ ) {
+    x[idx] = x0[idx];
+  }
+
+  // Define the expected result
+  std::vector<double> expected(m, 0.0);
+  for (size_t idx = 0; idx < m; idx++ ) {
+    expected[idx] = -(planner_result.max_range - constr_data.distances[idx]);
+  }
+ 
+  // Evaluate the LHS of the inequality constraint
+  ineq_constraint_rhs(
+    m, result, n, const_cast<const double*>(x), grad, &constr_data);
+  for ( size_t idx = 0; idx < m; idx++ ) {
+    double val = result[idx];
+    EXPECT_DOUBLE_EQ(result[idx], expected[idx]);
   }
 
   // Clean up

@@ -133,18 +133,18 @@ namespace supercharger
   {
     // Cast pointers to other types
     ConstraintData* data_ptr = reinterpret_cast<ConstraintData*>(data);
-    std::vector<double> durations(x, x + sizeof(x) / sizeof(x[0]));
+    std::vector<double> durations(x, x + n);
 
     // Compute the arrival ranges for all nodes [2, n]
     std::vector<double> arrival_ranges = get_arrival_ranges(durations, data_ptr);
 
     // Evaluate the inequality constraint function, f (f <= 0)
-    std::vector<double> f(arrival_ranges.size(), 0.0);
+    std::vector<double> f(m, 0.0);
     for ( size_t idx = 0; idx < m; idx++ ) {
       f[idx] = arrival_ranges[idx] - 
         (data_ptr->max_range - data_ptr->distances[idx]);
     }
-    std::copy(f.begin(), f.end() - 1, result);
+    std::copy(f.begin(), f.end(), result);
     return;
   }
 
