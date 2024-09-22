@@ -25,6 +25,49 @@ namespace supercharger
         double max_range{0};
       };
 
+      static ConstraintData CreateConstraintData(const PlannerResult&);
       PlannerResult Optimize(const PlannerResult&) const override;
   };
+
+  double cost_fcn(
+    const std::vector<double>& x,
+    std::vector<double>& data,
+    void*
+  );
+
+  std::vector<double> get_arrival_ranges(
+    const std::vector<double>& durations,
+    const NLOptimizer::ConstraintData* const data
+  );
+
+  void ineq_constraint_lhs(
+    unsigned m,
+    double* result,
+    unsigned n,
+    const double* x,
+    double* grad,
+    void* data
+  );
+
+  void ineq_constraint_rhs(
+    unsigned m,
+    double* result,
+    unsigned n,
+    const double* x,
+    double* grad,
+    void* data
+  );
+
+  void ineq_constraint(
+    std::vector<double>& result,
+    const std::vector<double>& x,
+    std::vector<double>& grad,
+    void* data
+  );
+
+  double eq_constraint(
+    const std::vector<double>& x,
+    std::vector<double>& grad,
+    void* data
+  );
 } // end namespace supercharger

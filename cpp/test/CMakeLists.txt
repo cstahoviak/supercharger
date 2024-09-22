@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10.2)
 set(TEST_NAME test_${PROJECT_NAME})
 
 set(TEST_SOURCES
+  "optimizer/test_nloptimizer.cpp"
   "test_math.cpp"
 )
 
@@ -13,6 +14,7 @@ add_executable(${TEST_NAME} ${TEST_SOURCES})
 target_link_libraries(${TEST_NAME} PUBLIC
   gtest_main
   superchargerlib
+  nlopt
 )
 
 # Add the tests

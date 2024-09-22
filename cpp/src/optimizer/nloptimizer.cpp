@@ -207,22 +207,16 @@ namespace supercharger
     return arrival_ranges.back();
   }
 
-  PlannerResult NLOptimizer::Optimize(const PlannerResult& result) const
+  ConstraintData NLOptimizer::CreateConstraintData(const PlannerResult& result)
   {
-    // Define the optimization algorithm and dimensionality.
-    size_t dim = result.route.size() - 2;
-    nlopt::opt opt(nlopt::LN_AUGLAG, dim);
-
     // Define the optimization constraint data and the initial guess.
     ConstraintData constr_data;
-    std::vector<double> x;
     for ( auto iter = result.route.cbegin() + 1; iter != result.route.cend(); ++iter )
     {
       const Node& current = *iter;
       const Node& previous = *(iter - 1);
       constr_data.distances.push_back(distance(previous, current));
       constr_data.rates.push_back(current.charger().rate);
-      x.push_back(current.duration);
     }
     constr_data.init_arrival_range = result.route.at(1).arrival_range;
     constr_data.max_range = result.max_range;
@@ -231,7 +225,18 @@ namespace supercharger
     // between the first and second nodes, and final node's charging rate.
     constr_data.distances.erase(constr_data.distances.begin());
     constr_data.rates.pop_back();
-    x.pop_back();
+
+    return constr_data;
+  }
+
+  PlannerResult NLOptimizer::Optimize(const PlannerResult& result) const
+  {
+    // Define the optimization algorithm and dimensionality.
+    size_t dim = result.route.size() - 2;
+    nlopt::opt opt(nlopt::LN_AUGLAG, dim);
+
+    // Define the optimization constraint data.
+    ConstraintData constr_data = NLOptimizer::CreateConstraintData(result);
 
     // Set the lower bounds on the charging rates.
     std::vector<double> lb = std::vector<double>(dim, 0.0);
@@ -254,14 +259,22 @@ namespace supercharger
     unsigned m = dim - 1;
     double tol = 1e-9;
     const std::vector<double> mtol = std::vector<double>(m, tol);
-    opt.add_inequality_mconstraint(ineq_constraint_lhs, &constr_data, mtol);
-    opt.add_inequality_mconstraint(ineq_constraint_rhs, &constr_data, mtol);
+    // opt.add_inequality_mconstraint(ineq_constraint_lhs, &constr_data, mtol);
+    // opt.add_inequality_mconstraint(ineq_constraint_rhs, &constr_data, mtol);
 
     // Add an equality constraint for the arrival range at the last node
     opt.add_equality_constraint(eq_constraint, &constr_data, tol);
 
     // Set a relative tolerance for the optimization parameters
     opt.set_xtol_rel(1e-4);
+
+    // Set the initial guess, i.e. the charging duration at all nodes not
+    // including the first and last nodes
+    std::vector<double> x;
+    for (auto iter = result.route.cbegin() + 1; iter != result.route.cend() - 1; ++iter)
+    {
+      x.push_back(iter->duration);
+    }
 
     // Run the optimization!
     double minf{0};
