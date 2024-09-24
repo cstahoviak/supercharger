@@ -117,7 +117,7 @@ namespace supercharger
    * arrival_range[n] - (MAX_RANGE - dist(n, n-1)) <= 0
    * 
    * @param m The dimension of the contraint vector.
-   * @param result The constraint 
+   * @param result The constraint vector.
    * @param n 
    * @param x 
    * @param grad 
@@ -180,7 +180,7 @@ namespace supercharger
   }
 
     /**
-   * @brief The equaility constraint function. The equality constraint applies
+   * @brief The equality constraint function. The equality constraint applies
    * to the last node - a time optimal route will have an arrival range of zero
    * at the final node.
    * 
@@ -235,10 +235,14 @@ namespace supercharger
     size_t dim = result.route.size() - 2;
     nlopt::opt opt(nlopt::LN_AUGLAG, dim);
 
+    nlopt::opt local_opt(nlopt::LN_COBYLA, dim);
+    // local_opt.set_stopval();
+    opt.set_local_optimizer(local_opt);
+
     // Define the optimization constraint data.
     ConstraintData constr_data = NLOptimizer::CreateConstraintData(result);
 
-    // Set the lower bounds on the charging rates.
+    // Set the lower bounds on the charging durations.
     std::vector<double> lb = std::vector<double>(dim, 0.0);
     opt.set_lower_bounds(lb);
 
@@ -259,14 +263,14 @@ namespace supercharger
     unsigned m = dim - 1;
     double tol = 1e-9;
     const std::vector<double> mtol = std::vector<double>(m, tol);
-    // opt.add_inequality_mconstraint(ineq_constraint_lhs, &constr_data, mtol);
-    // opt.add_inequality_mconstraint(ineq_constraint_rhs, &constr_data, mtol);
+    opt.add_inequality_mconstraint(ineq_constraint_lhs, &constr_data, mtol);
+    opt.add_inequality_mconstraint(ineq_constraint_rhs, &constr_data, mtol);
 
     // Add an equality constraint for the arrival range at the last node
     opt.add_equality_constraint(eq_constraint, &constr_data, tol);
 
     // Set a relative tolerance for the optimization parameters
-    opt.set_xtol_rel(1e-4);
+    opt.set_xtol_rel(1e-8);
 
     // Set the initial guess, i.e. the charging duration at all nodes not
     // including the first and last nodes.

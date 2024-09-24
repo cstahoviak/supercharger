@@ -77,11 +77,24 @@ TEST_F(NLOptimizerTestFixture, TestGetArrivalRanges)
   }
 }
 
+TEST_F(NLOptimizerTestFixture, TestCostFcn)
+{
+  std::vector<double> charging_times;
+  double total_charging_time{0};
+  for ( const Node& node : planner_result.route ) {
+    charging_times.push_back(node.duration);
+    total_charging_time += node.duration;
+  }
+
+  std::vector<double> grad;
+  EXPECT_DOUBLE_EQ(
+    cost_fcn(charging_times, grad, nullptr), total_charging_time);
+}
+
 TEST_F(NLOptimizerTestFixture, TestEqConstraint)
 {
   std::vector<double> grad;
-  double eq_constr_val = eq_constraint(x0, grad, &constr_data);
-  EXPECT_DOUBLE_EQ(eq_constr_val, 0.0);
+  EXPECT_DOUBLE_EQ(eq_constraint(x0, grad, &constr_data), 0.0);
 }
 
 TEST_F(NLOptimizerTestFixture, TestIneqConstraintLHS)
@@ -123,7 +136,7 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintRHS)
 
   // Define the expected result
   std::vector<double> expected(m, 0.0);
-  for (size_t idx = 0; idx < m; idx++ ) {
+  for ( size_t idx = 0; idx < m; idx++ ) {
     expected[idx] = -(planner_result.max_range - constr_data.distances[idx]);
   }
  

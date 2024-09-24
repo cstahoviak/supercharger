@@ -24,7 +24,21 @@ def cost_fcn(x: Sequence[float]) -> float:
     Returns: The total sum of charging durations.
 
     """
-    return sum(x)
+    return np.sum(x)
+
+
+def cost_fcn_grad(x: Sequence[float]) -> np.ndarray:
+    """
+    Evaluates the gradient of the cost function as the point x.
+
+    Args:
+        x: The evaluation point.
+
+    Returns:
+        The cost function gradient evaluated at the point x.
+    """
+    return np.ones_like(x)
+
 
 def get_arrival_range(
         durations: Sequence[float],
