@@ -34,7 +34,7 @@ if __name__ == "__main__":
     # Optimize the route
     optimizer = NonlinearOptimizer()
     start = perf_counter()
-    optimized = optimizer.optimize(result)
+    optimized = optimizer.optimize(result, method='SLSQP')
     stop = perf_counter()
     print(f"\nOptimization time: {(stop - start) * 1e3:.2f} ms")
     print(f"Optimized Final Route (Cost: {optimized.cost:.4f} hrs)")

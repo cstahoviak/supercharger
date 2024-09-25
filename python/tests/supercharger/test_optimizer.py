@@ -7,7 +7,16 @@ import numpy as np
 import pytest
 from scipy import optimize
 
-from supercharger.optimizer import get_arrival_range, cost_fcn, cost_fcn_grad
+from supercharger.optimizer import (
+    NonlinearOptimizer,
+    get_arrival_range,
+    cost_fcn,
+    cost_fcn_grad,
+    ineq_constraint,
+    ineq_constraint_grad,
+    eq_constraint,
+    eq_constraint_grad
+)
 
 from supercharger.pysupercharger import (
     AlgorithmType,
@@ -15,10 +24,12 @@ from supercharger.pysupercharger import (
     RoutePlanner
 )
 
+
 @pytest.fixture
 def planner_result():
     """
-    The test_optimizer test fixture.
+    The test_optimizer test fixture generates a PlannerResult using Dijkstra's
+    algorithm.
     """
     # Define the route's endpoints
     origin = "Council_Bluffs_IA"
@@ -32,11 +43,27 @@ def planner_result():
     planner.speed = 105
 
     # Plan the route with Dijkstra's algorithm
-    result = planner.plan_route(origin, destination)
-    return result
+    return planner.plan_route(origin, destination)
 
 
-def test_nonlinear_constraint(planner_result):
+@pytest.fixture
+def constraint_data(planner_result):
+    """
+    Creates the constraint data.
+    """
+    return NonlinearOptimizer.create_constraint_data(planner_result)
+
+
+@pytest.fixture
+def eval_point(planner_result):
+    """
+    The state vector is the vector of charging durations for all nodes not
+    including the first and last nodes
+    """
+    return np.array([node.duration for node in planner_result.route[1:-1]])
+
+
+def test_get_arrival_range(planner_result, constraint_data):
     """
     Verifies that the nonlinear constraint function is correct.
     """
@@ -50,10 +77,7 @@ def test_nonlinear_constraint(planner_result):
         rates.append(node.charger.rate)
 
     # Compute the arrival range at each node not including the origin.
-    func = partial(get_arrival_range,
-                   rates=rates[:-1],
-                   distances=distances[1:],
-                   init_arrival_rng=planner_result.route[1].arrival_range)
+    func = partial(get_arrival_range, data=constraint_data)
     arrival_ranges = func(durations[:-1])
 
     # For each node in the solution obtained by Dijkstra's, we expect the
@@ -62,21 +86,32 @@ def test_nonlinear_constraint(planner_result):
                             desired=np.zeros_like(arrival_ranges))
 
 
-def test_cost_fcn_gradient(planner_result):
+def test_cost_fcn_gradient(planner_result, eval_point):
     """
     Validates the analytically derived cost function gradient against a
     (forward) finite-difference approximation of the gradient.
     """
-    # Get the durations to use as the evaluation point
-    durations = [node.duration for node in planner_result.route]
-
-    residual = optimize.check_grad(cost_fcn, cost_fcn_grad, durations)
-    np.testing.assert_equal(residual, np.zeros_like(residual))
+    residual = optimize.check_grad(cost_fcn, cost_fcn_grad, eval_point)
+    np.testing.assert_equal(actual=residual, desired=np.zeros_like(residual))
 
 
-def test_constraint_fcn_grad(planner_result):
+def test_ineq_constraint_fcn_grad(planner_result, constraint_data, eval_point):
     """
-    Validates the analytically derived constraint function gradient against a
-    (forward) finite-difference approximation of the gradient.
+    Validates the analytically derived inequality constraint function gradient
+    against a (forward) finite-difference approximation of the gradient.
     """
-    pass
+    residual = optimize.check_grad(
+        ineq_constraint, ineq_constraint_grad, eval_point, constraint_data)
+    np.testing.assert_equal(actual=residual, desired=np.zeros_like(residual))
+
+
+def test_eq_constraint_fcn_grad(planner_result, constraint_data, eval_point):
+    """
+    Validates the analytically derived equality constraint function gradient
+    against a (forward) finite-difference approximation of the gradient.
+    """
+    residual = optimize.check_grad(
+        eq_constraint, eq_constraint_grad, eval_point, constraint_data)
+    np.testing.assert_equal(actual=residual, desired=np.zeros_like(residual))
+
+

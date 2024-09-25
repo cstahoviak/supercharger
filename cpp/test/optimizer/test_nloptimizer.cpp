@@ -48,8 +48,8 @@ class NLOptimizerTestFixture : public testing::Test
 
       // Define the initial guess, i.e. the charging duration at all nodes not
       // including the first and last nodes.
-      for (auto iter = planner_result.route.cbegin() + 1;
-          iter != planner_result.route.cend() - 1; ++iter) {
+      for ( auto iter = planner_result.route.cbegin() + 1;
+          iter != planner_result.route.cend() - 1; ++iter ) {
         x0.push_back(iter->duration);
       }
     }
