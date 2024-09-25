@@ -116,6 +116,33 @@ TODO: Add profiling for each algorithm.
 | Dijkstra's + _Naive_ Optimizer      | 17.0697  | -       | 1.0630     | -11:00      | 
 | Dijkstra's + Nonlinear Optimization | 16.8438  | -       | 2.3723     | -24:33      |
 
-The following figure illustrates how the nonlinear optimization scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
+The following figure illustrates how the constrained nonlinear optimization 
+scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
 
 ![charging durations](/figs/charging_durations.png "Charging Durations")
+
+
+### Constrained Nonlinear Optimization with SciPy `minimize`
+Adding python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limiations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
+
+| Optimization Algorithm                    | Name         | Bounds | Constriants | Gradient | Hessian     |
+|:------------------------------------------|:-------------|:------:|:-----------:|:--------:|:-----------:|
+| Nelder-Mead                               | Nelder-Mead  | ❌     | ❌          | unused   |             |
+| Powell                                    | Powell       | ✅     | ❌          | unused   |             |
+| Conjugate Gradient                        | CG           | ❌     | ❌          |          |             |
+| Broyden–Fletcher–Goldfarb–Shanno          | BFGS         | ❌     | ❌          |          |             |
+| Newton Conjugate Gradient                 | Newton-CG    | ❌     | ❌          | required |             |
+| Limited-memory BFGS with Bounds           | L-BFGS-B     | ✅     | ❌          |          |             |
+| Truncated Newton                          | TNC          | ✅     | ❌          |          |             |
+| Constr. Optimization by Linear Approx.    | COBYLA       | ✅     | ❌ (eq)     | unused   |             |
+| Constr. Optimization by Quadratic Approx. | COBYQA       | ✅     | ✅          | unused   |             |
+| Sequential Least Squares Programming      | SLSQP        | ✅     | ✅          | ✅       |             |
+| Trust-Region Constrianed                  | trust-constr | ✅     | ✅          | ✅       | recommended |
+| Dog-leg Trust-Region                      | dogleg       | ❌     | ❌          | required | required    |
+| Newton Conjugate Gradient Trust-Region    | trust-ncg    | ❌     | ❌          | required | required    |
+| Kyrlov "Nearly-Exact" Trust-Region        | trust-krylov | ❌     | ❌          | required | required    |
+| "Nearly-Exact" Trust-Region               | trust-exact  | ❌     | ❌          | required | required    |
+
+A ✅ in the "Gradient" column indicates that a user-supplied gradient function is supported, but not required.
+
+Based on the information in the table, there are only three optimization algorithms suitable for __bound-constrianed optimization__: `COBYQA`, `SLSQP` and the Trust-Region Constrained (`trust-constr`) algorithms.
