@@ -110,7 +110,6 @@ namespace supercharger
   PlannerResult RoutePlanner::OptimizeRoute(const PlannerResult& result) const
   {
     if ( optimizer_ ) {
-      INFO("Optimizing route.");
       return optimizer_->Optimize(result);
     }
 

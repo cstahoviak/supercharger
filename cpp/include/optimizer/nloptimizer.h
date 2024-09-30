@@ -12,6 +12,8 @@
 
 #include "optimizer/optimizer.h"
 
+#include "nlopt.hpp"
+
 namespace supercharger
 {
   class NLOptimizer : public Optimizer
@@ -27,6 +29,13 @@ namespace supercharger
 
       static ConstraintData CreateConstraintData(const PlannerResult&);
       PlannerResult Optimize(const PlannerResult&) const override;
+
+    private:
+      PlannerResult CreateOptimizedResult_(
+        const PlannerResult&, const std::vector<double>&) const;
+
+      // SLSQP performs local, gradient-based constrained optimization.
+      nlopt::algorithm algorithm_ = nlopt::LD_SLSQP;
   };
 
   double cost_fcn(

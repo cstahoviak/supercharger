@@ -107,15 +107,9 @@ namespace supercharger
       [](auto& value){return -1 * value;});
     std::copy(arrival_ranges.begin(), arrival_ranges.end() - 1, result);
 
-    size_t sz = m * n;
-    double gradient[sz];
-    double* grad_ptr = gradient; 
-
     // Assign the mxn gradient values.
     for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
       for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
-        grad_ptr[idx_m * n + idx_n] = 
-          (idx_n <= idx_m) ? -data_ptr->rates[idx_n] : 0.0;
         if ( grad ) {
           grad[idx_m * n + idx_n] = 
             (idx_n <= idx_m) ? -data_ptr->rates[idx_n] : 0.0;
@@ -172,16 +166,9 @@ namespace supercharger
     }
     std::copy(f.begin(), f.end(), result);
 
-    size_t sz = m * n;
-    double gradient[sz];
-    double* grad_ptr = gradient; 
-
     // Assign the mxn gradient values.
     for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
       for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
-        grad_ptr[idx_m * n + idx_n] = 
-          (idx_n <= idx_m) ? data_ptr->rates[idx_n] : 0.0;
-
         if ( grad ) {
           grad[idx_m * n + idx_n] = 
             (idx_n <= idx_m) ? data_ptr->rates[idx_n] : 0.0;
@@ -283,7 +270,7 @@ namespace supercharger
   {
     // Define the optimization algorithm and dimensionality.
     size_t dim = result.route.size() - 2;
-    nlopt::opt opt(nlopt::LD_SLSQP, dim);
+    nlopt::opt opt(algorithm_, dim);
 
     // Define the optimization constraint data.
     ConstraintData constr_data = NLOptimizer::CreateConstraintData(result);
@@ -321,7 +308,7 @@ namespace supercharger
     // Set the initial guess, i.e. the charging duration at all nodes not
     // including the first and last nodes.
     std::vector<double> x;
-    for (auto iter = result.route.cbegin() + 1; iter != result.route.cend() - 1; ++iter)
+    for ( auto iter = result.route.cbegin() + 1; iter != result.route.cend() - 1; ++iter )
     {
       x.push_back(iter->duration);
     }
@@ -337,6 +324,44 @@ namespace supercharger
       INFO("nlopt failed: " << e.what());
     }
 
-    return result;
+    return CreateOptimizedResult_(result, x);
+  }
+
+  PlannerResult NLOptimizer::CreateOptimizedResult_(
+    const PlannerResult& result, const std::vector<double>& new_durations) const
+  {
+    // Create the new result as a copy of the original.
+    PlannerResult optimized = result;
+
+    // Update the charging duration for all nodes between the start and end.
+    for ( size_t idx = 0; idx < new_durations.size(); idx++ ) {
+      optimized.route[idx + 1].duration = new_durations[idx];
+    }
+
+    // Update the arrival and departure ranges and the cost at each node.
+    for ( auto iter = optimized.route.begin() + 1; iter != optimized.route.end(); ++iter )
+    {
+      const Node& previous = *(iter - 1);
+      Node& current = *iter;
+
+      // Update the arrival range at the current node
+      current.arrival_range = previous.arrival_range + \
+                            previous.duration * previous.charger().rate - \
+                            distance(previous, current);
+
+      // Update the cost at the current node
+      current.cost = previous.cost + previous.duration + \
+                  distance(previous, current) / result.speed;
+
+      // For all nodes but the final node, update the departure range
+      if ( iter != optimized.route.end() - 1 ) {
+        current.departure_range = current.arrival_range + \
+          current.duration * current.charger().rate;
+      }
+    }
+
+    // Finally, update the total cost of the route
+    optimized.cost = optimized.route.back().cost;
+    return optimized;
   }
 }

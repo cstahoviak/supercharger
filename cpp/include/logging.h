@@ -19,5 +19,5 @@
 #else
   #define INFO(msg) std::cout << "[INFO]\t" << msg << std::endl
   #define DEBUG(msg)
-  #define WANRING(msg)
+  #define WARN(msg)
 #endif
