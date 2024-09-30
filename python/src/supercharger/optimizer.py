@@ -94,9 +94,21 @@ def ineq_constraint(x: Sequence[float], constr_data: ConstraintData) -> \
 def ineq_constraint_grad(x: Sequence[float], constr_data: ConstraintData) -> \
         np.ndarray:
     """
-    The inequality constraint function gradient.
+    The inequality constraint function gradient, an mxn matrix where n is the
+    dimension of the vector x (and the number of nodes whose charging durations
+    are being optimized), and m = n-1 (the number of nodes that the inequality
+    constraint applies to).
     """
     m = len(x) - 1
+
+    # Validation of C++-style lower-triangular matrix generation
+    # n = len(x)
+    # grad = np.zeros(m * n)
+    # for idx_m in range(m):
+    #     for idx_n in range(n):
+    #         if idx_n <= idx_m:
+    #             grad[idx_m * n + idx_n] = constr_data.rates[idx_n]
+
     return np.tril(np.tile(constr_data.rates, (m, 1)))
 
 
@@ -112,7 +124,9 @@ def eq_constraint(x: Sequence[float], constr_data: ConstraintData) -> \
 def eq_constraint_grad(x: Sequence[float], constr_data: ConstraintData) -> \
         np.ndarray:
     """
-    The equality constraint function gradient.
+    The equality constraint function gradient, an nx1 vector where n is the
+    dimension of the vector x (and the number of nodes whose charging durations
+    are being optimized).
     """
     return constr_data.rates
 

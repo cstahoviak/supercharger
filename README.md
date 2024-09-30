@@ -125,7 +125,9 @@ scheme maximizes the charging time at nodes with relatively high charging rates,
 ### Constrained Nonlinear Optimization with SciPy `minimize`
 Adding python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limiations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
 
-| Optimization Algorithm                    | Name         | Bounds | Constriants | Gradient | Hessian     |
+Based on the information in the table, there are only three optimization algorithms suitable for __constrained optimization__: `COBYQA`, `SLSQP` and the Trust-Region Constrained (`trust-constr`) method.
+
+| Optimization Algorithm                    | Name         | Bounds | Constraints | Gradient | Hessian     |
 |:------------------------------------------|:-------------|:------:|:-----------:|:--------:|:-----------:|
 | Nelder-Mead                               | Nelder-Mead  | ❌     | ❌          | unused   |             |
 | Powell                                    | Powell       | ✅     | ❌          | unused   |             |
@@ -134,15 +136,15 @@ Adding python bindings to the project via the `pybind11` package has enabled exp
 | Newton Conjugate Gradient                 | Newton-CG    | ❌     | ❌          | required |             |
 | Limited-memory BFGS with Bounds           | L-BFGS-B     | ✅     | ❌          |          |             |
 | Truncated Newton                          | TNC          | ✅     | ❌          |          |             |
-| Constr. Optimization by Linear Approx.    | COBYLA       | ✅     | ❌ (eq)     | unused   |             |
-| Constr. Optimization by Quadratic Approx. | COBYQA       | ✅     | ✅          | unused   |             |
+| Constr. Optimization BY Linear Approx.    | COBYLA       | ✅     | ✅*         | unused   |             |
+| Constr. Optimization BY Quadratic Approx. | COBYQA       | ✅     | ✅          | unused   |             |
 | Sequential Least Squares Programming      | SLSQP        | ✅     | ✅          | ✅       |             |
-| Trust-Region Constrianed                  | trust-constr | ✅     | ✅          | ✅       | recommended |
+| Trust-Region Constrained                  | trust-constr | ✅     | ✅          | ✅       | recommended |
 | Dog-leg Trust-Region                      | dogleg       | ❌     | ❌          | required | required    |
 | Newton Conjugate Gradient Trust-Region    | trust-ncg    | ❌     | ❌          | required | required    |
 | Kyrlov "Nearly-Exact" Trust-Region        | trust-krylov | ❌     | ❌          | required | required    |
 | "Nearly-Exact" Trust-Region               | trust-exact  | ❌     | ❌          | required | required    |
 
-A ✅ in the "Gradient" column indicates that a user-supplied gradient function is supported, but not required.
+*The `COBYLA` method only supports inequality constraints (equality constraints are not supported). 
 
-Based on the information in the table, there are only three optimization algorithms suitable for __bound-constrianed optimization__: `COBYQA`, `SLSQP` and the Trust-Region Constrained (`trust-constr`) algorithms.
+A ✅ in the "Gradient" column indicates that a user-supplied gradient function is supported, but not required.

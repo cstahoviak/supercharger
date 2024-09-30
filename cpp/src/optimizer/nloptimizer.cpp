@@ -39,6 +39,10 @@ namespace supercharger
   double cost_fcn(
     const std::vector<double>& x, std::vector<double>& grad, void* data)
   {
+    // Assign the nx1 gradient vector.
+    grad.assign(x.size(), 1.0);
+
+    // Retuturn the cost - the sum of the charging durations.
     return std::reduce(x.begin(), x.end());
   }
 
@@ -77,7 +81,9 @@ namespace supercharger
    * @param result The constraint vector.
    * @param n The dimension of the parameter space.
    * @param x The 
-   * @param grad 
+   * @param grad A pointer to the gradient. The gradient is an array of length
+   *  mxn. The n dimension of grad is stored contiguously, so that ∂c_i/∂x_j
+   *  is stored in grad[i*n + j].
    * @param data 
    */
   void ineq_constraint_lhs(
@@ -100,6 +106,26 @@ namespace supercharger
       arrival_ranges.begin(), arrival_ranges.end(), arrival_ranges.begin(), 
       [](auto& value){return -1 * value;});
     std::copy(arrival_ranges.begin(), arrival_ranges.end() - 1, result);
+
+    size_t sz = m * n;
+    double gradient[sz];
+    double* grad_ptr = gradient; 
+
+    // Assign the mxn gradient values.
+    for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
+      for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
+        grad_ptr[idx_m * n + idx_n] = 
+          (idx_n <= idx_m) ? -data_ptr->rates[idx_n] : 0.0;
+        if ( grad ) {
+          grad[idx_m * n + idx_n] = 
+            (idx_n <= idx_m) ? -data_ptr->rates[idx_n] : 0.0;
+        }
+        else {
+          WARN("LHS inequality constraint gradient pointer is NULL.");
+        }
+      }
+    }
+
     return;
   }
 
@@ -145,6 +171,27 @@ namespace supercharger
         (data_ptr->max_range - data_ptr->distances[idx]);
     }
     std::copy(f.begin(), f.end(), result);
+
+    size_t sz = m * n;
+    double gradient[sz];
+    double* grad_ptr = gradient; 
+
+    // Assign the mxn gradient values.
+    for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
+      for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
+        grad_ptr[idx_m * n + idx_n] = 
+          (idx_n <= idx_m) ? data_ptr->rates[idx_n] : 0.0;
+
+        if ( grad ) {
+          grad[idx_m * n + idx_n] = 
+            (idx_n <= idx_m) ? data_ptr->rates[idx_n] : 0.0;
+        }
+        else {
+          WARN("RHS inequality constraint gradient pointer is NULL.");
+        }
+      }
+    }
+
     return;
   }
 
@@ -203,6 +250,9 @@ namespace supercharger
     ConstraintData* data_ptr = reinterpret_cast<ConstraintData*>(data);
     std::vector<double> arrival_ranges = get_arrival_ranges(x, data_ptr);
 
+    // TODO: Assign the nx1 gradient values.
+    grad.assign(data_ptr->rates.cbegin(), data_ptr->rates.cend());
+
     // Return the arrival range at the final node.
     return arrival_ranges.back();
   }
@@ -233,11 +283,7 @@ namespace supercharger
   {
     // Define the optimization algorithm and dimensionality.
     size_t dim = result.route.size() - 2;
-    nlopt::opt opt(nlopt::LN_AUGLAG, dim);
-
-    nlopt::opt local_opt(nlopt::LN_COBYLA, dim);
-    // local_opt.set_stopval();
-    opt.set_local_optimizer(local_opt);
+    nlopt::opt opt(nlopt::LD_SLSQP, dim);
 
     // Define the optimization constraint data.
     ConstraintData constr_data = NLOptimizer::CreateConstraintData(result);
