@@ -94,7 +94,14 @@ TEST_F(NLOptimizerTestFixture, TestCostFcn)
 TEST_F(NLOptimizerTestFixture, TestEqConstraint)
 {
   std::vector<double> grad;
+
+  // Validate the scalar value returned by the equality constraint.
   EXPECT_DOUBLE_EQ(eq_constraint(x0, grad, &constr_data), 0.0);
+
+  // Validate that the gradient is being set correctly.
+  for ( size_t idx = 0; idx < x0.size(); idx++ ) {
+    EXPECT_DOUBLE_EQ(grad.at(idx), constr_data.rates.at(idx));
+  }
 }
 
 TEST_F(NLOptimizerTestFixture, TestIneqConstraintLHS)
@@ -116,6 +123,8 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintLHS)
   for ( size_t idx = 0; idx < m; idx++ ) {
     EXPECT_DOUBLE_EQ(result[idx], 0.0);
   }
+
+  // TODO: Validate that the gradient is being set correctly.
 
   // Clean up
   delete[] x, grad, result;
@@ -147,6 +156,8 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintRHS)
     double val = result[idx];
     EXPECT_DOUBLE_EQ(result[idx], expected[idx]);
   }
+
+  // TODO: Validate that the gradient is being set correctly.
 
   // Clean up
   delete[] x, grad, result;
