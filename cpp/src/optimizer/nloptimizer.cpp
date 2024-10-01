@@ -104,20 +104,19 @@ namespace supercharger
     // Evaluate the inequality constraint function, f (f <= 0)
     std::transform(
       arrival_ranges.begin(), arrival_ranges.end(), arrival_ranges.begin(), 
-      [](auto& value){return -1 * value;});
+      [](auto& value){ return -1 * value; });
     std::copy(arrival_ranges.begin(), arrival_ranges.end() - 1, result);
 
     // Assign the mxn gradient values.
-    for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
-      for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
-        if ( grad ) {
+    if ( grad ) {
+      for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
+        for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
           grad[idx_m * n + idx_n] = 
             (idx_n <= idx_m) ? -data_ptr->rates[idx_n] : 0.0;
         }
-        else {
-          WARN("LHS inequality constraint gradient pointer is NULL.");
-        }
       }
+    } else {
+      WARN("LHS inequality constraint gradient pointer is NULL.");
     }
 
     return;
@@ -167,16 +166,15 @@ namespace supercharger
     std::copy(f.begin(), f.end(), result);
 
     // Assign the mxn gradient values.
-    for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
-      for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
-        if ( grad ) {
+    if ( grad ) {
+      for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
+        for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
           grad[idx_m * n + idx_n] = 
             (idx_n <= idx_m) ? data_ptr->rates[idx_n] : 0.0;
         }
-        else {
-          WARN("RHS inequality constraint gradient pointer is NULL.");
-        }
       }
+    } else {
+      WARN("LHS inequality constraint gradient pointer is NULL.");
     }
 
     return;

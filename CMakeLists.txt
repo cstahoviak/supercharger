@@ -61,7 +61,9 @@ if( DEBUG_INFO )
 endif()
 
 # Add NLOpt
-# TODO: Haven't gotten it to work with FetchContent yet.
+# TODO: Adding NLOpt like this creates an error with "#include <array>". I'm not
+# sure why this is happening, so I'll have to build install NLOpt from source
+# instead.
 # include(FetchContent)
 # FetchContent_Declare(
 #   NLopt

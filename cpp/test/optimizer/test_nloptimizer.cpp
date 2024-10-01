@@ -29,7 +29,7 @@ class NLOptimizerTestFixture : public testing::Test
       const std::string goal_charger_name = "Cadillac_MI";
 
       // Create the Route Planner
-      RoutePlanner planner(AlgoType::DIJKSTRAS, OptimizerType::NLOPT);
+      RoutePlanner planner(AlgoType::DIJKSTRAS);
 
       // Set the vehicle's speed and max range
       planner.max_range() = 320;
