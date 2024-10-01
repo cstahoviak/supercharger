@@ -14,7 +14,7 @@
 
 namespace supercharger
 {
-  void Node::reset() {
+  void Node::Reset() {
     duration = 0.0;
     arrival_range = 0.0;
     departure_range = 0.0;

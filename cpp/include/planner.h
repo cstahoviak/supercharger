@@ -49,7 +49,7 @@ namespace supercharger
 
       PlannerResult PlanRoute(const std::string&, const std::string&);
 
-      void SetPlanningAlgorithm(AlgoType algo_type, CostFcnType cost_type);
+      void SetPlanningAlgorithm(AlgoType, CostFcnType);
       void SetPlanningAlgorithm(AlgoType algo_type) {
         SetPlanningAlgorithm(algo_type, CostFcnType::NONE);
       }

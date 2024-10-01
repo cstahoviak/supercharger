@@ -26,11 +26,24 @@ void initRoutePlanner(py::module_& m)
   //   py::overload_cast<std::ostream&, const std::vector<Node*>&>(&operator<<));
 
   py::class_<RoutePlanner>(m, "RoutePlanner")
-    .def(py::init<AlgoType, CostFcnType>(), py::arg("algo_type"), py::arg("cost_type"))
-    // Since cost_type is a default argument, we need to define a seperate 
-    // constructor that leaves out the CostFcnType parameter.
+    .def(py::init<AlgoType, CostFcnType, OptimizerType>(),
+      py::arg("algo_type"), py::arg("cost_type"), py::arg("optim_type"))
+    .def(py::init<AlgoType, OptimizerType>(),
+      py::arg("algo_type"), py::arg("optim_type"))
+    .def(py::init<AlgoType, CostFcnType>(),
+      py::arg("algo_type"), py::arg("cost_type"))
     .def(py::init<AlgoType>(), py::arg("algo_type"))
-    .def("plan_route", &RoutePlanner::PlanRoute, py::arg("origin"), py::arg("destination"))
+
+    .def("plan_route", &RoutePlanner::PlanRoute,
+      py::arg("origin"), py::arg("destination"))
+    .def("set_planning_algorithm",
+      py::overload_cast<AlgoType, CostFcnType>(&RoutePlanner::SetPlanningAlgorithm),
+      py::arg("algo_type"), py::arg("cost_type"))
+    .def("set_planning_algorithm",
+      py::overload_cast<AlgoType>(&RoutePlanner::SetPlanningAlgorithm),
+      py::arg("algo_type"))
+    .def("set_optimizer", &RoutePlanner::SetOptimizer, py::arg("type"))
+
     .def_property_readonly("network", &RoutePlanner::network)
     .def_property_readonly("destination", &RoutePlanner::destination)
     // Require a lambda to deal with getters and setters of the same name.

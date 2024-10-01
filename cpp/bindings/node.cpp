@@ -22,6 +22,7 @@ void initNode(py::module_& m)
 {
   py::class_<Node, std::shared_ptr<Node>>(m, "Node")
     .def(py::init<Charger>(), py::arg("charger"))
+    .def("reset", &Node::Reset)
     .def_property_readonly("charger", &Node::charger)
     .def_readwrite("duration", &Node::duration)
     .def_readwrite("arrival_range", &Node::arrival_range)

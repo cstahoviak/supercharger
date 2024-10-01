@@ -69,7 +69,7 @@ namespace supercharger
    */
   void PlanningAlgorithm::Reset() {
     for ( auto [name, node] : nodes_ ) {
-      node.get()->reset();
+      node.get()->Reset();
     }
   }
 
