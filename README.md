@@ -1,13 +1,24 @@
 # Tesla Coding Challenge
 
+## Overview
+This repository implements a solution to the Tesla Supercharger coding challenge (described in more detail in the [Problem Statement](#problem-statement) section). The following is an overview of the solution method and supported features:
+
+- The route planning problem is solved as a two-step process:
+  - First, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. The Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the arrival range at each charger will be zero.
+  - Next, the solution is refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
+- Additionally, the `pysupercharger` module is provided to support python development.
+  - The python bindings are written using the [`pybind11`](https://pybind11.readthedocs.io/en/stable/) library.
+  - Both the `PlanningAlgorithm` and `Optimizer` classes are extensible on the python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimizer` module) inherits from the bound `Optimizer` class.
+  - This workflow enabled rapid prototyping of the constrained optimization improvement by allowing me to experiment with Scipy `minimize` before implementing the optimization solution in C++ via NLOpt.
+- The full set of results is described in detail in the [Results](#results) section.
+
+
 ## Future Work
 
-1. (__DONE__) Add [Dijkstra's algorithm](https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/) for route planning.
-2. Add [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
-3. (__DONE__) Create python bindings ([`pybind11`](https://pybind11.readthedocs.io/en/stable/)) for the `RoutePlanner` class.
-4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
-5. Add benchmarking to `PlanningAlgorithm::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c).
-6. Design an optimization problem to further refine the solution provided by Dijkstra's and/or A*.
+1. Imporove the Dijkstra's cost function via NLOpt.
+2. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
+3. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
+4. Add benchmarking to `PlanningAlgorithm::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c). 
 
 ## Problem Statement
 Your objective is to construct a search algorithm to find the minimum time path through the tesla network of supercharging stations. Each supercharger will refuel the vehicle at a different rate given in km/hr of charge time. Your route does not have to fully charge at every visited charger, so long as it never runs out of charge between two chargers. You should expect to need __no more than 4-6 hours__ to solve this problem. We suggest implementing a quick brute force method before attempting to find an optimal routine.
@@ -45,7 +56,7 @@ might return:
 	
 You can check the solution by providing your output to the included checker, for example
 ```
-./checker_osx “Council_Bluffs_IA, Worthington_MN, 1.18646, Albert_Lea_MN, 1.90293, Onalaska_WI, 0.69868, Mauston_WI, 1.34287, Sheboygan_WI, 1.69072, Cadillac_MI”
+./checker_linux “Council_Bluffs_IA, Worthington_MN, 1.18646, Albert_Lea_MN, 1.90293, Onalaska_WI, 0.69868, Mauston_WI, 1.34287, Sheboygan_WI, 1.69072, Cadillac_MI”
 ```
 
 will return 
@@ -115,6 +126,13 @@ Run the `supercharger` application by passing any two valid Supercharger locatio
 ./supercharger Council_Bluffs_IA Cadillac_MI
 ```
 
+### Tests
+The unit tests can be run via
+
+```
+./cpp/test/test_supercharger 
+```
+
 ### Results
 So far, the following results have been obtained. The _reference result_ provided by the `checker_linux` application is included for comparison. The last two columns indicate the percent improvement over the reference result, and the time saved compared to the reference result.
 
@@ -129,7 +147,7 @@ TODO: Add profiling for each algorithm.
 | Dijkstra's + _Naive_ Optimizer       | 17.0697  | -       | 1.0630     | -11:00      | 
 | Dijkstra's + Nonlinear Optimization* | 16.8438  | -       | 2.3723     | -24:33      |
 
-*constrained nonlinear optimization performed using the [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
+*constrained nonlinear optimization performed via NLopt's [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
 
 The following figure illustrates how the constrained nonlinear optimization 
 scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
@@ -138,7 +156,7 @@ scheme maximizes the charging time at nodes with relatively high charging rates,
 
 
 ### Constrained Nonlinear Optimization with SciPy `minimize`
-Adding python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limiations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
+Adding python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limitations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
 
 Based on the information in the table, there are only three optimization algorithms suitable for __constrained optimization__: `COBYQA`, `SLSQP` and the Trust-Region Constrained (`trust-constr`) method.
 
