@@ -102,7 +102,7 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintLHS)
   // Define the arguments
   unsigned m = n - 1;
   double* x = new double[n];
-  double* grad = new double[n];
+  double* grad = new double[m * n];
   double* result = new double[n];
 
   // Create the initial guess
@@ -118,7 +118,7 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintLHS)
   }
 
   // Clean up
-  delete x, grad, result;
+  delete[] x, grad, result;
 }
 
 TEST_F(NLOptimizerTestFixture, TestIneqConstraintRHS)
@@ -126,7 +126,7 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintRHS)
   // Define the arguments
   unsigned m = n - 1;
   double* x = new double[n];
-  double* grad = new double[n];
+  double* grad = new double[m * n];
   double* result = new double[n];
 
   // Create the initial guess
@@ -149,5 +149,5 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintRHS)
   }
 
   // Clean up
-  delete x, grad, result;
+  delete[] x, grad, result;
 }
