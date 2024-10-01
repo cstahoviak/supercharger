@@ -67,7 +67,7 @@ namespace supercharger
       Charger origin_;
       Charger destination_;
 
-      // Store some hard-coded constants.
+      // Store some vehicle-related constants.
       double max_range_{0};   // [km]
       double speed_{0};       // [km/hr]
 

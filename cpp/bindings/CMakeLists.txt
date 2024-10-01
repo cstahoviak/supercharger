@@ -22,7 +22,10 @@ target_include_directories(${TARGET} PRIVATE
   "${PROJECT_SOURCE_DIR}/cpp/include"
 )
 
-target_link_libraries(${TARGET} PRIVATE superchargerlib)
+target_link_libraries(${TARGET} PRIVATE
+  superchargerlib
+  nlopt
+)
 
 # Install the bindings to the python directory
 set(OUTPUT_PATH "${PROJECT_SOURCE_DIR}/python/src/supercharger")

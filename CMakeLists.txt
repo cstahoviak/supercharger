@@ -58,8 +58,6 @@ set_property(TARGET superchargerlib PROPERTY POSITION_INDEPENDENT_CODE ON)  #-fP
 # Create the supercharger app (add project executable)
 add_executable(${PROJECT_NAME} "cpp/app/supercharger.cpp")
 
-# target_include_directories(${PROJECT_NAME} PUBLIC "cpp/include")
-
 # Add NLOpt
 # TODO: Haven't gotten it to work with FetchContent yet.
 # include(FetchContent)
@@ -97,4 +95,5 @@ enable_testing()
 add_subdirectory(cpp/test)
 
 # Add the python bindings
+message(STATUS "Building the python bindings.")
 add_subdirectory(cpp/bindings)
