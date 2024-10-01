@@ -31,7 +31,6 @@ void initRoutePlanner(py::module_& m)
     // constructor that leaves out the CostFcnType parameter.
     .def(py::init<AlgoType>(), py::arg("algo_type"))
     .def("plan_route", &RoutePlanner::PlanRoute, py::arg("origin"), py::arg("destination"))
-    .def("optimize_route", &RoutePlanner::OptimizeRoute, py::arg("result"))
     .def_property_readonly("network", &RoutePlanner::network)
     .def_property_readonly("destination", &RoutePlanner::destination)
     // Require a lambda to deal with getters and setters of the same name.

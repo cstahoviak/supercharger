@@ -48,7 +48,12 @@ namespace supercharger
       // TODO: Add ctor that also takes max range and speed.
 
       PlannerResult PlanRoute(const std::string&, const std::string&);
-      PlannerResult OptimizeRoute(const PlannerResult&) const;
+
+      void SetPlanningAlgorithm(AlgoType algo_type, CostFcnType cost_type);
+      void SetPlanningAlgorithm(AlgoType algo_type) {
+        SetPlanningAlgorithm(algo_type, CostFcnType::NONE);
+      }
+      void SetOptimizer(OptimizerType);
 
       // Getters
       const std::unordered_map<std::string, const Charger*>& network() const

@@ -318,7 +318,7 @@ namespace supercharger
     try {
       DEBUG("Optimizing via NLOpt.");
       nlopt::result new_durations = opt.optimize(x, minf);
-      INFO("Found minimum at f(x) = " << std::setprecision(10) << minf);
+      DEBUG("NLOpt found minimum at f(x) = " << std::setprecision(10) << minf);
     }
     catch( std::exception &e ) {
       INFO("nlopt failed: " << e.what());

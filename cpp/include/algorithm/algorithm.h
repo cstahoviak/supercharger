@@ -66,6 +66,8 @@ namespace supercharger
       
       virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
       virtual double ComputeCost(const Node&, const Node&) const = 0;
+      
+      void Reset();
 
     protected:
       // Constructs the final route.

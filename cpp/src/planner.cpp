@@ -89,32 +89,40 @@ namespace supercharger
   PlannerResult RoutePlanner::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
-    // Initialize the route
+    // Initialize the route.
     Initialize_(origin, destination);
 
-    // Plan the route
-    DEBUG("Planning route between '" << origin << "' and '" << destination << 
-      "'.");
+    // Plan the route.
+    DEBUG("Planning route between '" << origin << "' and '" << destination 
+      << "'.");
     PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
-    if ( result.route.back().name() == destination_.name ) {
-      DEBUG("Solution found!");
+    if ( result.route.back().name() != destination_.name ) {
+      INFO("Search terminated. Solution not found.");
+      return {};
     }
-    else {
-      DEBUG("Search terminated. Solution not found.");
-    }
-    
-    return result;
+
+    DEBUG("Solution found!");
+    return ( optimizer_ ) ? optimizer_.get()->Optimize(result) : result;    
   }
 
-  PlannerResult RoutePlanner::OptimizeRoute(const PlannerResult& result) const
+  void RoutePlanner::SetPlanningAlgorithm(
+    AlgoType algo_type, CostFcnType cost_type)
   {
-    if ( optimizer_ ) {
-      return optimizer_->Optimize(result);
-    }
+    std::unique_ptr<PlanningAlgorithm> new_algo = 
+      PlanningAlgorithm::GetPlanningAlgorithm(
+        this, std::move(algo_type), std::move(cost_type));
+    planning_algo_.swap(new_algo);
+  }
 
-    INFO("No optimizer set. Unable to optimize route.");
-    return result;
+  void RoutePlanner::SetOptimizer(OptimizerType type) {
+    // Reset the planning algorithm.
+    planning_algo_.get()->Reset();
+
+    // Swap the optimizer.
+    std::unique_ptr<Optimizer> new_optimizer = 
+      Optimizer::GetOptimizer(type);
+    optimizer_.swap(new_optimizer);
   }
 
   void RoutePlanner::Initialize_(

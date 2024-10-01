@@ -14,6 +14,15 @@
 
 namespace supercharger
 {
+  void Node::reset() {
+    duration = 0.0;
+    arrival_range = 0.0;
+    departure_range = 0.0;
+    visited = false;
+    cost = std::numeric_limits<double>::max();
+    parent_.reset();
+  }
+
   std::ostream& operator<<(std::ostream& stream, const Node& node) {
     return stream << std::addressof(node);
   }

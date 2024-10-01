@@ -55,8 +55,10 @@ add_library(superchargerlib ${LIB_SOURCES} ${LIB_HEADERS})
 # to overloads of operator<<), but I don't really understand why?
 set_property(TARGET superchargerlib PROPERTY POSITION_INDEPENDENT_CODE ON)  #-fPIC
 
-# Create the supercharger app (add project executable)
-add_executable(${PROJECT_NAME} "cpp/app/supercharger.cpp")
+if( DEBUG_INFO )
+  # Add Debug info to our library
+  target_compile_definitions(superchargerlib PRIVATE DEBUG_INFO)
+endif()
 
 # Add NLOpt
 # TODO: Haven't gotten it to work with FetchContent yet.
@@ -67,17 +69,22 @@ add_executable(${PROJECT_NAME} "cpp/app/supercharger.cpp")
 # )
 # FetchContent_MakeAvailable(NLopt)
 
-# Link our library against the app
-target_link_libraries(${PROJECT_NAME}
-  superchargerlib
-  nlopt
-)
-
-if( DEBUG_INFO )
-  # Add Debug info to both library and app
-  target_compile_definitions(superchargerlib PRIVATE DEBUG_INFO)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG_INFO)
-endif()
+# Build all app executables
+file( GLOB APP_SOURCES cpp/app/*.cpp )
+foreach( testsourcefile ${APP_SOURCES} )
+    # Cut off the file extension and directory path
+    get_filename_component( testname ${testsourcefile} NAME_WE )
+    add_executable( ${testname} ${testsourcefile} )
+    # Linking
+    target_link_libraries( ${testname} 
+      superchargerlib
+      nlopt
+    )
+    # Add debug info for each target
+    if( DEBUG_INFO )
+        target_compile_definitions(${testname} PRIVATE DEBUG_INFO)
+    endif()
+endforeach( testsourcefile ${APP_SOURCES} )
 
 # Add googletest
 include(FetchContent)
