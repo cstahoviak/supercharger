@@ -85,13 +85,26 @@ The solution needs to be self-contained with just the use of STL algorithms
 
 ## Solution
 
+### Dependencies
+The `supercharger` applications depends on the [NLOpt](https://nlopt.readthedocs.io/en/latest/) libary. NLOpt must be built and installed locally before building the `supercharger` application.
+
+```
+git clone https://github.com/stevengj/nlopt.git
+cd nlopt
+mkdir build && cd build
+cmake ..
+make
+sudo make install
+```
+
 ### Building
 Build the `supercharger` application by following the standard CMake build process:
 
 ```
+git clone https://github.com/cstahoviak/supercharger.git
 cd supercharger
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
@@ -107,14 +120,16 @@ So far, the following results have been obtained. The _reference result_ provide
 
 TODO: Add profiling for each algorithm.
 
-| Algorithm                           | Cost     | Runtime | Pct Imprv. | Time Saved  |
-|:------------------------------------|:--------:|:-------:|:----------:|:-----------:|
-|                                     | [hrs]    | [msecs] | [%]        | [mins:secs] |
-| _Naive_ Route Planner               | 18.1017  | -       | -2.9185    | +50:55      |
-| Dijkstra's Algorithm                | 17.2548  | -       | -0.0096    | +00:06      |
-| _Reference_ Result                  | 17.2531  | -       | -          | -           |
-| Dijkstra's + _Naive_ Optimizer      | 17.0697  | -       | 1.0630     | -11:00      | 
-| Dijkstra's + Nonlinear Optimization | 16.8438  | -       | 2.3723     | -24:33      |
+| Algorithm                            | Cost     | Runtime | Pct Imprv. | Time Saved  |
+|:-------------------------------------|:--------:|:-------:|:----------:|:-----------:|
+|                                      | [hrs]    | [msecs] | [%]        | [mins:secs] |
+| _Naive_ Route Planner                | 18.1017  | -       | -2.9185    | +50:55      |
+| Dijkstra's Algorithm                 | 17.2548  | -       | -0.0096    | +00:06      |
+| _Reference_ Result                   | 17.2531  | -       | -          | -           |
+| Dijkstra's + _Naive_ Optimizer       | 17.0697  | -       | 1.0630     | -11:00      | 
+| Dijkstra's + Nonlinear Optimization* | 16.8438  | -       | 2.3723     | -24:33      |
+
+*constrained nonlinear optimization performed using the [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
 
 The following figure illustrates how the constrained nonlinear optimization 
 scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
