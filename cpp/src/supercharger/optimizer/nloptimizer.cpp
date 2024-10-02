@@ -12,15 +12,15 @@
  *  2. Completely switch to the C-style implementation.
  */
 
-#include "optimizer/nloptimizer.h"
-#include "logging.h"
+#include "supercharger/optimizer/nloptimizer.h"
+#include "supercharger/logging.h"
 
 #include "nlopt.hpp"
 
 #include <iomanip>
 #include <numeric>
 
-namespace supercharger
+namespace supercharger::optimizer
 {
   using ConstraintData = NLOptimizer::ConstraintData;
 
@@ -130,7 +130,7 @@ namespace supercharger
    * 
    * 0 <= arrival_range[n] <= MAX_RANGE - dist(n, n-1)
    * 
-   * where dist(n, n-1) is the distance between node n and the previous node.
+   * where dist(n, n-1) is the math::distance between node n and the previous node.
    * This right hand side of this constraint can be re-written as:
    * 
    * arrival_range[n] - (MAX_RANGE - dist(n, n-1)) <= 0
@@ -250,13 +250,13 @@ namespace supercharger
     {
       const Node& current = *iter;
       const Node& previous = *(iter - 1);
-      constr_data.distances.push_back(distance(previous, current));
+      constr_data.distances.push_back(math::distance(previous, current));
       constr_data.rates.push_back(current.charger().rate);
     }
     constr_data.init_arrival_range = result.route.at(1).arrival_range;
     constr_data.max_range = result.max_range;
 
-    // Remove values that do not affect the optimization, i.e. the distance 
+    // Remove values that do not affect the optimization, i.e. the math::distance 
     // between the first and second nodes, and final node's charging rate.
     constr_data.distances.erase(constr_data.distances.begin());
     constr_data.rates.pop_back();
@@ -345,11 +345,11 @@ namespace supercharger
       // Update the arrival range at the current node
       current.arrival_range = previous.arrival_range + \
                             previous.duration * previous.charger().rate - \
-                            distance(previous, current);
+                            math::distance(previous, current);
 
       // Update the cost at the current node
       current.cost = previous.cost + previous.duration + \
-                  distance(previous, current) / result.speed;
+                  math::distance(previous, current) / result.speed;
 
       // For all nodes but the final node, update the departure range
       if ( iter != optimized.route.end() - 1 ) {

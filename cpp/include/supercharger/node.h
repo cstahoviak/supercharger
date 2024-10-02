@@ -8,7 +8,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "network.h"
+#include "supercharger/network.h"
 
 #include <limits>
 #include <memory>

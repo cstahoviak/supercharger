@@ -8,14 +8,14 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/dijkstras.h"
-#include "logging.h"
-#include "planner.h"
+#include "supercharger/algorithm/dijkstras.h"
+#include "supercharger/logging.h"
+#include "supercharger/planner.h"
 
 #include <algorithm>
 #include <queue>
 
-namespace supercharger
+namespace supercharger::algorithm
 {
   PlannerResult Dijkstras::PlanRoute(
     const std::string& origin, const std::string& destination)
@@ -40,7 +40,7 @@ namespace supercharger
     unvisited.push(origin_node);
 
     while ( !unvisited.empty() ) {
-      // Get the next node (it has the smallest known distance from the origin)
+      // Get the next node (it has the smallest known math::distance from the origin)
       std::shared_ptr<Node> current_node = unvisited.top();
       unvisited.pop();
 
@@ -90,7 +90,7 @@ namespace supercharger
           // the charge duration is calculated properly when the neighbor node
           // is considered as the "current" node.
           neighbor->arrival_range = departure_range - 
-            distance(*current_node, *neighbor);
+            math::distance(*current_node, *neighbor);
 
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
@@ -102,7 +102,7 @@ namespace supercharger
     }
 
     // 7. Once the above loop exits, every reachable node will contain the
-    // shortest distance from itself to the start node.
+    // shortest math::distance from itself to the start node.
 
     // If we've gotten here, no path was found!
     INFO("No path found!");
@@ -127,7 +127,7 @@ namespace supercharger
   double Dijkstras::ComputeCost(const Node& current, const Node& neighbor) const
   {
     return current.cost + ComputeChargeTime_(current, neighbor) +
-      distance(current, neighbor) / route_planner_->speed();
+      math::distance(current, neighbor) / route_planner_->speed();
   }
 
   /**
@@ -143,14 +143,15 @@ namespace supercharger
    * @param current The current node (a const pointer to a const Node).
    * @return std::vector<Node*> A vector of neighbors as Node pointers.
    */
-  std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(const Node& current) {
+  std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(const Node& current)
+  {
     std::vector<std::shared_ptr<Node>> neighbors;
     double current_to_neighbor{0};
 
     // TODO: Iterate over nodes_ via 'const auto&' rather than 'auto&'. This
     // creates issues with push_back().
     for ( const auto& [name, node] : nodes_ ) {
-      current_to_neighbor = distance(current, *node);
+      current_to_neighbor = math::distance(current, *node);
       if ( current_to_neighbor <= route_planner_->max_range() && !node->visited )
       {
         neighbors.push_back(node);

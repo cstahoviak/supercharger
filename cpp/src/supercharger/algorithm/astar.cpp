@@ -8,9 +8,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/astar.h"
+#include "supercharger/algorithm/astar.h"
 
-namespace supercharger
+namespace supercharger::algorithm
 {
   PlannerResult AStar::PlanRoute(
     const std::string& origin, const std::string& destination)

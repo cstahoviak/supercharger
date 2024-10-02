@@ -9,9 +9,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/algorithm.h"
+#include "supercharger/algorithm/algorithm.h"
 
-namespace supercharger
+namespace supercharger::algorithm
 {
   /**
    * @brief My "naive" path planner.

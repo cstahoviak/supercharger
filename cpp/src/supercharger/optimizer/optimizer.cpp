@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "optimizer/naive.h"
-#include "optimizer/nloptimizer.h"
+#include "supercharger/optimizer/naive.h"
+#include "supercharger/optimizer/nloptimizer.h"
 
 
-namespace supercharger
+namespace supercharger::optimizer
 {
   // NOTE: Do NOT repeat the 'static' keyword at the cpp file level.
   std::unique_ptr<Optimizer> Optimizer::GetOptimizer(OptimizerType type)

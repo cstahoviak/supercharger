@@ -14,37 +14,37 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "DEBUG_INFO: ${DEBUG_INFO}")
 
 # NOTE: Need to use GLOB_RECURSE to grab files in subdiirectories
-# file(GLOB_RECURSE LIB_SOURCES cpp/src/*.cpp)
-# file(GLOB_RECURSE LIB_HEADERS cpp/include/*.h)
+# file(GLOB_RECURSE LIB_SOURCES cpp/src/supercharger/*.cpp)
+# file(GLOB_RECURSE LIB_HEADERS cpp/include/supercharger/*.h)
 
 include_directories("cpp/include")
 
 set(LIB_SOURCES
-  "cpp/src/algorithm/algorithm.cpp"
-  "cpp/src/algorithm/astar.cpp"
-  "cpp/src/algorithm/dijkstras.cpp"
-  "cpp/src/algorithm/naive.cpp"
-  "cpp/src/optimizer/naive.cpp"
-  "cpp/src/optimizer/nloptimizer.cpp"
-  "cpp/src/optimizer/optimizer.cpp"
-  "cpp/src/network.cpp"
-  "cpp/src/node.cpp"
-  "cpp/src/planner.cpp"
+  "cpp/src/supercharger/algorithm/algorithm.cpp"
+  "cpp/src/supercharger/algorithm/astar.cpp"
+  "cpp/src/supercharger/algorithm/dijkstras.cpp"
+  "cpp/src/supercharger/algorithm/naive.cpp"
+  "cpp/src/supercharger/optimizer/naive.cpp"
+  "cpp/src/supercharger/optimizer/nloptimizer.cpp"
+  "cpp/src/supercharger/optimizer/optimizer.cpp"
+  "cpp/src/supercharger/network.cpp"
+  "cpp/src/supercharger/node.cpp"
+  "cpp/src/supercharger/planner.cpp"
 )
 
 set(LIB_HEADERS
-  "cpp/include/algorithm/algorithm.h"
-  "cpp/include/algorithm/astar.h"
-  "cpp/include/algorithm/dijkstras.h"
-  "cpp/include/algorithm/naive.h"
-  "cpp/include/optimizer/naive.h"
-  "cpp/include/optimizer/nloptimizer.h"
-  "cpp/include/optimizer/optimizer.h"
-  "cpp/include/logging.h"
-  "cpp/include/math.h"
-  "cpp/include/network.h"
-  "cpp/include/node.h"
-  "cpp/include/planner.h"
+  "cpp/include/supercharger/algorithm/algorithm.h"
+  "cpp/include/supercharger/algorithm/astar.h"
+  "cpp/include/supercharger/algorithm/dijkstras.h"
+  "cpp/include/supercharger/algorithm/naive.h"
+  "cpp/include/supercharger/math/math.h"
+  "cpp/include/supercharger/optimizer/naive.h"
+  "cpp/include/supercharger/optimizer/nloptimizer.h"
+  "cpp/include/supercharger/optimizer/optimizer.h"
+  "cpp/include/supercharger/logging.h"
+  "cpp/include/supercharger/network.h"
+  "cpp/include/supercharger/node.h"
+  "cpp/include/supercharger/planner.h"
 )
 
 find_package(NLopt REQUIRED)

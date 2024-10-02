@@ -8,9 +8,11 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "math.h"
+#include "supercharger/math/math.h"
 
 #include <gtest/gtest.h>
+
+using namespace supercharger::math;
 
 TEST(TestMath, TestGreatCircleDistance) {
   // Define the lat/lon of the locations being tested
@@ -20,8 +22,8 @@ TEST(TestMath, TestGreatCircleDistance) {
   double oakdale_mn_lat = 44.964892;
   double oakdale_mn_lon = -92.961249;
 
-  // Compute the "great circle" distance
-  double dist = supercharger::great_circle_distance(
+  // Compute the "great circle" math::distance
+  double dist = great_circle_distance(
     worthington_mn_lat, worthington_mn_lon, oakdale_mn_lat, oakdale_mn_lon);
 
   // Expected result comes from evaluating the nested Matlab function call:
