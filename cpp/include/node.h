@@ -51,6 +51,8 @@ namespace supercharger
     std::weak_ptr<Node> parent() const { return parent_; }
     void parent(std::shared_ptr<Node> parent) { parent_ = std::move(parent); }
 
+    void Reset();
+
     private:
       // Store the charger associated with this node.
       Charger charger_;

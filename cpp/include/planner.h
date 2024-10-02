@@ -24,6 +24,7 @@ namespace supercharger
 {  
   using AlgoType = PlanningAlgorithm::AlgorithmType;
   using CostFcnType = PlanningAlgorithm::CostFunctionType;
+  using OptimizerType = Optimizer::OptimizerType;
 
   class RoutePlanner
   {
@@ -32,12 +33,27 @@ namespace supercharger
       // NOTE: Initially, both ctor args were rvalue references, but a more
       // common pattern is to consume by value and std::move in the initializer
       // list.
-      RoutePlanner(AlgoType, CostFcnType = CostFcnType::NONE);
+      RoutePlanner(AlgoType, CostFcnType, OptimizerType);
+
+      // The following ctors are known as "delegating" ctors.
+      RoutePlanner(AlgoType algo_type, CostFcnType cost_type) : 
+        RoutePlanner(algo_type, cost_type, OptimizerType::NONE) {};
+
+      RoutePlanner(AlgoType algo_type, OptimizerType optim_type) : 
+        RoutePlanner(algo_type, CostFcnType::NONE, optim_type) {};
+
+      RoutePlanner(AlgoType algo_type) : 
+        RoutePlanner(algo_type, CostFcnType::NONE, OptimizerType::NONE) {};
 
       // TODO: Add ctor that also takes max range and speed.
 
       PlannerResult PlanRoute(const std::string&, const std::string&);
-      PlannerResult OptimizeRoute(const PlannerResult&) const;
+
+      void SetPlanningAlgorithm(AlgoType, CostFcnType);
+      void SetPlanningAlgorithm(AlgoType algo_type) {
+        SetPlanningAlgorithm(algo_type, CostFcnType::NONE);
+      }
+      void SetOptimizer(OptimizerType);
 
       // Getters
       const std::unordered_map<std::string, const Charger*>& network() const
@@ -56,7 +72,7 @@ namespace supercharger
       Charger origin_;
       Charger destination_;
 
-      // Store some hard-coded constants.
+      // Store some vehicle-related constants.
       double max_range_{0};   // [km]
       double speed_{0};       // [km/hr]
 

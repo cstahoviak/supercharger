@@ -88,8 +88,9 @@ void initPlanningAlgorithm(py::module_& m)
     //   py::arg("rp"), py::arg("algo_type"), py::arg("cost_type"))
     .def("plan_route", &PlanningAlgorithm::PlanRoute, 
       py::arg("origin"), py::arg("destination"))
-    .def("ComputeCost", &PlanningAlgorithm::ComputeCost,
+    .def("compute_cost", &PlanningAlgorithm::ComputeCost,
       py::arg("current"), py::arg("candidate"))
+    .def("reset", &PlanningAlgorithm::Reset)
     // NOTE: Cannot bind protected or private members.
     // .def("_construct_final_route", 
     //   [](const PlanningAlgorithm& self, const Node* const final) {

@@ -3,11 +3,8 @@ A demonstration of the Python route optimizer.
 """
 from time import perf_counter
 
-from numpy.compat import basestring
-
 from supercharger.optimizer import NonlinearOptimizer
-from supercharger.utils.plotly import plot_charging_durations, plot_ranges, \
-    plot_charging_durations_stacked
+from supercharger.utils.plotly import plot_charging_durations, plot_ranges
 
 from supercharger.pysupercharger import (
     AlgorithmType,
@@ -37,7 +34,7 @@ if __name__ == "__main__":
     # Optimize the route
     optimizer = NonlinearOptimizer()
     start = perf_counter()
-    optimized = optimizer.optimize(result)
+    optimized = optimizer.optimize(result, method='SLSQP')
     stop = perf_counter()
     print(f"\nOptimization time: {(stop - start) * 1e3:.2f} ms")
     print(f"Optimized Final Route (Cost: {optimized.cost:.4f} hrs)")

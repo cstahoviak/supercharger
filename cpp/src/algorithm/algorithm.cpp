@@ -65,6 +65,15 @@ namespace supercharger
   }
 
   /**
+   * @brief Resets all nodes in the graph.
+   */
+  void PlanningAlgorithm::Reset() {
+    for ( auto [name, node] : nodes_ ) {
+      node.get()->Reset();
+    }
+  }
+
+  /**
    * @brief Computes the charge time at the current node required to make it to
    * the next node.
    * 

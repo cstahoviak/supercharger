@@ -9,6 +9,7 @@
  * 
  */
 #include "optimizer/naive.h"
+#include "optimizer/nloptimizer.h"
 
 #include <pybind11/pybind11.h>
 
@@ -34,7 +35,7 @@ namespace supercharger
       result          // Argument(s)
     );
   }
-} //end namespace supercharger
+} // end namespace supercharger
 
 namespace py = pybind11;
 using namespace supercharger;
@@ -54,6 +55,10 @@ void initOptimizer(py::module_& m)
   ;
 
   py::class_<NaiveOptimizer, Optimizer>(m, "NaiveOptimizer")
+    .def(py::init<>())
+  ;
+
+  py::class_<NLOptimizer, Optimizer>(m, "NLOptimizer")
     .def(py::init<>())
   ;
 }

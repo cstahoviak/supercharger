@@ -8,8 +8,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "optimizer/optimizer.h"
 #include "optimizer/naive.h"
+#include "optimizer/nloptimizer.h"
+
 
 namespace supercharger
 {
@@ -25,6 +26,9 @@ namespace supercharger
         // be initialized from a unique_ptr of the derived class: public
         // inheritance allows this, but protected inheritance does not. But why?
         return std::make_unique<NaiveOptimizer>();
+
+      case Optimizer::OptimizerType::NLOPT:
+        return std::make_unique<NLOptimizer>();
       
       default:
         return std::unique_ptr<Optimizer>(nullptr);
