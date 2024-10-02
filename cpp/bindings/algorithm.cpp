@@ -34,6 +34,7 @@ namespace supercharger::algorithm
       double ComputeCost(const Node&, const Node&) const override;
 
     protected:
+      // TODO: I might not be able to bind proctected (and private) members??
       std::vector<Node> ConstructFinalRoute_(const Node&) override;
   };
 
