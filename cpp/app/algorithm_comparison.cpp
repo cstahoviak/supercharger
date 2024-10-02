@@ -8,8 +8,8 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "logging.h"
-#include "planner.h"
+#include "supercharger/logging.h"
+#include "supercharger/planner.h"
 
 #include <algorithm>
 #include <iomanip>

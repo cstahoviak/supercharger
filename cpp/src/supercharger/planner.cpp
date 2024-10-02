@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/algorithm.h"
-#include "logging.h"
-#include "math.h"
-#include "planner.h"
+#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/logging.h"
+#include "supercharger/math/math.h"
+#include "supercharger/planner.h"
 
 #include <algorithm>
 #include <cmath>
@@ -29,7 +29,8 @@ namespace supercharger
    * @param route 
    * @return std::ostream& 
    */
-  std::ostream& operator<<(std::ostream& stream, const std::vector<Node>& route) {
+  std::ostream& operator<<(std::ostream& stream, const std::vector<Node>& route)
+  {
     size_t sz = route.size();
     size_t idx = 0;
     for ( const Node& node : route ) {

@@ -9,14 +9,14 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/dijkstras.h"
+#include "supercharger/algorithm/dijkstras.h"
 
-namespace supercharger
+namespace supercharger::algorithm
 {
   /**
    * @brief Implements the A* search algorithm. A* makes sense in this scenario
    * because the total cost of the route is computed as a function of both the
-   * distance (total time traveled) from the current node to the start node as 
+   * math::distance (total time traveled) from the current node to the start node as 
    * well as a heuristic that, in our case, should be a function of the charge
    * rate.
    */

@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "optimizer/naive.h"
-#include "logging.h"
+#include "supercharger/optimizer/naive.h"
+#include "supercharger/logging.h"
 
-namespace supercharger
+namespace supercharger::optimizer
 {
   PlannerResult NaiveOptimizer::Optimize(const PlannerResult& result) const {
     const std::vector<Node>& route = result.route;
@@ -44,19 +44,19 @@ namespace supercharger
       max_node.charger().rate << " km/hr is the fastest charger on the route.");
 
     // The charge time at the "max-rate" node will be a function of the
-    // distance remaining to the destination.
+    // math::distance remaining to the destination.
     double dist_remaining{0};
     for ( size_t idx = argmax; idx < optimized.size() - 1; idx++ ) {
       const Node& current = optimized.at(idx);
       const Node& next = optimized.at(idx + 1);
-      dist_remaining += distance(current, next);
+      dist_remaining += math::distance(current, next);
     }
     DEBUG("Distance remaining between " << max_node.name() << " and " << 
       route.back().name() << ": " << dist_remaining << " km.");
 
     // If the distance remaining is less than the max range of the vehicle, only
     // charge the vehicle enough at the max-rate node to make it the
-    // destination. Otherwise, the distance remaining is greater than the 
+    // destination. Otherwise, the math::distance remaining is greater than the 
     // maximum range of the vehicle, so we can charge the vehicle fully. 
     max_node.departure_range = ( dist_remaining <= result.max_range ) ? 
       dist_remaining - max_node.departure_range : result.max_range;
@@ -78,17 +78,18 @@ namespace supercharger
 
       // For all remaining nodes on the route, update the range remaining
       // after arriving at the node.
-      current.arrival_range = prev.departure_range - distance(prev, current);
+      current.arrival_range =
+        prev.departure_range - math::distance(prev, current);
 
       // Update the current node's cost.
       current.cost = prev.cost + prev.duration + 
-        distance(prev, current) / result.speed;
+        math::distance(prev, current) / result.speed;
 
       if ( idx < optimized.size() - 1 ) {
         // For all nodes not the destination, update the charge duration if
-        // the range remaining is less than the distance to the next node.
+        // the range remaining is less than the math::distance to the next node.
         const Node& next = optimized.at(idx + 1);
-        double dist_to_next = distance(current, next);
+        double dist_to_next = math::distance(current, next);
         if ( current.arrival_range < dist_to_next ) {
           // Charge just long enough to make it to the next node.
           current.duration =

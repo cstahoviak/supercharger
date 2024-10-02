@@ -8,17 +8,17 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/algorithm.h"
-#include "algorithm/astar.h"
-#include "algorithm/naive.h"
-#include "algorithm/dijkstras.h"
-#include "logging.h"
-#include "planner.h"
+#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/astar.h"
+#include "supercharger/algorithm/naive.h"
+#include "supercharger/algorithm/dijkstras.h"
+#include "supercharger/logging.h"
+#include "supercharger/planner.h"
 
 #include <algorithm>
 
 
-namespace supercharger
+namespace supercharger::algorithm
 {
   PlannerResult::PlannerResult(
     std::vector<Node> route, double cost, double max_range, double speed) :
@@ -84,8 +84,8 @@ namespace supercharger
   double PlanningAlgorithm::ComputeChargeTime_(
     const Node& current, const Node& next) const
   {
-    // Compute the distance to the next charger.
-    double current_to_next = distance(current, next);
+    // Compute the math::distance to the next charger.
+    double current_to_next = math::distance(current, next);
 
     // Compute the charge time required to make it to the next charger.
     // NOTE: we're charging the car only enough to make it to the next node.
@@ -101,8 +101,8 @@ namespace supercharger
     const Node& current, const Node& next) const
   {
     // The range remaining after arriving at the next node is the departure
-    // range at the current node - the distance to the next charger.
-    return current.departure_range - distance(current, next);
+    // range at the current node - the math::distance to the next charger.
+    return current.departure_range - math::distance(current, next);
   }
 
   double PlanningAlgorithm::ComputeDepartureRange_(const Node& current) const {

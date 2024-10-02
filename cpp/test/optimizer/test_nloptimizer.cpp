@@ -8,12 +8,13 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "optimizer/nloptimizer.h"
-#include "planner.h"
+#include "supercharger/optimizer/nloptimizer.h"
+#include "supercharger/planner.h"
 
 #include <gtest/gtest.h>
 
 using namespace supercharger;
+using namespace supercharger::optimizer;
 using ConstraintData = NLOptimizer::ConstraintData;
 
 class NLOptimizerTestFixture : public testing::Test

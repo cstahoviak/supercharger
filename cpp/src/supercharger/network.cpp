@@ -1,7 +1,7 @@
 /*************************************************/
 /********* DO NOT MODIFY THIS FILE ************/
 /*************************************************/
-#include "network.h"
+#include "supercharger/network.h"
 
 namespace supercharger
 {

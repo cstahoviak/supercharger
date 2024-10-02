@@ -9,10 +9,10 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/algorithm.h"
-#include "optimizer/optimizer.h"
-#include "network.h"
-#include "node.h"
+#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/optimizer/optimizer.h"
+#include "supercharger/network.h"
+#include "supercharger/node.h"
 
 #include <memory>
 #include <ostream>
@@ -22,9 +22,13 @@
 
 namespace supercharger
 {  
-  using AlgoType = PlanningAlgorithm::AlgorithmType;
-  using CostFcnType = PlanningAlgorithm::CostFunctionType;
-  using OptimizerType = Optimizer::OptimizerType;
+  using AlgoType = algorithm::PlanningAlgorithm::AlgorithmType;
+  using CostFcnType = algorithm::PlanningAlgorithm::CostFunctionType;
+  using OptimizerType = optimizer::Optimizer::OptimizerType;
+
+  using PlannerResult = algorithm::PlannerResult;
+  using PlanningAlgorithm = algorithm::PlanningAlgorithm;
+  using Optimizer = optimizer::Optimizer;
 
   class RoutePlanner
   {

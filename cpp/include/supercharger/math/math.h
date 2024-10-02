@@ -8,14 +8,14 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "node.h"
+#include "supercharger/node.h"
 
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
 #define M_EARTH_RADIUS_KM 6356.752       // [km]
 
-namespace supercharger
+namespace supercharger::math
 {
   /**
    * @brief Uses the "Haversine" formula to compute the "great circle" distance

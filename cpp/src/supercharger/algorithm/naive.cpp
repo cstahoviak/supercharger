@@ -8,18 +8,18 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "algorithm/naive.h"
-#include "logging.h"
+#include "supercharger/algorithm/naive.h"
+#include "supercharger/logging.h"
 // Need to include planner.h here to avoid "pointer or reference to incomplete
 // type is not allowed" errors related to using the route_planner_ pointer.
-#include "planner.h"
+#include "supercharger/planner.h"
 
 #include <algorithm>
 #include <map>
 #include <stdexcept>
 
 
-namespace supercharger
+namespace supercharger::algorithm
 {
   /**
    * @brief The "naive" route planner.
@@ -66,14 +66,14 @@ namespace supercharger
     const::std::shared_ptr<Node>& end_node = nodes_.at(destination);
 
     // Use a map to store the candidate nodes, i.e. the next possible nodes on
-    // the route, sorted by distance to the destination.
+    // the route, sorted by math::distance to the destination.
     // TODO: Could use a priority queue instead? 
     std::map<double, std::shared_ptr<const Node>> candidates;
     std::vector<std::string> candidate_names;
     bool is_reachable{false};
     bool is_closer{false};
 
-    // Store relative distance measurements.
+    // Store relative math::distance measurements.
     double current_to_candidate{0};
     double current_to_dest{0};
     double candidate_to_dest{0};
@@ -83,9 +83,9 @@ namespace supercharger
       is_closer = false;
 
       // Compute distances.
-      current_to_candidate = distance(*current, *node);
-      current_to_dest = distance(*current, *end_node);
-      candidate_to_dest = distance(*node, *end_node);
+      current_to_candidate = math::distance(*current, *node);
+      current_to_dest = math::distance(*current, *end_node);
+      candidate_to_dest = math::distance(*node, *end_node);
 
       // If candidate node is within the maximum range of the vehicle, add the
       // candidate node to "reachable" set.
@@ -129,7 +129,8 @@ namespace supercharger
       UpdateRouteCost_();
 
       // Finally, add the travel time to the destination to the total cost.
-      total_cost_ += distance(*current, *end_node) / route_planner_->speed();
+      total_cost_ += 
+        math::distance(*current, *end_node) / route_planner_->speed();
 
       // Construct the final route and return the planner result.
       return;
@@ -174,7 +175,7 @@ namespace supercharger
     // for ( const auto& [name, charger] : candidate_chargers ) {
     //   // Compute the charge time to return to max charge (Assume for now that 
     //   // the vehicle leaves the current node with a full charge)
-    //   double dist = distance(current_node.charger, charger);
+    //   double dist = math::distance(current_node.charger, charger);
     //   double charge_duration = (max_range_ - dist) / charger->rate;
 
     //   // Recursively call the brute force algorithm until the destination is
@@ -204,15 +205,16 @@ namespace supercharger
       case CostFcnType::MINIMIZE_DIST_TO_NEXT:
       {
         // Effectively the same as Dijkstra's
-        cost = distance(current, candidate);
+        cost = math::distance(current, candidate);
         break;
       }
 
       case CostFcnType::MINIMIZE_DIST_REMAINING:
       {
-        // The "cost" is the distance from the candidate charger to the
+        // The "cost" is the math::distance from the candidate charger to the
         // destination charger.
-        cost = distance(candidate.charger(), route_planner_->destination());
+        cost = 
+          math::distance(candidate.charger(), route_planner_->destination());
         break;
       }
       
@@ -220,8 +222,8 @@ namespace supercharger
       {
         // Compute distances
         double candidate_to_destination = 
-          distance(candidate.charger(), route_planner_->destination());
-        double current_to_candidate = distance(current, candidate);
+          math::distance(candidate.charger(), route_planner_->destination());
+        double current_to_candidate = math::distance(current, candidate);
 
         // Compute times
         double time_to_destination = 
@@ -264,7 +266,8 @@ namespace supercharger
       const std::shared_ptr<Node>& previous = route_.rbegin()[1];
 
       // Add the travel time between the previous and current nodes
-      total_cost_ += distance(*previous, *current) / route_planner_->speed();
+      total_cost_ +=
+        math::distance(*previous, *current) / route_planner_->speed();
 
       // Add the time to charge at the current node
       total_cost_ += current->duration;
