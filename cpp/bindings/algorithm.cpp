@@ -21,13 +21,66 @@
 
 #include <sstream>
 
+namespace supercharger::algorithm
+{
+  class PyPlanningAlgorithm : PlanningAlgorithm
+  {
+    public:
+      // Inherit the constructor(s)
+      using PlanningAlgorithm::PlanningAlgorithm;
+
+      // "Trampoline" function(s) (required for each virtual function)
+      PlannerResult PlanRoute(const std::string&, const std::string&) override;
+      double ComputeCost(const Node&, const Node&) const override;
+
+    protected:
+      std::vector<Node> ConstructFinalRoute_(const Node&) override;
+  };
+
+  PlannerResult PyPlanningAlgorithm::PlanRoute(
+    const std::string& origin, const std::string& destination)
+  {
+    PYBIND11_OVERRIDE_PURE(
+      PlannerResult,      // Return type
+      PlanningAlgorithm,  // Parent class
+      PlanRoute,          // Name of C++ function (must match python name)
+      origin,             // Argument(s)
+      destination
+    );
+  }
+
+  double PyPlanningAlgorithm::ComputeCost(
+    const Node& current, const Node& neighbor) const
+  {
+    PYBIND11_OVERRIDE_PURE(
+      double,             // Return type
+      PlanningAlgorithm,  // Parent class
+      ComputeCost,        // Name of C++ function (must match python name)
+      current,            // Arguments(s)
+      neighbor
+    );
+  }
+
+  std::vector<Node> PyPlanningAlgorithm::ConstructFinalRoute_(
+    const Node& final)
+  {
+    PYBIND11_OVERRIDE_PURE(
+      std::vector<Node>,    // Return type
+      PlanningAlgorithm,    // Parent class
+      ConstructFinalRoute_, // Name of C++ function (must match python name)
+      final                 // Arguments(s)
+    );
+  }
+} // end namespace supercharger::algorithm
+
 namespace py = pybind11;
 using namespace supercharger;
+using namespace supercharger::algorithm;
 
-using AlgoType = algorithm::PlanningAlgorithm::AlgorithmType;
-using CostFcnType = algorithm::PlanningAlgorithm::CostFunctionType;
+using AlgoType = PlanningAlgorithm::AlgorithmType;
+using CostFcnType = PlanningAlgorithm::CostFunctionType;
 
-std::string to_string(const algorithm::PlannerResult& result) {
+std::string to_string(const PlannerResult& result) {
   std::ostringstream os;
   size_t idx = 0;
   for ( const Node& node : result.route ) {
@@ -42,18 +95,18 @@ std::string to_string(const algorithm::PlannerResult& result) {
 
 void initPlanningAlgorithm(py::module_& m)
 {
-  py::class_<algorithm::PlannerResult>(m, "PlannerResult")
+  py::class_<PlannerResult>(m, "PlannerResult")
     .def(py::init<>())
     .def(py::init<std::vector<Node>, double, double, double>(),
       py::arg("route"), py::arg("cost"), py::arg("max_range"), py::arg("speed"))
-    .def_readwrite("route", &algorithm::PlannerResult::route)
-    .def_readwrite("cost", &algorithm::PlannerResult::cost)
-    .def_readwrite("max_range", &algorithm::PlannerResult::max_range)
-    .def_readwrite("speed", &algorithm::PlannerResult::speed)
+    .def_readwrite("route", &PlannerResult::route)
+    .def_readwrite("cost", &PlannerResult::cost)
+    .def_readwrite("max_range", &PlannerResult::max_range)
+    .def_readwrite("speed", &PlannerResult::speed)
     // TODO: I haven't figured out how to get the bindings for operator<< to
     // work yet, so for now, I'm stuck effectively re-writing them.
     .def("__str__", &to_string)
-    .def("__repr__", [](const algorithm::PlannerResult& self) {
+    .def("__repr__", [](const PlannerResult& self) {
       std::ostringstream os;
       os << "PlannerResult(route: '" << to_string(self) << "', ";
       os << "cost: " << self.cost << ", ";
@@ -81,16 +134,16 @@ void initPlanningAlgorithm(py::module_& m)
   // Note that as-implmented the PlanningAlgorithm class is not extensible on
   // the python side. See the "Overriding virtual functions in Python" section
   // of the pybind11 docs for more info on how to use a "trampoline" class to
-  // define dervied classes on the python side.
-  py::class_<algorithm::PlanningAlgorithm>(m, "PlanningAlgorithm")
+  // define derived classes on the python side.
+  py::class_<PlanningAlgorithm, PyPlanningAlgorithm>(m, "PlanningAlgorithm")
     // .def(py::init<RoutePlanner*>(), py::arg("rp"))
     // .def_static("get_planning_algorithm", &PlanningAlgorithm::GetPlanningAlgorithm,
     //   py::arg("rp"), py::arg("algo_type"), py::arg("cost_type"))
-    .def("plan_route", &algorithm::PlanningAlgorithm::PlanRoute, 
+    .def("plan_route", &PlanningAlgorithm::PlanRoute, 
       py::arg("origin"), py::arg("destination"))
-    .def("compute_cost", &algorithm::PlanningAlgorithm::ComputeCost,
-      py::arg("current"), py::arg("candidate"))
-    .def("reset", &algorithm::PlanningAlgorithm::Reset)
+    .def("compute_cost", &PlanningAlgorithm::ComputeCost,
+      py::arg("current"), py::arg("neighbor"))
+    .def("reset", &PlanningAlgorithm::Reset)
     // NOTE: Cannot bind protected or private members.
     // .def("_construct_final_route", 
     //   [](const PlanningAlgorithm& self, const Node* const final) {

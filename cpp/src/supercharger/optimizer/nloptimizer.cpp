@@ -6,10 +6,6 @@
  * @date 2024-09-13
  * 
  * @copyright Copyright (c) 2024
- * 
- * TODO: Fix the "free(): invalid size" error.
- *  1. Implement the equality constraint via a C-style function.
- *  2. Completely switch to the C-style implementation.
  */
 
 #include "supercharger/optimizer/nloptimizer.h"
