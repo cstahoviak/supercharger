@@ -4,8 +4,9 @@
 This repository implements a solution to the Tesla Supercharger coding challenge (described in more detail in the [Problem Statement](#problem-statement) section). The following is an overview of the solution method and supported features:
 
 - The route planning problem is solved as a two-step process:
-  - First, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. The Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the arrival range at each charger will be zero.
+  - First, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. The Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the vehicle's arrival range at each charger will be zero.
   - Next, the solution is refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
+  - This approach achives a [__24.5 minute (2.37%) improvement__](#results) over the provided _reference result_.
 - Additionally, the `pysupercharger` module is provided to support python development.
   - The python bindings are written using the [`pybind11`](https://pybind11.readthedocs.io/en/stable/) library.
   - Both the `PlanningAlgorithm` and `Optimizer` classes are extensible on the python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimizer` module) inherits from the bound `Optimizer` class.
