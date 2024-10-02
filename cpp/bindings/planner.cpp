@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "planner.h"
+#include "supercharger/planner.h"
 
 #include <pybind11/pybind11.h>
 // Required for automatic type conversions between python lists and std::vector

@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "math.h"
+#include "supercharger/math/math.h"
 
 #include <pybind11/pybind11.h>
 
@@ -17,14 +17,14 @@ using namespace supercharger;
 
 void initMath(py::module_& m)
 {
-  m.def("great_circle_distance", &great_circle_distance,
+  m.def("great_circle_distance", &math::great_circle_distance,
     py::arg("lat1"), py::arg("lon1"), py::arg("lat2"), py::arg("lon2"));
   
   m.def("distance",
-    py::overload_cast<const Charger&, const Charger&>(&distance),
+    py::overload_cast<const Charger&, const Charger&>(&math::distance),
     py::arg("charger1"), py::arg("charger2"));
   m.def("distance",
-    py::overload_cast<const Node&, const Node&>(&distance),
+    py::overload_cast<const Node&, const Node&>(&math::distance),
     py::arg("node1"), py::arg("node2"));
 
 }

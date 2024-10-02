@@ -8,37 +8,42 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "optimizer/naive.h"
-#include "optimizer/nloptimizer.h"
+#include "supercharger/optimizer/naive.h"
+#include "supercharger/optimizer/nloptimizer.h"
 
 #include <pybind11/pybind11.h>
 
 namespace supercharger
 {
-  class PyOptimizer : public Optimizer
-  {
-    public:
-      // Inherit the constructor(s)
-      using Optimizer::Optimizer;
+  using PlannerResult = algorithm::PlannerResult;
 
-      // "Trampoline" function (required for each virtual function)
-      PlannerResult Optimize(const PlannerResult&) const override;
-  };
-
-  PlannerResult supercharger::PyOptimizer::Optimize(
-    const PlannerResult& result) const
+  namespace optimizer
   {
-    PYBIND11_OVERRIDE_PURE(
-      PlannerResult,  // Return type
-      Optimizer,      // Parent class
-      Optimize,       // Name of C++ function (must match python name)
-      result          // Argument(s)
-    );
-  }
+    class PyOptimizer : public Optimizer
+    {
+      public:
+        // Inherit the constructor(s)
+        using optimizer::Optimizer::Optimizer;
+
+        // "Trampoline" function (required for each virtual function)
+        PlannerResult Optimize(const PlannerResult&) const override;
+    };
+
+    PlannerResult PyOptimizer::Optimize(
+      const PlannerResult& result) const
+    {
+      PYBIND11_OVERRIDE_PURE(
+        PlannerResult,  // Return type
+        Optimizer,      // Parent class
+        Optimize,       // Name of C++ function (must match python name)
+        result          // Argument(s)
+      );
+    }
+  } // end namespace supercharger::optimizer
 } // end namespace supercharger
 
 namespace py = pybind11;
-using namespace supercharger;
+using namespace supercharger::optimizer;
 
 void initOptimizer(py::module_& m)
 {
