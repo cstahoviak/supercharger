@@ -340,12 +340,12 @@ namespace supercharger::optimize
 
       // Update the arrival range at the current node
       current.arrival_range = previous.arrival_range + \
-                            previous.duration * previous.charger().rate - \
-                            math::distance(previous, current);
+        previous.duration * previous.charger().rate - \
+        math::distance(previous, current);
 
       // Update the cost at the current node
       current.cost = previous.cost + previous.duration + \
-                  math::distance(previous, current) / result.speed;
+        math::distance(previous, current) / result.speed;
 
       // For all nodes but the final node, update the departure range
       if ( iter != optimized.route.end() - 1 ) {
