@@ -7,8 +7,8 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/optimizer/naive.h"
-#include "supercharger/optimizer/nloptimizer.h"
+#include "supercharger/optimize/naive.h"
+#include "supercharger/optimize/nloptimizer.h"
 
 #include <pybind11/pybind11.h>
 
@@ -16,7 +16,7 @@ namespace supercharger
 {
   using PlannerResult = algorithm::PlannerResult;
 
-  namespace optimizer
+  namespace optimize
   {
     /**
      * @brief The PyOptimizer "trampline" class allows the Optimizer class to
@@ -26,7 +26,7 @@ namespace supercharger
     {
       public:
         // Inherit the constructor(s)
-        using optimizer::Optimizer::Optimizer;
+        using optimize::Optimizer::Optimizer;
 
         // "Trampoline" function (required for each virtual function)
         PlannerResult Optimize(const PlannerResult&) const override;
@@ -46,7 +46,7 @@ namespace supercharger
 } // end namespace supercharger
 
 namespace py = pybind11;
-using namespace supercharger::optimizer;
+using namespace supercharger::optimize;
 
 void initOptimizer(py::module_& m)
 {

@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  */
 
-#include "supercharger/optimizer/nloptimizer.h"
+#include "supercharger/optimize/nloptimizer.h"
 #include "supercharger/logging.h"
 
 #include "nlopt.hpp"
@@ -16,7 +16,7 @@
 #include <iomanip>
 #include <numeric>
 
-namespace supercharger::optimizer
+namespace supercharger::optimize
 {
   using ConstraintData = NLOptimizer::ConstraintData;
 

@@ -10,7 +10,7 @@
  * 
  */
 #include "supercharger/algorithm/algorithm.h"
-#include "supercharger/optimizer/optimizer.h"
+#include "supercharger/optimize/optimizer.h"
 #include "supercharger/network.h"
 #include "supercharger/node.h"
 
@@ -24,11 +24,11 @@ namespace supercharger
 {  
   using AlgoType = algorithm::PlanningAlgorithm::AlgorithmType;
   using CostFcnType = algorithm::PlanningAlgorithm::CostFunctionType;
-  using OptimizerType = optimizer::Optimizer::OptimizerType;
+  using OptimizerType = optimize::Optimizer::OptimizerType;
 
   using PlannerResult = algorithm::PlannerResult;
   using PlanningAlgorithm = algorithm::PlanningAlgorithm;
-  using Optimizer = optimizer::Optimizer;
+  using Optimizer = optimize::Optimizer;
 
   class RoutePlanner
   {

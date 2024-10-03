@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "supercharger/optimizer/naive.h"
+#include "supercharger/optimize/naive.h"
 #include "supercharger/logging.h"
 
-namespace supercharger::optimizer
+namespace supercharger::optimize
 {
   PlannerResult NaiveOptimizer::Optimize(const PlannerResult& result) const {
     const std::vector<Node>& route = result.route;

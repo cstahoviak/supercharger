@@ -11,7 +11,7 @@
  */
 #include "supercharger/algorithm/algorithm.h"
 
-namespace supercharger::optimizer
+namespace supercharger::optimize
 {
   using PlannerResult = algorithm::PlannerResult;
 

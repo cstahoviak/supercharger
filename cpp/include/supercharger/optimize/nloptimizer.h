@@ -9,11 +9,11 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "supercharger/optimizer/optimizer.h"
+#include "supercharger/optimize/optimizer.h"
 
 #include "nlopt.hpp"
 
-namespace supercharger::optimizer
+namespace supercharger::optimize
 {
   class NLOptimizer : public Optimizer
   {

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.2)
 set(TEST_NAME test_${PROJECT_NAME})
 
 set(TEST_SOURCES
-  "optimizer/test_nloptimizer.cpp"
+  "optimize/test_nloptimizer.cpp"
   "test_math.cpp"
 )
 
