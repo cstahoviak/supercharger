@@ -79,8 +79,7 @@ namespace supercharger
     // cast the l-values 'algo_type' and 'cost_type' as r-values to "move" them
     // to PlanningAlgorithm::GetPlanner.
     planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
-      this, std::move(algo_type), std::move(cost_type)
-    );
+      this, algo_type, cost_type);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);

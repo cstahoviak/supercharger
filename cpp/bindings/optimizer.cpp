@@ -1,12 +1,11 @@
 /**
  * @file optimizer.cpp
  * @author Carl Stahoviak
- * @brief Pybind11 bindings for...
+ * @brief Pybind11 bindings for the Optimizer (and Optimizer-derived) classes.
  * @version 0.1
  * @date 2024-09-05
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/optimizer/naive.h"
 #include "supercharger/optimizer/nloptimizer.h"
@@ -19,6 +18,10 @@ namespace supercharger
 
   namespace optimizer
   {
+    /**
+     * @brief The PyOptimizer "trampline" class allows the Optimizer class to
+     * be extensible on the python side.
+     */
     class PyOptimizer : public Optimizer
     {
       public:

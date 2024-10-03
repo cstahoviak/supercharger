@@ -1,16 +1,20 @@
 /**
  * @file algorithm.cpp
  * @author Carl Stahoviak
- * @brief Pybind11 bindings for...
+ * @brief Pybind11 bindings for the PlanningAlgorithm (and 
+ *  PlanningAlgorithm-derived) classes.
  * @version 0.1
- * @date 2024-09-05
+ * @date 2024-10-03
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/algorithm/algorithm.h"
 #include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/algorithm/naive.h"
+
+// NOTE: Must include the RoutePlanner header otherwise an "invalid use of
+// incomplete type" error will occur when binding the PlanningAlgorithm ctor.
+#include "supercharger/planner.h"
 
 #include <pybind11/pybind11.h>
 // NOTE: required because PlannerResult::route is a std::vector.
@@ -23,6 +27,10 @@
 
 namespace supercharger::algorithm
 {
+  /**
+   * @brief The PyPlanningAlgorithm "trampline" class allows the Optimizer class
+   * to be extensible on the python side.
+   */
   class PyPlanningAlgorithm : PlanningAlgorithm
   {
     public:
@@ -132,33 +140,25 @@ void initPlanningAlgorithm(py::module_& m)
     .export_values()
   ;
   
-  // Note that as-implmented the PlanningAlgorithm class is not extensible on
-  // the python side. See the "Overriding virtual functions in Python" section
-  // of the pybind11 docs for more info on how to use a "trampoline" class to
-  // define derived classes on the python side.
   py::class_<PlanningAlgorithm, PyPlanningAlgorithm>(m, "PlanningAlgorithm")
-    // .def(py::init<RoutePlanner*>(), py::arg("rp"))
-    // .def_static("get_planning_algorithm", &PlanningAlgorithm::GetPlanningAlgorithm,
-    //   py::arg("rp"), py::arg("algo_type"), py::arg("cost_type"))
+    .def(py::init<RoutePlanner*>(), py::arg("rp"))
+    .def_static("get_planning_algorithm", &PlanningAlgorithm::GetPlanningAlgorithm,
+      py::arg("rp"), py::arg("algo_type"), py::arg("cost_type"))
     .def("plan_route", &PlanningAlgorithm::PlanRoute, 
       py::arg("origin"), py::arg("destination"))
     .def("compute_cost", &PlanningAlgorithm::ComputeCost,
       py::arg("current"), py::arg("neighbor"))
     .def("reset", &PlanningAlgorithm::Reset)
     // NOTE: Cannot bind protected or private members.
-    // .def("_construct_final_route", 
-    //   [](const PlanningAlgorithm& self, const Node* const final) {
-    //     return self.ConstructFinalRoute_(final);
-    //   }
-    // )
+    // .def("_construct_final_route", &PlanningAlgorithm::ConstructFinalRoute_)
   ;
 
-  // TODO: I'm not sure how to deal with raw pointers as constructor arguments.
-  // Pybind11 provides supports for smart pointers, so the solution here may be
-  // to move away from using raw pointers entirely in the codebase in favor of
-  // smart pointers.
-  // py::class_<Naive, PlanningAlgorithm>(m, "Naive")
-  //   .def(py::init<RoutePlanner*, CostFcnType>(), py::arg("rp"), py::arg("type"));
-  // ;
-    
+  py::class_<Naive, PlanningAlgorithm>(m, "NaivePlanner")
+    .def(py::init<RoutePlanner*, CostFcnType>(),
+      py::arg("rp"), py::arg("cost_type"));
+  ;
+
+    py::class_<Dijkstras, PlanningAlgorithm>(m, "Dijkstras")
+    .def(py::init<RoutePlanner*>(), py::arg("rp"));
+  ;   
 }

@@ -68,7 +68,7 @@ namespace supercharger
         PlanningAlgorithm(RoutePlanner*);
 
         static std::unique_ptr<PlanningAlgorithm> GetPlanningAlgorithm(
-          RoutePlanner*, AlgorithmType&&, CostFunctionType&&);
+          RoutePlanner*, AlgorithmType, CostFunctionType);
         
         virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
         virtual double ComputeCost(const Node&, const Node&) const = 0;
