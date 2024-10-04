@@ -301,11 +301,10 @@ namespace supercharger::optimize
 
     // Set the initial guess, i.e. the charging duration at all nodes not
     // including the first and last nodes.
-    std::vector<double> x;
-    for ( auto iter = result.route.cbegin() + 1; iter != result.route.cend() - 1; ++iter )
-    {
-      x.push_back(iter->duration);
-    }
+    // TODO: Do this better (the const_cast here feels pretty ugly).
+    std::vector<double> x(
+      const_cast<PlannerResult&>(result).durations().cbegin() + 1,
+      const_cast<PlannerResult&>(result).durations().cend() - 1);
 
     // Run the optimization!
     double minf{0};

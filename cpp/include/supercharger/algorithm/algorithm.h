@@ -43,6 +43,18 @@ namespace supercharger
 
       PlannerResult() = default;
       PlannerResult(std::vector<Node>, double, double, double);
+
+      const std::vector<double>& durations() {
+        if ( durations_.empty() ) {
+          for ( const Node& node : route ) {
+            durations_.push_back(node.duration);
+          }
+        }
+        return durations_;
+      }
+
+      private:
+        std::vector<double> durations_;
     };
 
     /**
