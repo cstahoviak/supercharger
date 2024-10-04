@@ -43,16 +43,14 @@ class NLOptimizerTestFixture : public testing::Test
       );
 
       // Define the optimization problem dimensionality and create the
-      // constraint data
+      // constraint data.
       n = planner_result.route.size() - 2;
       constr_data = NLOptimizer::CreateConstraintData(planner_result);
 
       // Define the initial guess, i.e. the charging duration at all nodes not
       // including the first and last nodes.
-      for ( auto iter = planner_result.route.cbegin() + 1;
-          iter != planner_result.route.cend() - 1; ++iter ) {
-        x0.push_back(iter->duration);
-      }
+      x0.assign(planner_result.durations().cbegin() + 1,
+        planner_result.durations().cend() - 1);
     }
 
     // Store the result of Dijkstra's planning algorithm.

@@ -25,10 +25,6 @@ namespace supercharger
 
   namespace algorithm
   {
-    // Forward declare the RoutePlanner
-    // NOTE: MUST include "planner.h" in "algorithm.cpp"
-    // class RoutePlanner;
-
     /**
      * @brief Stores the resulting output of a path planning algorithm. The
      * result contains both a path and a total cost (duration in hours) of the
