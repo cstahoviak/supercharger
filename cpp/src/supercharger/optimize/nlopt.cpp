@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  */
 
-#include "supercharger/optimize/nloptimizer.h"
+#include "supercharger/optimize/nlopt.h"
 #include "supercharger/logging.h"
 
 #include "nlopt.hpp"

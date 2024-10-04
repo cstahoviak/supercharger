@@ -9,7 +9,7 @@
  * 
  */
 #include "supercharger/optimize/naive.h"
-#include "supercharger/optimize/nloptimizer.h"
+#include "supercharger/optimize/nlopt.h"
 
 
 namespace supercharger::optimize

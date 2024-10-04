@@ -10,7 +10,7 @@ set(SOURCES
   "math.cpp"
   "network.cpp"
   "node.cpp"
-  "optimizer.cpp"
+  "optimize.cpp"
   "planner.cpp"
 
   "module.cpp"

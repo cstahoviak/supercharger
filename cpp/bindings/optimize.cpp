@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  */
 #include "supercharger/optimize/naive.h"
-#include "supercharger/optimize/nloptimizer.h"
+#include "supercharger/optimize/nlopt.h"
 
 #include <pybind11/pybind11.h>
 
