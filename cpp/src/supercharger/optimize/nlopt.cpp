@@ -177,9 +177,12 @@ namespace supercharger::optimize
   }
 
   /**
-   * @brief The inequaility constraint function. The inequality constraint
-   * applies to all nodes between the second node and the second to last node, 
-   * [2, n-1].
+   * @brief (UNUSED) The inequaility constraint function. The inequality
+   * constraint applies to all nodes between the second node and the second to
+   * last node, [2, n-1].
+   * 
+   * Note that NLOpt does not support a vector-valued inequality constraint
+   * function with a C++-style function signature. This function is unused.
    * 
    * Note that NLOpt expects constraints to be of the form:
    * constraint_fcn(x) <= 0.
@@ -238,6 +241,13 @@ namespace supercharger::optimize
     return arrival_ranges.back();
   }
 
+  /**
+   * @brief Creates the constraint data (the distances and rates) from the
+   * provided planner result.
+   * 
+   * @param result 
+   * @return ConstraintData 
+   */
   ConstraintData NLOptimizer::CreateConstraintData(const PlannerResult& result)
   {
     // Define the optimization constraint data and the initial guess.
@@ -252,7 +262,7 @@ namespace supercharger::optimize
     constr_data.init_arrival_range = result.route.at(1).arrival_range;
     constr_data.max_range = result.max_range;
 
-    // Remove values that do not affect the optimization, i.e. the math::distance 
+    // Remove values that do not affect the optimization, i.e. the distance 
     // between the first and second nodes, and final node's charging rate.
     constr_data.distances.erase(constr_data.distances.begin());
     constr_data.rates.pop_back();
@@ -260,6 +270,12 @@ namespace supercharger::optimize
     return constr_data;
   }
 
+  /**
+   * @brief Optimizes the provided route via a constrained optimization scheme.
+   * 
+   * @param result The "unoptimized" reference route.
+   * @return PlannerResult The oprimized route.
+   */
   PlannerResult NLOptimizer::Optimize(const PlannerResult& result) const
   {
     // Define the optimization algorithm and dimensionality.
@@ -269,7 +285,7 @@ namespace supercharger::optimize
     // Define the optimization constraint data.
     ConstraintData constr_data = NLOptimizer::CreateConstraintData(result);
 
-    // Set the lower bounds on the charging durations.
+    // Set the lower bounds on the charging durations (zero).
     std::vector<double> lb = std::vector<double>(dim, 0.0);
     opt.set_lower_bounds(lb);
 
@@ -283,7 +299,7 @@ namespace supercharger::optimize
     }
     opt.set_upper_bounds(ub);
 
-    // Set the objective function
+    // Set the objective function.
     opt.set_min_objective(cost_fcn, NULL);
 
     // Add the inequality constraints on the arrival ranges, [3, N-1].
@@ -293,10 +309,10 @@ namespace supercharger::optimize
     opt.add_inequality_mconstraint(ineq_constraint_lhs, &constr_data, mtol);
     opt.add_inequality_mconstraint(ineq_constraint_rhs, &constr_data, mtol);
 
-    // Add an equality constraint for the arrival range at the last node
+    // Add an equality constraint for the arrival range at the last node.
     opt.add_equality_constraint(eq_constraint, &constr_data, tol);
 
-    // Set a relative tolerance for the optimization parameters
+    // Set a relative tolerance for the optimization parameters.
     opt.set_xtol_rel(1e-8);
 
     // Set the initial guess, i.e. the charging duration at all nodes not
@@ -320,6 +336,15 @@ namespace supercharger::optimize
     return CreateOptimizedResult_(result, x);
   }
 
+  /**
+   * @brief Creates the optimized route from the reference planner result and
+   * the newly optimized set of charging durations.
+   * 
+   * @param result The reference result.
+   * @param new_durations The optimized set of charging durations at all nodes
+   * not including the first and last nodes.
+   * @return PlannerResult The optimized planner result.
+   */
   PlannerResult NLOptimizer::CreateOptimizedResult_(
     const PlannerResult& result, const std::vector<double>& new_durations) const
   {
@@ -357,4 +382,4 @@ namespace supercharger::optimize
     optimized.cost = optimized.route.back().cost;
     return optimized;
   }
-}
+} // end namespace supercharger::optimize

@@ -6,7 +6,7 @@ This repository implements a solution to the Tesla Supercharger coding challenge
 - The route planning problem is solved as a two-step process:
   - First, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. The Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the vehicle's arrival range at each charger will be zero.
   - Next, the solution is refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
-  - This approach achives a [__24.5 minute (2.37%) improvement__](#results) over the provided _reference result_.
+  - This approach achieves a [24.5 minute (2.37%) improvement](#results) over the _reference result_.
 - Additionally, the `pysupercharger` module is provided to support python development.
   - The python bindings are written using the [`pybind11`](https://pybind11.readthedocs.io/en/stable/) library.
   - Both the `PlanningAlgorithm` and `Optimizer` classes are extensible on the python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimizer` module) inherits from the bound `Optimizer` class.
@@ -17,9 +17,10 @@ This repository implements a solution to the Tesla Supercharger coding challenge
 ## Future Work
 
 1. Imporove the Dijkstra's cost function via NLOpt.
-2. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
-3. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
-4. Add benchmarking to `PlanningAlgorithm::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c). 
+2. Add Valgrind to the C++ unit tests.
+3. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
+4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
+5. Add benchmarking to `PlanningAlgorithm::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c). 
 
 ## Problem Statement
 Your objective is to construct a search algorithm to find the minimum time path through the tesla network of supercharging stations. Each supercharger will refuel the vehicle at a different rate given in km/hr of charge time. Your route does not have to fully charge at every visited charger, so long as it never runs out of charge between two chargers. You should expect to need __no more than 4-6 hours__ to solve this problem. We suggest implementing a quick brute force method before attempting to find an optimal routine.
@@ -98,7 +99,7 @@ The solution needs to be self-contained with just the use of STL algorithms
 ## Solution
 
 ### Dependencies
-The `supercharger` applications depends on the [NLOpt](https://nlopt.readthedocs.io/en/latest/) libary. NLOpt must be built and installed locally before building the `supercharger` application.
+The `supercharger` application depends on the [NLOpt](https://nlopt.readthedocs.io/en/latest/) libary. NLOpt must be built and installed locally before building the `supercharger` application.
 
 ```
 git clone https://github.com/stevengj/nlopt.git
@@ -139,19 +140,18 @@ So far, the following results have been obtained. The _reference result_ provide
 
 TODO: Add profiling for each algorithm.
 
-| Algorithm                            | Cost     | Runtime | Pct Imprv. | Time Saved  |
-|:-------------------------------------|:--------:|:-------:|:----------:|:-----------:|
-|                                      | [hrs]    | [msecs] | [%]        | [mins:secs] |
-| _Naive_ Route Planner                | 18.1017  | -       | -2.9185    | +50:55      |
-| Dijkstra's Algorithm                 | 17.2548  | -       | -0.0096    | +00:06      |
-| _Reference_ Result                   | 17.2531  | -       | -          | -           |
-| Dijkstra's + _Naive_ Optimizer       | 17.0697  | -       | 1.0630     | -11:00      | 
-| Dijkstra's + Nonlinear Optimization* | 16.8438  | -       | 2.3723     | -24:33      |
+| Algorithm                              | Cost     | Runtime | Pct Imprv. | Time Saved  |
+|:---------------------------------------|:--------:|:-------:|:----------:|:-----------:|
+|                                        | [hrs]    | [msecs] | [%]        | [mins:secs] |
+| _Naive_ Route Planner                  | 18.1017  | -       | -2.9185    | +50:55      |
+| Dijkstra's Algorithm                   | 17.2548  | -       | -0.0096    | +00:06      |
+| _Reference_ Result                     | 17.2531  | -       | -          | -           |
+| Dijkstra's + _Naive_ Optimizer         | 17.0697  | -       | 1.0630     | -11:00      | 
+| Dijkstra's + Constrained Optimization* | 16.8438  | -       | 2.3723     | -24:33      |
 
-*constrained nonlinear optimization performed via NLopt's [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
+*constrained optimization performed via NLopt's [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
 
-The following figure illustrates how the constrained nonlinear optimization 
-scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
+The following figure illustrates how the constrained optimization scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
 
 ![charging durations](/figs/charging_durations.png "Charging Durations")
 

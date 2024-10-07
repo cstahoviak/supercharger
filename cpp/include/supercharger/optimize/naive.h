@@ -1,13 +1,12 @@
 #pragma once
 /**
  * @file naive.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief The "naive" optimizer.
  * @version 0.1
  * @date 2024-09-04
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/optimize/optimizer.h"
 

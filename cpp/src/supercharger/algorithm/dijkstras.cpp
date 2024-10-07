@@ -17,6 +17,14 @@
 
 namespace supercharger::algorithm
 {
+  /**
+   * @brief Plans a route between the origin and the destination using
+   * Dijkstra's algorithm.
+   * 
+   * @param origin The origin node.
+   * @param destination The destination node.
+   * @return PlannerResult The planner result.
+   */
   PlannerResult Dijkstras::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
@@ -40,7 +48,7 @@ namespace supercharger::algorithm
     unvisited.push(origin_node);
 
     while ( !unvisited.empty() ) {
-      // Get the next node (it has the smallest known math::distance from the origin)
+      // Get the next node (it has the smallest known distance from the origin)
       std::shared_ptr<Node> current_node = unvisited.top();
       unvisited.pop();
 
@@ -65,6 +73,9 @@ namespace supercharger::algorithm
       double cost{0};
       for ( std::shared_ptr<Node>& neighbor : GetNeighbors_(*current_node) ) {
         // Compute the cost to get to the neighbor through the current node.
+        // TODO: Is dereferencing here the right choice? Would it be better to
+        // pass the shared pointer itself? Or a reference to the shared pointer
+        // so as to not increase the reference count?
         cost = ComputeCost(*current_node, *neighbor);
 
         if ( cost < neighbor->cost ) {
@@ -95,14 +106,13 @@ namespace supercharger::algorithm
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
           // added again by this line - that's okay.
-          // TODO: Should this be push() or emplace()?
           unvisited.emplace(neighbor);
         }
       }
     }
 
     // 7. Once the above loop exits, every reachable node will contain the
-    // shortest math::distance from itself to the start node.
+    // shortest distance from itself to the start node.
 
     // If we've gotten here, no path was found!
     INFO("No path found!");
@@ -141,15 +151,13 @@ namespace supercharger::algorithm
    * cannot do this with const elements.
    * 
    * @param current The current node (a const pointer to a const Node).
-   * @return std::vector<Node*> A vector of neighbors as Node pointers.
+   * @return A vector of neighbors as shared Node pointers.
    */
   std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(const Node& current)
   {
     std::vector<std::shared_ptr<Node>> neighbors;
     double current_to_neighbor{0};
 
-    // TODO: Iterate over nodes_ via 'const auto&' rather than 'auto&'. This
-    // creates issues with push_back().
     for ( const auto& [name, node] : nodes_ ) {
       current_to_neighbor = math::distance(current, *node);
       if ( current_to_neighbor <= route_planner_->max_range() && !node->visited )
@@ -161,6 +169,13 @@ namespace supercharger::algorithm
     return neighbors;
   }
 
+  /**
+   * @brief Constructs the final route by iterating over the Node's parents as a
+   * linked list.
+   * 
+   * @return std::vector<Node> The final route from the origin node to the
+   * destination node.
+   */
   std::vector<Node> Dijkstras::ConstructFinalRoute_(const Node& final) {
     // Create the route and add the final node.
     std::vector<Node> route;
@@ -190,8 +205,6 @@ namespace supercharger::algorithm
     // a given node... (I need to think more about what's actually happening
     // during the Dijkstra's route planning process).
     for ( auto iter = route.begin(); iter != route.end() - 1; ++iter) {
-      // TODO: Is there really no better way to convert an iterator to a raw
-      // pointer?
       Node& current = *iter;
       Node& next = *(iter + 1);
 
@@ -210,4 +223,4 @@ namespace supercharger::algorithm
 
     return route;
   }
-} // end namespace supercharger
+} // end namespace supercharger::algorithm

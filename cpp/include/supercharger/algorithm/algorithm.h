@@ -41,7 +41,7 @@ namespace supercharger
       PlannerResult(std::vector<Node>, double, double, double);
 
       const std::vector<double>& durations() {
-        if ( durations_.empty() ) {
+        if ( durations_.size() != route.size() ) {
           for ( const Node& node : route ) {
             durations_.push_back(node.duration);
           }

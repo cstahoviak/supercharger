@@ -1,12 +1,11 @@
 /**
  * @file optimizer.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief Defines the Optimizer interface functions.
  * @version 0.1
  * @date 2024-09-04
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/optimize/naive.h"
 #include "supercharger/optimize/nlopt.h"
@@ -34,4 +33,4 @@ namespace supercharger::optimize
         return std::unique_ptr<Optimizer>(nullptr);
     }
   }
-} // end namespace supercharger
+} // end namespace supercharger::optimize

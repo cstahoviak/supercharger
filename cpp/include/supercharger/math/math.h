@@ -29,7 +29,8 @@ namespace supercharger::math
    * code for that function in ~each~ translation unit that includes the header
    * where the function is defined, thus creating "multiple definition" errors.
    * 
-   * @return double 
+   * @return double The "great circle distance" between (lat1, lon1) and
+   * (lat2, lon2).
    */
   inline double great_circle_distance(
     const double lat1, const double lon1, const double lat2, const double lon2)
@@ -55,11 +56,9 @@ namespace supercharger::math
    * @brief Effectively a wrapper around the great_circle_distance() function
    * for use with the Charger type.
    * 
-   * TODO: Would it make more sense for this to be in math.h?
-   * 
    * @param charger1
    * @param charger2
-   * @return double 
+   * @return double The "great circle distance" between charger1 and charger2.
    */
   inline double distance(const Charger& charger1, const Charger& charger2)
   {
@@ -71,14 +70,12 @@ namespace supercharger::math
    * @brief Effectively a wrapper around the great_circle_distance() function
    * for use with the Node type.
    * 
-   * @param node1 A reference a const Node.
-   * @param node2 A reference to a const Node.
-   * @return double 
+   * @param node1
+   * @param node2
+   * @return double The "great circle distance" between node1 and node2.
    */
   inline double distance(const Node& node1, const Node& node2)
   {
     return distance(node1.charger(), node2.charger());
   }
-
-
 } //end namespace supercharger

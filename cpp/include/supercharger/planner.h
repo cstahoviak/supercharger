@@ -1,13 +1,12 @@
 #pragma once
 /**
  * @file planner.h
- * @author your name (you@domain.com)
+ * @author Carl Stahoviak
  * @brief 
  * @version 0.1
  * @date 2024-08-03
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/algorithm/algorithm.h"
 #include "supercharger/optimize/optimizer.h"
@@ -33,8 +32,7 @@ namespace supercharger
   class RoutePlanner
   {
     public:
-      // NOTE: Default parameter values must appear in the declaration.
-      // NOTE: Initially, both ctor args were rvalue references, but a more
+      // NOTE: Initially, the ctor args were rvalue references, but a more
       // common pattern is to consume by value and std::move in the initializer
       // list.
       RoutePlanner(AlgoType, CostFcnType, OptimizerType);
@@ -48,8 +46,6 @@ namespace supercharger
 
       RoutePlanner(AlgoType algo_type) : 
         RoutePlanner(algo_type, CostFcnType::NONE, OptimizerType::NONE) {};
-
-      // TODO: Add ctor that also takes max range and speed.
 
       PlannerResult PlanRoute(const std::string&, const std::string&);
 

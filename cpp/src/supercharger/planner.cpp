@@ -1,12 +1,11 @@
 /**
  * @file planner.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief The RoutePlanner class definition.
  * @version 0.1
  * @date 2024-08-03
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/algorithm/algorithm.h"
 #include "supercharger/logging.h"
@@ -73,19 +72,20 @@ namespace supercharger
     }
 
     // Create the planning algorithm.
-    // NOTE: Even though this function accepts 'algo_type' and 'cost_type as 
-    // r-value references, once we're within the scope of this function, they
-    // become l-values (pretty odd, right?). So we need to use std::move() to 
-    // cast the l-values 'algo_type' and 'cost_type' as r-values to "move" them
-    // to PlanningAlgorithm::GetPlanner.
     planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
       this, algo_type, cost_type);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);
-
   }
 
+  /**
+   * @brief Plan the route with the provided PlanningAlgorithm and Optimizer.
+   * 
+   * @param origin The origin node.
+   * @param destination The destination node.
+   * @return PlannerResult The planner result.
+   */
   PlannerResult RoutePlanner::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
@@ -125,6 +125,13 @@ namespace supercharger
     optimizer_.swap(new_optimizer);
   }
 
+  /**
+   * @brief Sets the origin and destination chargers and validates the
+   * "max_range" and "speed" values. 
+   * 
+   * @param origin The origin node.
+   * @param destination The destinatiion node.
+   */
   void RoutePlanner::Initialize_(
     const std::string& origin, const std::string& destination)
   {

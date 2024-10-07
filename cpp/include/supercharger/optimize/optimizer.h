@@ -2,12 +2,11 @@
 /**
  * @file optimizer.h
  * @author Carl Stahoviak
- * @brief Defines the Optimizer template class.
+ * @brief Defines the Optimizer base class.
  * @version 0.1
  * @date 2024-09-04
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/algorithm/algorithm.h"
 

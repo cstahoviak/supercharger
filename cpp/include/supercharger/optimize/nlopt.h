@@ -7,7 +7,6 @@
  * @date 2024-09-13
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/optimize/optimizer.h"
 
@@ -18,6 +17,9 @@ namespace supercharger::optimize
   class NLOptimizer : public Optimizer
   {
     public:
+      /**
+       * @brief Stores all data required by the constraint functions.
+       */
       struct ConstraintData
       {
         std::vector<double> distances;

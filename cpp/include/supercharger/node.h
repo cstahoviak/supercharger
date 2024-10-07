@@ -43,11 +43,11 @@ namespace supercharger
     // at this node. It does NOT include the charging time at this node.
     double cost{std::numeric_limits<double>::max()};
     
-    // "identity oriented" getters
+    // "identity-oriented" getters
     const Charger& charger() const { return charger_; }
     const std::string& name() const { return charger_.name; }
 
-    // "value oriented" getter and setter
+    // "value-oriented" getter and setter
     std::weak_ptr<Node> parent() const { return parent_; }
     void parent(std::shared_ptr<Node> parent) { parent_ = std::move(parent); }
 
