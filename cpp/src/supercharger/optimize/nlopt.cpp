@@ -231,7 +231,7 @@ namespace supercharger::optimize
     ConstraintData* data_ptr = reinterpret_cast<ConstraintData*>(data);
     std::vector<double> arrival_ranges = get_arrival_ranges(x, data_ptr);
 
-    // TODO: Assign the nx1 gradient values.
+    // Assign the nx1 gradient values.
     grad.assign(data_ptr->rates.cbegin(), data_ptr->rates.cend());
 
     // Return the arrival range at the final node.
