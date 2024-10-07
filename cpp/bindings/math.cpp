@@ -1,7 +1,7 @@
 /**
  * @file math.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief Pybind11 bindings for math functions.
  * @version 0.1
  * @date 2024-09-05
  * 

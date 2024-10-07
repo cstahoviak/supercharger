@@ -1,7 +1,7 @@
 /**
  * @file node.cpp
  * @author Carl Stahoviak
- * @brief Pybind11 bindings for...
+ * @brief Pybind11 bindings for the Node class.
  * @version 0.1
  * @date 2024-09-05
  * 

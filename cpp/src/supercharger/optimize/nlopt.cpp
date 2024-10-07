@@ -6,13 +6,9 @@
  * @date 2024-09-13
  * 
  * @copyright Copyright (c) 2024
- * 
- * TODO: Fix the "free(): invalid size" error.
- *  1. Implement the equality constraint via a C-style function.
- *  2. Completely switch to the C-style implementation.
  */
 
-#include "supercharger/optimizer/nloptimizer.h"
+#include "supercharger/optimize/nlopt.h"
 #include "supercharger/logging.h"
 
 #include "nlopt.hpp"
@@ -20,7 +16,7 @@
 #include <iomanip>
 #include <numeric>
 
-namespace supercharger::optimizer
+namespace supercharger::optimize
 {
   using ConstraintData = NLOptimizer::ConstraintData;
 
@@ -235,7 +231,7 @@ namespace supercharger::optimizer
     ConstraintData* data_ptr = reinterpret_cast<ConstraintData*>(data);
     std::vector<double> arrival_ranges = get_arrival_ranges(x, data_ptr);
 
-    // TODO: Assign the nx1 gradient values.
+    // Assign the nx1 gradient values.
     grad.assign(data_ptr->rates.cbegin(), data_ptr->rates.cend());
 
     // Return the arrival range at the final node.
@@ -305,11 +301,10 @@ namespace supercharger::optimizer
 
     // Set the initial guess, i.e. the charging duration at all nodes not
     // including the first and last nodes.
-    std::vector<double> x;
-    for ( auto iter = result.route.cbegin() + 1; iter != result.route.cend() - 1; ++iter )
-    {
-      x.push_back(iter->duration);
-    }
+    // TODO: Do this better (the const_cast here feels pretty ugly).
+    std::vector<double> x(
+      const_cast<PlannerResult&>(result).durations().cbegin() + 1,
+      const_cast<PlannerResult&>(result).durations().cend() - 1);
 
     // Run the optimization!
     double minf{0};
@@ -342,23 +337,23 @@ namespace supercharger::optimizer
       const Node& previous = *(iter - 1);
       Node& current = *iter;
 
-      // Update the arrival range at the current node
+      // Update the arrival range at the current node.
       current.arrival_range = previous.arrival_range + \
-                            previous.duration * previous.charger().rate - \
-                            math::distance(previous, current);
+        previous.duration * previous.charger().rate - \
+        math::distance(previous, current);
 
       // Update the cost at the current node
       current.cost = previous.cost + previous.duration + \
-                  math::distance(previous, current) / result.speed;
+        math::distance(previous, current) / result.speed;
 
-      // For all nodes but the final node, update the departure range
+      // For all nodes but the final node, update the departure range.
       if ( iter != optimized.route.end() - 1 ) {
         current.departure_range = current.arrival_range + \
           current.duration * current.charger().rate;
       }
     }
 
-    // Finally, update the total cost of the route
+    // Finally, update the total cost of the route.
     optimized.cost = optimized.route.back().cost;
     return optimized;
   }

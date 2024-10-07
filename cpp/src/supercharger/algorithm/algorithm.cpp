@@ -40,8 +40,8 @@ namespace supercharger::algorithm
   // algorithm types (Naive, Dijkstra's, etc.). 
   std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanningAlgorithm(
     RoutePlanner* rp,
-    AlgorithmType&& algo_type,
-    CostFunctionType&& cost_type)
+    AlgorithmType algo_type,
+    CostFunctionType cost_type)
   {
     switch ( algo_type )
     {

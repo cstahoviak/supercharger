@@ -25,10 +25,6 @@ namespace supercharger
 
   namespace algorithm
   {
-    // Forward declare the RoutePlanner
-    // NOTE: MUST include "planner.h" in "algorithm.cpp"
-    // class RoutePlanner;
-
     /**
      * @brief Stores the resulting output of a path planning algorithm. The
      * result contains both a path and a total cost (duration in hours) of the
@@ -43,6 +39,18 @@ namespace supercharger
 
       PlannerResult() = default;
       PlannerResult(std::vector<Node>, double, double, double);
+
+      const std::vector<double>& durations() {
+        if ( durations_.empty() ) {
+          for ( const Node& node : route ) {
+            durations_.push_back(node.duration);
+          }
+        }
+        return durations_;
+      }
+
+      private:
+        std::vector<double> durations_;
     };
 
     /**
@@ -68,7 +76,7 @@ namespace supercharger
         PlanningAlgorithm(RoutePlanner*);
 
         static std::unique_ptr<PlanningAlgorithm> GetPlanningAlgorithm(
-          RoutePlanner*, AlgorithmType&&, CostFunctionType&&);
+          RoutePlanner*, AlgorithmType, CostFunctionType);
         
         virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
         virtual double ComputeCost(const Node&, const Node&) const = 0;

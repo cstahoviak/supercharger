@@ -1,15 +1,14 @@
 /**
  * @file optimizer.cpp
  * @author Carl Stahoviak
- * @brief Pybind11 bindings for...
+ * @brief Pybind11 bindings for the Optimizer (and Optimizer-derived) classes.
  * @version 0.1
  * @date 2024-09-05
  * 
  * @copyright Copyright (c) 2024
- * 
  */
-#include "supercharger/optimizer/naive.h"
-#include "supercharger/optimizer/nloptimizer.h"
+#include "supercharger/optimize/naive.h"
+#include "supercharger/optimize/nlopt.h"
 
 #include <pybind11/pybind11.h>
 
@@ -17,13 +16,17 @@ namespace supercharger
 {
   using PlannerResult = algorithm::PlannerResult;
 
-  namespace optimizer
+  namespace optimize
   {
+    /**
+     * @brief The PyOptimizer "trampline" class allows the Optimizer class to
+     * be extensible on the python side.
+     */
     class PyOptimizer : public Optimizer
     {
       public:
         // Inherit the constructor(s)
-        using optimizer::Optimizer::Optimizer;
+        using optimize::Optimizer::Optimizer;
 
         // "Trampoline" function (required for each virtual function)
         PlannerResult Optimize(const PlannerResult&) const override;
@@ -43,7 +46,7 @@ namespace supercharger
 } // end namespace supercharger
 
 namespace py = pybind11;
-using namespace supercharger::optimizer;
+using namespace supercharger::optimize;
 
 void initOptimizer(py::module_& m)
 {

@@ -9,9 +9,9 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "supercharger/optimizer/optimizer.h"
+#include "supercharger/optimize/optimizer.h"
 
-namespace supercharger::optimizer
+namespace supercharger::optimize
 {
   class NaiveOptimizer : public Optimizer
   {
