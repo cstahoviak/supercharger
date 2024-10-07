@@ -32,7 +32,7 @@ namespace supercharger
   class RoutePlanner
   {
     public:
-      // NOTE: Initially, both ctor args were rvalue references, but a more
+      // NOTE: Initially, the ctor args were rvalue references, but a more
       // common pattern is to consume by value and std::move in the initializer
       // list.
       RoutePlanner(AlgoType, CostFcnType, OptimizerType);

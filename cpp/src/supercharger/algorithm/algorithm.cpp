@@ -24,6 +24,11 @@ namespace supercharger::algorithm
     std::vector<Node> route, double cost, double max_range, double speed) :
     route(std::move(route)), cost(cost), max_range(max_range), speed(speed) {}
 
+  /**
+   * @brief PlanningAlgorithm constructor.
+   * 
+   * @param rp 
+   */
   PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
     // Create a set of nodes from the route planner's charger network.
     for (const auto& [name, charger] : route_planner_->network() ) {
@@ -77,14 +82,15 @@ namespace supercharger::algorithm
    * @brief Computes the charge time at the current node required to make it to
    * the next node.
    * 
-   * @param current 
-   * @param next 
-   * @return double 
+   * @param current The current Node.
+   * @param next The next node.
+   * @return double The charge time required to make it to the next node. The
+   * arrival range at the 'next' node will be zero.
    */
   double PlanningAlgorithm::ComputeChargeTime_(
     const Node& current, const Node& next) const
   {
-    // Compute the math::distance to the next charger.
+    // Compute the distance to the next charger.
     double current_to_next = math::distance(current, next);
 
     // Compute the charge time required to make it to the next charger.
@@ -97,17 +103,32 @@ namespace supercharger::algorithm
     return std::max(0.0, charge_time);
   }
 
+  /**
+   * @brief Computes the arrival range at the 'next' node after departing the
+   * 'current' node.
+   * 
+   * @param current The current node.
+   * @param next The next node.
+   * @return double The arrival range at the 'next' node.
+   */
   double PlanningAlgorithm::ComputeArrivalRange_(
     const Node& current, const Node& next) const
   {
     // The range remaining after arriving at the next node is the departure
-    // range at the current node - the math::distance to the next charger.
+    // range at the current node - the distance to the next charger.
     return current.departure_range - math::distance(current, next);
   }
 
+  /**
+   * @brief Computes the departure range at the current node given the current
+   * node's arrival range and charging duration.
+   * 
+   * @param current The current node.
+   * @return double The departure range after charging at the current node.
+   */
   double PlanningAlgorithm::ComputeDepartureRange_(const Node& current) const {
     // The departure range at the current node is the arrival range at the
     // current node + range added by charging.
     return current.arrival_range + current.duration * current.charger().rate;
   }
-} // end namespace supercharger
+} // end namespace supercharger::algorithm

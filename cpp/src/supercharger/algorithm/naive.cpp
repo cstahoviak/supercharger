@@ -6,7 +6,6 @@
  * @date 2024-08-23
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/algorithm/naive.h"
 #include "supercharger/logging.h"
@@ -29,10 +28,12 @@ namespace supercharger::algorithm
    * "closer to" (chargers that are closer to the destination station than the 
    * current charger) sets of candidate chargers. Then, the actual set of
    * candidate chargers will be the intersection (std::set_intersection) of the
-   * "reachable" and "closer to" sets. I beleive this will require defining
+   * "reachable" and "closer to" sets. I believe this will require defining
    * both operator== and a hash function for the supercharger::Charger class.
    * 
-   * @param route 
+   * @param origin The origin node.
+   * @param destination The destination node.
+   * @return PlannerResult The planner result.
    */
   PlannerResult Naive::PlanRoute(
     const std::string& origin, const std::string& destination)
@@ -52,6 +53,12 @@ namespace supercharger::algorithm
       route_planner_->max_range(), route_planner_->speed() };
   }
 
+  /**
+   * @brief The "naive" route planner is implemented via a recursive method.
+   * 
+   * @param origin The origin node.
+   * @param destination The destination node.
+   */
   void Naive::PlanRouteRecursive_(
     const std::string& origin, const std::string& destination)
   {
@@ -73,7 +80,7 @@ namespace supercharger::algorithm
     bool is_reachable{false};
     bool is_closer{false};
 
-    // Store relative math::distance measurements.
+    // Store relative distance measurements.
     double current_to_candidate{0};
     double current_to_dest{0};
     double candidate_to_dest{0};
@@ -100,7 +107,7 @@ namespace supercharger::algorithm
       }
 
       // If the node is reachable, and it's closer to the destination than
-      // the current node, add it to map of candidate nodes.
+      // the current node, add it to the map of candidate nodes.
       if ( is_reachable && is_closer ) {
         // Compute the cost for the candidate charger.
         double cost = ComputeCost(*current, *node);
@@ -189,14 +196,13 @@ namespace supercharger::algorithm
   }
 
   /**
-   * @brief The "brute force" algorithm cost function.
+   * @brief The "naive" planning algorithm cost function.
    * 
-   * @param current 
-   * @param candidate 
-   * @return double 
+   * @param current The current node.
+   * @param candidate The candidate "next" node.
+   * @return double The cost to reach the candidate node from the current node.
    */
-  double Naive::ComputeCost(const Node& current, const Node& candidate) const 
-  {
+  double Naive::ComputeCost(const Node& current, const Node& candidate) const {
     // Define the cost
     double cost{0};
     
@@ -211,7 +217,7 @@ namespace supercharger::algorithm
 
       case CostFcnType::MINIMIZE_DIST_REMAINING:
       {
-        // The "cost" is the math::distance from the candidate charger to the
+        // The "cost" is the distance from the candidate charger to the
         // destination charger.
         cost = 
           math::distance(candidate.charger(), route_planner_->destination());
@@ -245,6 +251,11 @@ namespace supercharger::algorithm
     return cost;
   }
 
+  /**
+   * @brief Construct the final route.
+   * 
+   * @return std::vector<Node> 
+   */
   std::vector<Node> Naive::ConstructFinalRoute_(const Node& final) {
     // Construct the route.
     std::vector<Node> route;
@@ -258,6 +269,10 @@ namespace supercharger::algorithm
     return route;
   }
 
+  /**
+   * @brief Updates the route cost up to and including the charging time at
+   * the most recently added node to the route.
+   */
   void Naive::UpdateRouteCost_() {
     // Cost update can only take place for the second node onward.
     if ( route_.size() > 1 ) {
@@ -273,4 +288,4 @@ namespace supercharger::algorithm
       total_cost_ += current->duration;
     }
   }
-} // end namespace supercharger
+} // end namespace supercharger::algorithm
