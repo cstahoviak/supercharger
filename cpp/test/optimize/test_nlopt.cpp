@@ -70,9 +70,10 @@ TEST_F(NLOptimizerTestFixture, TestGetArrivalRanges)
 
   // For Dijkstra's algorithm, we expect the arrival ranges to be zero for all
   // nodes from node 3 onward.
+  constexpr int offset{2};
   for (size_t idx = 0; idx < arrival_ranges.size(); idx++) {
-    EXPECT_DOUBLE_EQ(
-      arrival_ranges.at(idx), planner_result.route.at(idx + 2).arrival_range);
+    EXPECT_DOUBLE_EQ(arrival_ranges.at(idx),
+      planner_result.route.at(idx + offset).arrival_range);
   }
 }
 
