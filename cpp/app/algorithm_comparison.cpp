@@ -6,6 +6,16 @@
  * @version 0.1
  * @date 2024-10-01
  * 
+ * TODO: Valgrind provides the following summary of memory leaks. Only the
+ * "Naive" planner has a leak.
+ * 
+ * ==37798== LEAK SUMMARY:
+ * ==37798==    definitely lost: 128 bytes in 1 blocks
+ * ==37798==    indirectly lost: 738 bytes in 6 blocks
+ * ==37798==      possibly lost: 0 bytes in 0 blocks
+ * ==37798==    still reachable: 0 bytes in 0 blocks
+ * ==37798==         suppressed: 0 bytes in 0 blocks
+ * 
  * @copyright Copyright (c) 2024
  */
 #include "supercharger/logging.h"
