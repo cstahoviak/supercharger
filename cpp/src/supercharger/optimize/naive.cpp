@@ -1,28 +1,31 @@
 /**
  * @file naive.cpp
- * @author your name (you@domain.com)
- * @brief 
+ * @author Carl Stahoviak
+ * @brief The "naive" optimizer definition.
  * @version 0.1
  * @date 2024-09-04
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/optimize/naive.h"
 #include "supercharger/logging.h"
 
 namespace supercharger::optimize
 {
+  /**
+   * @brief Implements the "naive" optimization scheme. The "naive" optimizer
+   * finds the node in the route with the max-rate charger (that is not the
+   * first, last or second-to-last node) and minimizes the route's total charge
+   * time by maximizing the charge time at the max-rate node.
+   * 
+   * @param result An "unoptimized" planner result.
+   * @return PlannerResult The optimized planner result.
+   */
   PlannerResult NaiveOptimizer::Optimize(const PlannerResult& result) const {
     const std::vector<Node>& route = result.route;
     if ( route.size() < 4 ) {
       INFO("The route contains 3 nodes or fewer and cannot be optimized.");
       return result;
-    }
-
-    // For debug purposes, print the charger rate at each node.
-    for ( const Node& node : route ) {
-      DEBUG(node.name() << " charger rate: " << node.charger().rate);
     }
     
     // Find the node with the fastest charger in the route (that's not the
@@ -44,7 +47,7 @@ namespace supercharger::optimize
       max_node.charger().rate << " km/hr is the fastest charger on the route.");
 
     // The charge time at the "max-rate" node will be a function of the
-    // math::distance remaining to the destination.
+    // distance remaining to the destination.
     double dist_remaining{0};
     for ( size_t idx = argmax; idx < optimized.size() - 1; idx++ ) {
       const Node& current = optimized.at(idx);
@@ -55,8 +58,8 @@ namespace supercharger::optimize
       route.back().name() << ": " << dist_remaining << " km.");
 
     // If the distance remaining is less than the max range of the vehicle, only
-    // charge the vehicle enough at the max-rate node to make it the
-    // destination. Otherwise, the math::distance remaining is greater than the 
+    // charge the vehicle enough at the max-rate node to make it to the
+    // destination. Otherwise, the distance remaining is greater than the 
     // maximum range of the vehicle, so we can charge the vehicle fully. 
     max_node.departure_range = ( dist_remaining <= result.max_range ) ? 
       dist_remaining - max_node.departure_range : result.max_range;
@@ -87,7 +90,7 @@ namespace supercharger::optimize
 
       if ( idx < optimized.size() - 1 ) {
         // For all nodes not the destination, update the charge duration if
-        // the range remaining is less than the math::distance to the next node.
+        // the range remaining is less than the distance to the next node.
         const Node& next = optimized.at(idx + 1);
         double dist_to_next = math::distance(current, next);
         if ( current.arrival_range < dist_to_next ) {
@@ -103,7 +106,7 @@ namespace supercharger::optimize
           " from " << route.at(idx).duration << " hrs to " <<
           current.duration << " hrs.");
 
-        // Update the departure range
+        // Update the departure range.
         current.departure_range = current.arrival_range +
           current.duration * current.charger().rate;
       }
@@ -111,4 +114,4 @@ namespace supercharger::optimize
     
     return { optimized, optimized.back().cost, result.max_range, result.speed };
   }
-} // end namespace supercharger
+} // end namespace supercharger::optimize

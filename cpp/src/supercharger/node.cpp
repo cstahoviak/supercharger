@@ -1,6 +1,6 @@
 /**
  * @file node.cpp
- * @author your name (you@domain.com)
+ * @author Carl Stahoviak
  * @brief 
  * @version 0.1
  * @date 2024-08-31
@@ -14,6 +14,9 @@
 
 namespace supercharger
 {
+  /**
+   * @brief Resets the Node's attributes to their original values.
+   */
   void Node::Reset() {
     duration = 0.0;
     arrival_range = 0.0;
@@ -34,4 +37,4 @@ namespace supercharger
     }
     return stream;
   }
-}
+} // end namespace supercharger
