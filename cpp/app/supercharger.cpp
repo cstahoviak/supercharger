@@ -1,7 +1,14 @@
 /**
  * @file supercharger.cpp
  * @author Carl Stahoviak
- * @brief The top-level Tesla Supercharger route planning application.
+ * @brief The top-level Tesla Supercharger route planning application. The
+ * output of this application is a single string in the format required by the
+ * 'checker_linux' application used for route validation. The required output
+ * format looks like:
+ * 
+ * <origin>, <node-2>, <charging-time-2>, <node-3>, <charging-time-2>, ...
+ * <node-n>, <charging-time-n>, <destination>
+ * 
  * @version 0.1
  * @date 2024-08-03
  * 
