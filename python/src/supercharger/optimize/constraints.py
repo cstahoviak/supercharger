@@ -1,5 +1,5 @@
 """
-
+The supercharger optimization constraints module.
 """
 from dataclasses import dataclass, field, InitVar
 from typing import Sequence
