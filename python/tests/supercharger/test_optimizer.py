@@ -10,8 +10,8 @@ from scipy import optimize
 from supercharger.optimizer import (
     NonlinearOptimizer,
     get_arrival_range,
-    cost_fcn,
-    cost_fcn_grad,
+    objective,
+    objective_grad,
     ineq_constraint,
     ineq_constraint_grad,
     eq_constraint,
@@ -82,8 +82,9 @@ def test_get_arrival_range(planner_result, constraint_data):
 
     # For each node in the solution obtained by Dijkstra's, we expect the
     # arrival range to be zero.
-    np.testing.assert_equal(actual=arrival_ranges,
-                            desired=np.zeros_like(arrival_ranges))
+    np.testing.assert_allclose(actual=arrival_ranges,
+                               desired=np.zeros_like(arrival_ranges),
+                               atol=1e-9)
 
 
 def test_cost_fcn_gradient(planner_result, eval_point):
@@ -91,7 +92,7 @@ def test_cost_fcn_gradient(planner_result, eval_point):
     Validates the analytically derived cost function gradient against a
     (forward) finite-difference approximation of the gradient.
     """
-    residual = optimize.check_grad(cost_fcn, cost_fcn_grad, eval_point)
+    residual = optimize.check_grad(objective, objective_grad, eval_point)
     np.testing.assert_equal(actual=residual, desired=np.zeros_like(residual))
 
 

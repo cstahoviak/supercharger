@@ -72,8 +72,8 @@ def update_planner_result(result: PlannerResult,
     """
     if len(durations) != len(result.route) - 2:
         raise ValueError(
-            f"The length of the 'new_durations' array must be equal to two "
-            f"less than len(PlannerResult.route) ({len(result.route) - 2}). "
+            f"The length of the 'durations' array must be equal to two less"
+            f"than len(PlannerResult.route) ({len(result.route) - 2}). "
             f"Actual length is {len(durations)}.")
 
     # Update the charging duration for all nodes between the start and end.
