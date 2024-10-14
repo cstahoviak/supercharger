@@ -1,7 +1,7 @@
 """
 The Python supercharger optimization module.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 from functools import partial
 from typing import Sequence
 from warnings import warn
@@ -24,9 +24,23 @@ class ConstraintData:
     rates: (n-2,) The known charging rates at each node for nodes [2, n-1].
     init_arrival_rng: The known arrival range at node two (the node following
         the origin).
+
+    The A matrix encodes the charging rates at each node and looks like:
+
+    [[r1,  0,  0, ..., 0],
+     [r1, r2,  0, ..., 0],
+     [r1, r2, r3, ..., 0],
+     ...
+     [r1, r2, r3, ..., r_(n-1)]]
+
+     where r1 is the charging rate at the first node (the node following the
+     origin), and r_(n-1) is the charging rate at the second to last node.
+
+     A_ineq = A[:-1]
+     A_eq = A[-1]
     """
     distances: np.ndarray
-    rates: np.ndarray
+    rates: InitVar[np.ndarray]
     init_arrival_range: float
 
     n: int = field(init=False)
@@ -34,10 +48,10 @@ class ConstraintData:
     A_ineq: np.ndarray = field(init=False)
     A_eq: np.ndarray = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self, rates):
         # Define the A matrix
-        self.n = len(self.rates)
-        self.A = np.tril(np.tile(self.rates, (self.n, 1)))
+        self.n = len(rates)
+        self.A = np.tril(np.tile(rates, (self.n, 1)))
 
         # Define the A matrix for the inequality constraint
         self.A_ineq = self.A[:-1]
@@ -113,10 +127,9 @@ def ineq_constraint_grad(x: Sequence[float], constr_data: ConstraintData) -> \
     are being optimized), and m = n-1 (the number of nodes that the inequality
     constraint applies to).
     """
-    m = len(x) - 1
-
     # Validation of C++-style lower-triangular matrix generation
     # n = len(x)
+    # m = n - 1
     # grad = np.zeros(m * n)
     # for idx_m in range(m):
     #     for idx_n in range(n):
