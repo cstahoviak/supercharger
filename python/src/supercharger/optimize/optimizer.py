@@ -1,13 +1,21 @@
 """
 The Python supercharger optimization module.
 """
-from dataclasses import dataclass
 from functools import partial
 from typing import Sequence
 from warnings import warn
 
 import numpy as np
 from scipy import optimize
+
+from python.sandbox.optimization import constraint
+from supercharger.optimize.constraints import (
+    ConstraintData,
+    ineq_constraint,
+    ineq_constraint_grad,
+    eq_constraint,
+    eq_constraint_grad
+)
 
 from supercharger.pysupercharger import (
     distance,
@@ -16,21 +24,7 @@ from supercharger.pysupercharger import (
 )
 
 
-@dataclass
-class ConstraintData:
-    """
-    rates: (n-2,) The known charging rates at each node for nodes [2, n-1].
-    distances: (n-2,) The known distances between nodes, e.g. distances[0] is
-        the distance from the second node to the third node.
-    init_arrival_rng: The known arrival range at node two (the node following
-        the origin).
-    """
-    distances: np.ndarray
-    rates: np.ndarray
-    init_arrival_range: float
-
-
-def cost_fcn(x: Sequence[float]) -> float:
+def objective(x: Sequence[float]) -> float:
     """
     Args:
         x: (n-2,) A list of charging durations for all nodes but the first and
@@ -42,7 +36,7 @@ def cost_fcn(x: Sequence[float]) -> float:
     return np.sum(x)
 
 
-def cost_fcn_grad(x: Sequence[float]) -> np.ndarray:
+def objective_grad(x: Sequence[float]) -> np.ndarray:
     """
     Evaluates the gradient of the cost function as the point x.
 
@@ -53,82 +47,6 @@ def cost_fcn_grad(x: Sequence[float]) -> np.ndarray:
         The cost function gradient evaluated at the point x.
     """
     return np.ones_like(x)
-
-
-def get_arrival_range(
-        durations: Sequence[float],
-        data: ConstraintData) -> np.ndarray:
-    """
-    Computes the arrival range at each node [2, n].
-
-    Args:
-        durations: (n-2,) A list of charging durations for all nodes but the
-            first and last node, [2, n-1]
-        data: A ConstraintData instance.
-
-    Returns: (n-2,) The arrival range at each node from the third node onward.
-
-    """
-    arrival_ranges = np.zeros_like(durations)
-    for idx, (duration, rate, dist) in (
-            enumerate(zip(durations, data.rates, data.distances))):
-        # Set the previous arrival range
-        prev_arrival_rng = arrival_ranges[idx - 1] if idx else \
-            data.init_arrival_range
-
-        # Compute the arrival range at the current node.
-        arrival_ranges[idx] = prev_arrival_rng + duration * rate - dist
-
-    return arrival_ranges
-
-
-def ineq_constraint(x: Sequence[float], constr_data: ConstraintData) -> \
-        np.ndarray:
-    """
-    The inequality constraint function. Applies to all nodes between the second
-    node and the second to last node, [2, n-1].
-    """
-    return get_arrival_range(x, constr_data)[:-1]
-
-
-def ineq_constraint_grad(x: Sequence[float], constr_data: ConstraintData) -> \
-        np.ndarray:
-    """
-    The inequality constraint function gradient, an mxn matrix where n is the
-    dimension of the vector x (and the number of nodes whose charging durations
-    are being optimized), and m = n-1 (the number of nodes that the inequality
-    constraint applies to).
-    """
-    m = len(x) - 1
-
-    # Validation of C++-style lower-triangular matrix generation
-    # n = len(x)
-    # grad = np.zeros(m * n)
-    # for idx_m in range(m):
-    #     for idx_n in range(n):
-    #         if idx_n <= idx_m:
-    #             grad[idx_m * n + idx_n] = constr_data.rates[idx_n]
-
-    return np.tril(np.tile(constr_data.rates, (m, 1)))
-
-
-def eq_constraint(x: Sequence[float], constr_data: ConstraintData) -> \
-        np.ndarray:
-    """
-    The equality constraint applies to the last node - a time optimal route will
-    have an arrival range of zero at the final node.
-    """
-    return get_arrival_range(x, constr_data)[-1]
-
-
-def eq_constraint_grad(x: Sequence[float], constr_data: ConstraintData) -> \
-        np.ndarray:
-    """
-    The equality constraint function gradient, an nx1 vector where n is the
-    dimension of the vector x (and the number of nodes whose charging durations
-    are being optimized).
-    """
-    return constr_data.rates
 
 
 class NonlinearOptimizer(Optimizer):
@@ -143,6 +61,8 @@ class NonlinearOptimizer(Optimizer):
         # Store the optimization method
         self._available_methods = ['COBYQA', 'SLSQP', 'trust-constr']
         self._method = None
+
+        self._use_linear_constraints = True
 
     def optimize(self, result: PlannerResult, method: str = 'SLSQP') -> \
             PlannerResult:
@@ -173,7 +93,7 @@ class NonlinearOptimizer(Optimizer):
         """
         Create the ConstraintData from a PlannerResult.
         """
-        # Define some arrays for route optimization
+        # Extract some relevant data from the planner result.
         distances = []
         rates = []
         for idx, node in enumerate(result.route[1:]):
@@ -204,30 +124,57 @@ class NonlinearOptimizer(Optimizer):
         # Define the dimensionality of the problem (n-2)
         dim = len(result.route) - 2
 
-        # Define the lower and upper bounds of the optimization constraint - the
-        # arrival range at each node, for nodes [2, n-1].
-        ineq_constraint_lb = np.zeros(dim - 1)
-        # The upper bound on the arrival range at a given node is equal to the
-        # vehicle's maximum range minus the distance between that node and the
-        # previous node.
-        ineq_constraint_ub = \
-            np.full_like(ineq_constraint_lb, result.max_range) - \
-            constr_data.distances[:-1]
-
-        # Define the nonlinear inequality and equality constraints
         constraints = []
-        constraints.append(optimize.NonlinearConstraint(
-            fun=partial(ineq_constraint, constr_data=constr_data),
-            lb=ineq_constraint_lb,
-            ub=ineq_constraint_ub,
-            jac=partial(ineq_constraint_grad, constr_data=constr_data))
-        )
-        constraints.append(optimize.NonlinearConstraint(
-            fun=partial(eq_constraint, constr_data=constr_data),
-            lb=0,
-            ub=0,
-            jac=partial(eq_constraint_grad, constr_data=constr_data))
-        )
+        if self._use_linear_constraints:
+            # Define the linear inequality constraint bounds.
+            L = np.tri(dim - 1)
+            I = np.eye(dim - 1)
+            d = constr_data.distances[:-1]
+            ineq_constraint_lb2 = L.dot(d) - constr_data.init_arrival_range
+            ineq_constraint_ub2 = np.subtract(L, I).dot(d) + \
+                result.max_range - constr_data.init_arrival_range
+
+            # Formulate the inequality constraint as a linear constraint
+            constraints.append(optimize.LinearConstraint(
+                A=constr_data.A_ineq,
+                lb=ineq_constraint_lb2,
+                ub=ineq_constraint_ub2)
+            )
+
+            # Formulate the equality constraint as a linear constraint
+            eq_constraint_lb = constr_data.distances.sum() - \
+                               constr_data.init_arrival_range
+            eq_constraint_ub = eq_constraint_lb
+            constraints.append(optimize.LinearConstraint(
+                A=constr_data.A_eq,
+                lb=eq_constraint_lb,
+                ub=eq_constraint_ub)
+            )
+        else:
+            # Use "nonlinear" constraints.
+            # Define the lower and upper bounds of the optimization constraint -
+            # the arrival range at each node, for nodes [2, n-1].
+            ineq_constraint_lb = np.zeros(dim - 1)
+            # The upper bound on the arrival range at a given node is equal to
+            # the vehicle's maximum range minus the distance between that node
+            # and the previous node.
+            ineq_constraint_ub = \
+                np.full_like(ineq_constraint_lb, result.max_range) - \
+                constr_data.distances[:-1]
+
+            # Define the nonlinear inequality and equality constraints
+            constraints.append(optimize.NonlinearConstraint(
+                fun=partial(ineq_constraint, constr_data=constr_data),
+                lb=ineq_constraint_lb,
+                ub=ineq_constraint_ub,
+                jac=partial(ineq_constraint_grad, constr_data=constr_data))
+            )
+            constraints.append(optimize.NonlinearConstraint(
+                fun=partial(eq_constraint, constr_data=constr_data),
+                lb=0,
+                ub=0,
+                jac=partial(eq_constraint_grad, constr_data=constr_data))
+            )
 
         # Define the bounds on the charging durations.The upper bound for the
         # charge time at each node is determined by the known arrival range at
@@ -238,10 +185,10 @@ class NonlinearOptimizer(Optimizer):
 
         # Define and run the optimization problem
         optimization_result = optimize.minimize(
-            fun=cost_fcn,
+            fun=objective,
             x0=np.array([node.duration for node in result.route[1:-1]]),
             method=self._method,
-            jac=cost_fcn_grad,
+            jac=objective_grad,
             bounds=bounds,
             constraints=constraints)
 
