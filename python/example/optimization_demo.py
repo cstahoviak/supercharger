@@ -3,7 +3,7 @@ A demonstration of the Python route optimizer.
 """
 from time import perf_counter
 
-from supercharger.optimizer import NonlinearOptimizer
+from supercharger.optimize.optimizer import NonlinearOptimizer
 from supercharger.utils.plotly import plot_charging_durations, plot_ranges
 
 from supercharger.pysupercharger import (
