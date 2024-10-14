@@ -50,6 +50,7 @@ class ConstraintData:
         # Define the A matrix for the equality constraint
         self.A_eq = self.A[-1]
 
+
 def get_arrival_range(
         durations: Sequence[float],
         data: ConstraintData) -> np.ndarray:
