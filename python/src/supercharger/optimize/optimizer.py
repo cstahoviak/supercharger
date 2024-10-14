@@ -8,6 +8,7 @@ from warnings import warn
 import numpy as np
 from scipy import optimize
 
+from python.sandbox.optimization import constraint
 from supercharger.optimize.constraints import (
     ConstraintData,
     ineq_constraint,
@@ -60,6 +61,8 @@ class NonlinearOptimizer(Optimizer):
         # Store the optimization method
         self._available_methods = ['COBYQA', 'SLSQP', 'trust-constr']
         self._method = None
+
+        self._use_linear_constraints = True
 
     def optimize(self, result: PlannerResult, method: str = 'SLSQP') -> \
             PlannerResult:
@@ -121,54 +124,57 @@ class NonlinearOptimizer(Optimizer):
         # Define the dimensionality of the problem (n-2)
         dim = len(result.route) - 2
 
-        # Define the lower and upper bounds of the optimization constraint - the
-        # arrival range at each node, for nodes [2, n-1].
-        ineq_constraint_lb = np.zeros(dim - 1)
-        # The upper bound on the arrival range at a given node is equal to the
-        # vehicle's maximum range minus the distance between that node and the
-        # previous node.
-        ineq_constraint_ub = \
-            np.full_like(ineq_constraint_lb, result.max_range) - \
-            constr_data.distances[:-1]
-
-        # Define the linear constraint bounds.
-        L = np.tri(dim - 1)
-        I = np.eye(dim - 1)
-        d = constr_data.distances[:-1]
-        ineq_constraint_lb2 = L.dot(d) - constr_data.init_arrival_range
-        ineq_constraint_ub2 = np.subtract(L, I).dot(d) + result.max_range - \
-            constr_data.init_arrival_range
-
-        # Define the nonlinear inequality and equality constraints
         constraints = []
-        # constraints.append(optimize.NonlinearConstraint(
-        #     fun=partial(ineq_constraint, constr_data=constr_data),
-        #     lb=ineq_constraint_lb,
-        #     ub=ineq_constraint_ub,
-        #     jac=partial(ineq_constraint_grad, constr_data=constr_data))
-        # )
-        # constraints.append(optimize.NonlinearConstraint(
-        #     fun=partial(eq_constraint, constr_data=constr_data),
-        #     lb=0,
-        #     ub=0,
-        #     jac=partial(eq_constraint_grad, constr_data=constr_data))
-        # )
+        if self._use_linear_constraints:
+            # Define the linear inequality constraint bounds.
+            L = np.tri(dim - 1)
+            I = np.eye(dim - 1)
+            d = constr_data.distances[:-1]
+            ineq_constraint_lb2 = L.dot(d) - constr_data.init_arrival_range
+            ineq_constraint_ub2 = np.subtract(L, I).dot(d) + \
+                result.max_range - constr_data.init_arrival_range
 
-        # Formulate the inequality constraint as a linear constraint
-        constraints.append(optimize.LinearConstraint(
-            A=constr_data.A_ineq,
-            lb=ineq_constraint_lb2,
-            ub=ineq_constraint_ub2)
-        )
-        # Formulate the equality constraint as a linear constraint
-        eq_constraint_lb = constr_data.distances.sum() - \
-            constr_data.init_arrival_range
-        eq_constraint_ub = eq_constraint_lb
-        constraints.append(optimize.LinearConstraint(
-            A=constr_data.A_eq,
-            lb=eq_constraint_lb,
-            ub=eq_constraint_ub)
-        )
+            # Formulate the inequality constraint as a linear constraint
+            constraints.append(optimize.LinearConstraint(
+                A=constr_data.A_ineq,
+                lb=ineq_constraint_lb2,
+                ub=ineq_constraint_ub2)
+            )
+
+            # Formulate the equality constraint as a linear constraint
+            eq_constraint_lb = constr_data.distances.sum() - \
+                               constr_data.init_arrival_range
+            eq_constraint_ub = eq_constraint_lb
+            constraints.append(optimize.LinearConstraint(
+                A=constr_data.A_eq,
+                lb=eq_constraint_lb,
+                ub=eq_constraint_ub)
+            )
+        else:
+            # Use "nonlinear" constraints.
+            # Define the lower and upper bounds of the optimization constraint -
+            # the arrival range at each node, for nodes [2, n-1].
+            ineq_constraint_lb = np.zeros(dim - 1)
+            # The upper bound on the arrival range at a given node is equal to
+            # the vehicle's maximum range minus the distance between that node
+            # and the previous node.
+            ineq_constraint_ub = \
+                np.full_like(ineq_constraint_lb, result.max_range) - \
+                constr_data.distances[:-1]
+
+            # Define the nonlinear inequality and equality constraints
+            constraints.append(optimize.NonlinearConstraint(
+                fun=partial(ineq_constraint, constr_data=constr_data),
+                lb=ineq_constraint_lb,
+                ub=ineq_constraint_ub,
+                jac=partial(ineq_constraint_grad, constr_data=constr_data))
+            )
+            constraints.append(optimize.NonlinearConstraint(
+                fun=partial(eq_constraint, constr_data=constr_data),
+                lb=0,
+                ub=0,
+                jac=partial(eq_constraint_grad, constr_data=constr_data))
+            )
 
         # Define the bounds on the charging durations.The upper bound for the
         # charge time at each node is determined by the known arrival range at
