@@ -153,8 +153,9 @@ TODO: Add profiling for each algorithm.
 
 The following figure illustrates how the constrained optimization scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
 
-![charging durations](/figs/charging_durations.png "Charging Durations")
+![charging durations](/figs/charging_durations_stacked.png "Charging Durations")
 
+Figure 1: The lighter area at the bottom of each bar represents the total charging time _up to_ that node, and the darker area at the top of the bar represents the charge time _at_ that node. Upon arrival at the destination node (Cadillac, MI), the constrained optimization scheme has succesfully reduced the total charging time from 6.8217 hrs (6:49) to 6.4107 hrs (6:24) for a total savings of over 24 minutes.
 
 ### Constrained Nonlinear Optimization with SciPy `minimize`
 Adding python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limitations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
