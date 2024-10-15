@@ -1,6 +1,8 @@
 """
 Plotly plotting utility functions.
 """
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objs as go
 
@@ -9,8 +11,12 @@ from supercharger.pysupercharger import PlannerResult
 DIJKSTRAS_COLOR = 'rgb(55, 83, 109)'
 NL_COLOR = 'rgb(26, 118, 255)'
 
+mpl.rcParams['text.usetex'] = True
+# mpl.rcParams['font.family'] = 'serif'
+# mpl.rcParams['font.serif'] = ['Computer Modern']
 
-def plot_charging_durations(baseline: PlannerResult, optimized: PlannerResult):
+
+def plot_durations(baseline: PlannerResult, optimized: PlannerResult):
     """
     Args:
         baseline: The baseline PlannerResult.
@@ -54,6 +60,105 @@ def plot_charging_durations(baseline: PlannerResult, optimized: PlannerResult):
                 'x': 0.01}
     )
     fig.show()
+
+
+def plot_stacked_durations(baseline: PlannerResult, optimized: PlannerResult):
+    """
+    Args:
+        baseline: The baseline PlannerResult.
+        optimized: The optimized PlannerResult
+    """
+    labels = [f'{node.name}\n({node.charger.rate:.0f} km/hr)' for node in
+              baseline.route]
+    x = np.arange(len(labels))
+
+    baseline_durations = np.array([node.duration for node in baseline.route])
+    optimized_durations = np.array([node.duration for node in optimized.route])
+
+    n = len(baseline.route)
+    baseline_running_total = np.array([baseline_durations[:idx].sum() for
+                                       idx in range(n)])
+    optimized_running_total = np.array([optimized_durations[:idx].sum() for
+                                       idx in range(n)])
+
+    fig, ax = plt.subplots(figsize=(12,8))
+    width = 0.35
+    alpha = 0.4
+    bottom = np.zeros(n)
+
+    bars = []
+    bars.append(ax.bar(
+        x=x - width/2,
+        height=baseline_running_total,
+        width=width,
+        bottom=bottom,
+        label="Dijkstra's Algorithm Charging Profile",
+        color="tab:gray",
+        alpha=alpha)
+    )
+    bars.append(ax.bar(
+        x=x - width/2,
+        height=baseline_durations,
+        width=width,
+        bottom=baseline_running_total,
+        color="tab:gray")
+    )
+
+    bars.append(ax.bar(
+        x=x + width/2,
+        height=optimized_running_total,
+        width=width,
+        bottom=bottom,
+        label="Optimized Charging Profile",
+        color="tab:blue",
+        alpha=alpha)
+    )
+    bars.append(ax.bar(
+        x=x + width/2,
+        height=optimized_durations,
+        width=width,
+        bottom=optimized_running_total,
+        color="tab:blue")
+    )
+
+    # Add centered labels to all bars
+    bar_labels = []
+    get_bar_labels = lambda arr: [f'{val:.4f}' if val else '' for val in arr]
+    bar_labels.append(get_bar_labels(baseline_running_total))
+    bar_labels.append(get_bar_labels(baseline_durations))
+    bar_labels.append(get_bar_labels(optimized_running_total))
+    bar_labels.append(get_bar_labels(optimized_durations))
+    for label, bar in zip(bar_labels, bars):
+        ax.bar_label(bar, labels=label, fmt="%.4f", label_type='center')
+
+    # Add horizontal lines for max values
+    plt.axhline(y=baseline_running_total[-1],
+                color="tab:gray",
+                linestyle='--',
+                label="Dijkstra's Algorithm Total Charge Time")
+    plt.axhline(y=optimized_running_total[-1],
+                color="tab:blue",
+                linestyle='--',
+                label="Optimized Total Charge Time")
+
+    ax.set_title("Total Charging Duration Improvement via Constrained "
+                 "Optimization")
+    ax.set_ylabel('Charging duration [hrs]')
+    ax.set_xticks(x, labels)
+    ax.set_ylim(0, int(baseline_running_total[-1] + 1))
+
+    # Add ytick labels
+    y_ticks = np.append(ax.get_yticks(),
+        [baseline_running_total[-1], optimized_running_total[-1]])
+    ax.set_yticks(y_ticks)
+
+    # Reordering the labels
+    handles, labels = plt.gca().get_legend_handles_labels()
+    order = [2, 3, 0, 1]
+    legend = plt.legend([handles[i] for i in order], [labels[i] for i in order])
+    legend.set_draggable(True)
+
+    plt.show()
 
 
 def plot_ranges(baseline: PlannerResult, optimized: PlannerResult):

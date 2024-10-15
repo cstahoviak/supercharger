@@ -4,7 +4,11 @@ A demonstration of the Python route optimizer.
 from time import perf_counter
 
 from supercharger.optimize.optimizer import NonlinearOptimizer
-from supercharger.utils.plotly import plot_charging_durations, plot_ranges
+from supercharger.utils.plotly import (
+    plot_durations,
+    plot_stacked_durations,
+    plot_ranges
+)
 
 from supercharger.pysupercharger import (
     AlgorithmType,
@@ -41,8 +45,9 @@ if __name__ == "__main__":
     print(optimized)
 
     # Plot the results
-    plot_charging_durations(result, optimized)
-    plot_ranges(result, optimized)
+    plot_durations(result, optimized)
+    plot_stacked_durations(result, optimized)
+    # plot_ranges(result, optimized)
 
     # TODO: Create a stacked bar chart of charging durations that represents
     #  the total charging time up to that node.

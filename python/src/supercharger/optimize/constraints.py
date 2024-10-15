@@ -15,6 +15,7 @@ class ConstraintData:
     rates: (n-2,) The known charging rates at each node for nodes [2, n-1].
     init_arrival_rng: The known arrival range at node two (the node following
         the origin).
+    max_range: The maximum range of the vehicle.
 
     The A matrix encodes the charging rates at each node and looks like:
 
@@ -33,6 +34,7 @@ class ConstraintData:
     distances: np.ndarray
     rates: InitVar[np.ndarray]
     init_arrival_range: float
+    max_range: float
 
     n: int = field(init=False)
     A: np.ndarray = field(init=False)

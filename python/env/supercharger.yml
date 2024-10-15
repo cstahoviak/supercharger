@@ -3,8 +3,12 @@ channels:
   - conda-forge
 dependencies:
   - python=3.10
+  - matplotlib
   - numpy
   - plotly
+  - pip
   - pybind11
   - pytest
   - scipy
+  - pip:
+    - latex

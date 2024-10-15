@@ -2,11 +2,11 @@
 The Python supercharger optimization module.
 """
 from functools import partial
-from typing import Sequence
+from typing import List
 from warnings import warn
 
 import numpy as np
-from scipy import optimize
+import scipy
 
 from python.sandbox.optimization import constraint
 from supercharger.optimize.constraints import (
@@ -24,19 +24,19 @@ from supercharger.pysupercharger import (
 )
 
 
-def objective(x: Sequence[float]) -> float:
+def objective(x: np.ndarray) -> float:
     """
     Args:
-        x: (n-2,) A list of charging durations for all nodes but the first and
+        x: (n-2,) An array of charging durations for all nodes but the first and
             last node.
 
     Returns: The total sum of charging durations.
 
     """
-    return np.sum(x)
+    return x.sum()
 
 
-def objective_grad(x: Sequence[float]) -> np.ndarray:
+def objective_grad(x: np.ndarray) -> np.ndarray:
     """
     Evaluates the gradient of the cost function as the point x.
 
@@ -62,8 +62,6 @@ class NonlinearOptimizer(Optimizer):
         self._available_methods = ['COBYQA', 'SLSQP', 'trust-constr']
         self._method = None
 
-        self._use_linear_constraints = True
-
     def optimize(self, result: PlannerResult, method: str = 'SLSQP') -> \
             PlannerResult:
         """
@@ -81,12 +79,50 @@ class NonlinearOptimizer(Optimizer):
         if method in self._available_methods:
             self._method = method
         else:
-            warn(f"Cannot perform constrained, nonlinear optimization via the "
-                 f"'{method}' method. Available methods are "
-                 f"{self._available_methods}. Proceeding with 'SLSQP'.")
+            warn(f"Cannot perform constrained optimization via the '{method}' "
+                 f"method. Available methods are {self._available_methods}. "
+                 f"Proceeding with 'SLSQP'.")
             self._method = 'SLSQP'
 
         return self.Optimize(result)
+
+    def Optimize(self, result: PlannerResult) -> PlannerResult:
+        """
+        Optimize the route via constrained, nonlinear optimization.
+
+        Args:
+            result: The planning algorithm result to be optimized.
+
+        Returns:
+            The optimized route.
+        """
+        # Create the constraints
+        constraints = self._create_linear_constraints(
+            self.create_constraint_data(result))
+
+        # Define the bounds on the charging durations.The upper bound for the
+        # charge time at each node is determined by the known arrival range at
+        # that node.
+        ub = np.array([(result.max_range - n.arrival_range) / n.charger.rate
+                       for n in result.route[1:-1]])
+        bounds = scipy.optimize.Bounds(lb=np.zeros_like(ub), ub=ub)
+
+        # Define and run the optimization problem
+        optimization_result = scipy.optimize.minimize(
+            fun=objective,
+            x0=np.array([node.duration for node in result.route[1:-1]]),
+            method=self._method,
+            jac=objective_grad,
+            bounds=bounds,
+            constraints=constraints)
+
+        # Did it work?
+        if optimization_result.success:
+            return self._create_optimized_result(result, optimization_result.x)
+        else:
+            warn(f"The optimization failed with error message: "
+                 f"{optimization_result.message}")
+            return result
 
     @staticmethod
     def create_constraint_data(result: PlannerResult) -> ConstraintData:
@@ -106,104 +142,92 @@ class NonlinearOptimizer(Optimizer):
         return ConstraintData(
             distances=np.array(distances[1:]),
             rates=np.array(rates[:-1]),
-            init_arrival_range=result.route[1].arrival_range)
+            init_arrival_range=result.route[1].arrival_range,
+            max_range=result.max_range)
 
-    def Optimize(self, result: PlannerResult) -> PlannerResult:
+    @staticmethod
+    def _create_linear_constraints(data: ConstraintData) -> \
+        List[scipy.optimize.LinearConstraint]:
         """
-        Optimize the route via constrained, nonlinear optimization.
-
         Args:
-            result: The planning algorithm result to be optimized.
+            data: The constraint data.
 
         Returns:
-            The optimized route.
+            constraints: A list of constraints - one for the inequality
+                constraint on nodes [2, n-1], and one for the equality
+                constraint on the final node.
         """
-        # Create the constraint data
-        constr_data = self.create_constraint_data(result)
+        # Define the linear inequality constraint bounds
+        L = np.tri(data.n - 1)
+        I = np.eye(data.n - 1)
+        d = data.distances[:-1]
+        ineq_lb= L.dot(d) - data.init_arrival_range
+        ineq_ub = np.subtract(L, I).dot(d) + data.max_range - \
+            data.init_arrival_range
 
-        # Define the dimensionality of the problem (n-2)
-        dim = len(result.route) - 2
-
+        # Formulate the inequality constraint as a linear constraint
         constraints = []
-        if self._use_linear_constraints:
-            # Define the linear inequality constraint bounds.
-            L = np.tri(dim - 1)
-            I = np.eye(dim - 1)
-            d = constr_data.distances[:-1]
-            ineq_constraint_lb2 = L.dot(d) - constr_data.init_arrival_range
-            ineq_constraint_ub2 = np.subtract(L, I).dot(d) + \
-                result.max_range - constr_data.init_arrival_range
+        constraints.append(scipy.optimize.LinearConstraint(
+            A=data.A_ineq,
+            lb=ineq_lb,
+            ub=ineq_ub)
+        )
 
-            # Formulate the inequality constraint as a linear constraint
-            constraints.append(optimize.LinearConstraint(
-                A=constr_data.A_ineq,
-                lb=ineq_constraint_lb2,
-                ub=ineq_constraint_ub2)
-            )
+        # Formulate the equality constraint as a linear constraint
+        constraints.append(scipy.optimize.LinearConstraint(
+            A=data.A_eq,
+            lb=data.distances.sum() - data.init_arrival_range,
+            ub=data.distances.sum() - data.init_arrival_range)
+        )
 
-            # Formulate the equality constraint as a linear constraint
-            eq_constraint_lb = constr_data.distances.sum() - \
-                               constr_data.init_arrival_range
-            eq_constraint_ub = eq_constraint_lb
-            constraints.append(optimize.LinearConstraint(
-                A=constr_data.A_eq,
-                lb=eq_constraint_lb,
-                ub=eq_constraint_ub)
-            )
-        else:
-            # Use "nonlinear" constraints.
-            # Define the lower and upper bounds of the optimization constraint -
-            # the arrival range at each node, for nodes [2, n-1].
-            ineq_constraint_lb = np.zeros(dim - 1)
-            # The upper bound on the arrival range at a given node is equal to
-            # the vehicle's maximum range minus the distance between that node
-            # and the previous node.
-            ineq_constraint_ub = \
-                np.full_like(ineq_constraint_lb, result.max_range) - \
-                constr_data.distances[:-1]
+        return constraints
 
-            # Define the nonlinear inequality and equality constraints
-            constraints.append(optimize.NonlinearConstraint(
-                fun=partial(ineq_constraint, constr_data=constr_data),
-                lb=ineq_constraint_lb,
-                ub=ineq_constraint_ub,
-                jac=partial(ineq_constraint_grad, constr_data=constr_data))
-            )
-            constraints.append(optimize.NonlinearConstraint(
-                fun=partial(eq_constraint, constr_data=constr_data),
-                lb=0,
-                ub=0,
-                jac=partial(eq_constraint_grad, constr_data=constr_data))
-            )
+    @staticmethod
+    def _create_nonlinear_constraints(data: ConstraintData) -> \
+            List[scipy.optimize.NonlinearConstraint]:
+        """
+        (Unused) The constraint function is more accurately formulated as a
+        linear constraint (see NonlinearOptimizer._create_linear_constraints),
+        therefore this method is unused and exists solely as a validation of
+        the C++ implementation of the constraint functions.
 
-        # Define the bounds on the charging durations.The upper bound for the
-        # charge time at each node is determined by the known arrival range at
-        # that node.
-        ub = np.array([(result.max_range - n.arrival_range) / n.charger.rate
-                       for n in result.route[1:-1]])
-        bounds = optimize.Bounds(lb=np.zeros_like(ub), ub=ub)
+        Args:
+            data: The constraint data.
 
-        # Define and run the optimization problem
-        optimization_result = optimize.minimize(
-            fun=objective,
-            x0=np.array([node.duration for node in result.route[1:-1]]),
-            method=self._method,
-            jac=objective_grad,
-            bounds=bounds,
-            constraints=constraints)
+        Returns:
+            constraints: A list of constraints - one for the inequality
+                constraint on nodes [2, n-1], and one for the equality
+                constraint on the final node.
+        """
+        # Define the lower and upper bounds of the optimization constraint -
+        # the arrival range at each node, for nodes [2, n-1].
+        ineq_lb = np.zeros(data.n - 1)
+        # The upper bound on the arrival range at a given node is equal to
+        # the vehicle's maximum range minus the distance between that node
+        # and the previous node.
+        ineq_ub = np.full_like(ineq_lb, data.max_range) - data.distances[:-1]
 
-        # Did it work?
-        if optimization_result.success:
-            return self._create_optimized_result(result, optimization_result.x)
-        else:
-            warn(f"The optimization failed with error message: "
-                 f"{optimization_result.message}")
-            return result
+        # Define the nonlinear inequality and equality constraints
+        constraints = []
+        constraints.append(scipy.optimize.NonlinearConstraint(
+            fun=partial(ineq_constraint, constr_data=data),
+            lb=ineq_lb,
+            ub=ineq_ub,
+            jac=partial(ineq_constraint_grad, constr_data=data))
+        )
+        constraints.append(scipy.optimize.NonlinearConstraint(
+            fun=partial(eq_constraint, constr_data=data),
+            lb=0,
+            ub=0,
+            jac=partial(eq_constraint_grad, constr_data=data))
+        )
+
+        return constraints
+
 
     @staticmethod
     def _create_optimized_result(result: PlannerResult,
-                                 new_durations: Sequence[float]) \
-            -> PlannerResult:
+                                 new_durations: np.ndarray) -> PlannerResult:
         """
         Args:
             result: The initial route planner result.
