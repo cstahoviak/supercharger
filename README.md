@@ -99,11 +99,22 @@ The solution needs to be self-contained with just the use of STL algorithms
 ## Solution
 
 ### Dependencies
-The `supercharger` application depends on the [NLOpt](https://nlopt.readthedocs.io/en/latest/) libary. NLOpt must be built and installed locally before building the `supercharger` application.
+The `supercharger` application depends on the following libraries:
+
+- [NLOpt](https://nlopt.readthedocs.io/en/latest/)
+- [pybind11](https://pybind11.readthedocs.io/en/latest/)
+
+These libraries must be built and installed locally before building the `supercharger` application. These libraries can be cloned from the following locations
 
 ```
 git clone https://github.com/stevengj/nlopt.git
-cd nlopt
+git clone https://github.com/pybind/pybind11.git
+```
+
+Building and installing each of the dependencies follows the standard CMake build process.
+
+```
+cd <package-dir>
 mkdir build && cd build
 cmake ..
 make
@@ -111,7 +122,7 @@ sudo make install
 ```
 
 ### Building
-Build the `supercharger` application by following the standard CMake build process:
+Build the `supercharger` application by following the standard CMake build process.
 
 ```
 git clone https://github.com/cstahoviak/supercharger.git

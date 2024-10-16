@@ -16,6 +16,8 @@
  */
 #include "supercharger/planner.h"
 
+#include <glog/logging.h>
+
 #include <iostream>
 
 using namespace supercharger;
@@ -27,6 +29,9 @@ int main(int argc, char** argv)
       << std::endl;        
     return -1;
   }
+
+  // Add glog
+  google::InitGoogleLogging(argv[0]); 
   
   // Parse the initial and goal charger names
   const std::string initial_charger_name = argv[1];
