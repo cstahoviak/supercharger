@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 set(TARGET py${PROJECT_NAME})
 
-find_package(pybind11 REQUIRED)
+set(PYBIND11_FINDPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
 
 # The SOURCES are the bindings
 set(SOURCES
@@ -25,6 +26,7 @@ target_include_directories(${TARGET} PRIVATE
 target_link_libraries(${TARGET} PRIVATE
   superchargerlib
   nlopt
+  glog::glog
 )
 
 # Install the bindings to the python directory

@@ -7,7 +7,6 @@ dependencies:
   - numpy
   - plotly
   - pip
-  - pybind11
   - pytest
   - scipy
   - pip:

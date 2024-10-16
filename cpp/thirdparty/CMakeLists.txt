@@ -2,11 +2,21 @@ cmake_minimum_required(VERSION 3.10.2)
 
 include(FetchContent)
 
+# NOTE: Rather than downloading, building and installing NLOpt and pybind11
+# local to the build directory via FetchContent, I've opted to have the user
+# install these libraries from source and provided instructions for doing so in
+# the README. Using FetchContent like this and keeping everything local to the
+# build directory seems nice in theory because it reduces the end-user overhead,
+# but at the expense of bloating the build system.
+
+# Add pybind11
+# FetchContent_Declare(
+#   pybind11
+#   URL https://github.com/pybind/pybind11/archive/refs/tags/v2.13.6.tar.gz
+# )
+# FetchContent_MakeAvailable(pybind11)
+
 # Add NLOpt
-# TODO: Adding NLOpt like this creates an error with "#include <array>". I'm not
-# sure why this is happening, so I'll have to build install NLOpt from source
-# instead.
-# include(FetchContent)
 # FetchContent_Declare(
 #   NLopt
 #   URL https://github.com/stevengj/nlopt/archive/refs/tags/v2.8.0.tar.gz
