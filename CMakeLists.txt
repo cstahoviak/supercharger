@@ -20,6 +20,7 @@ message(STATUS "DEBUG_INFO: ${DEBUG_INFO}")
 include_directories("cpp/include")
 
 set(LIB_SOURCES
+  "cpp/src/supercharger/algorithm/cost_functions/dijkstras.cpp"
   "cpp/src/supercharger/algorithm/algorithm.cpp"
   "cpp/src/supercharger/algorithm/astar.cpp"
   "cpp/src/supercharger/algorithm/dijkstras.cpp"
@@ -33,6 +34,7 @@ set(LIB_SOURCES
 )
 
 set(LIB_HEADERS
+  "cpp/include/supercharger/algorithm/cost_functions/dijkstras.h"
   "cpp/include/supercharger/algorithm/algorithm.h"
   "cpp/include/supercharger/algorithm/astar.h"
   "cpp/include/supercharger/algorithm/dijkstras.h"

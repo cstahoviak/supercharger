@@ -10,6 +10,8 @@
  */
 #include "supercharger/algorithm/algorithm.h"
 
+#include <functional>
+
 namespace supercharger::algorithm
 {
   /**
@@ -19,6 +21,11 @@ namespace supercharger::algorithm
   {
     public:
       Dijkstras(RoutePlanner* rp) : PlanningAlgorithm(rp) {};
+      Dijkstras(
+        RoutePlanner* rp,
+        std::function<double(const Node&, const Node&, double, void*)> cost_f) :
+          PlanningAlgorithm(rp), cost_f(std::move(cost_f)) {};
+
 
       PlannerResult PlanRoute(const std::string&, const std::string&) override;
       double ComputeCost(const Node&, const Node&) const override;
@@ -29,5 +36,7 @@ namespace supercharger::algorithm
     private:
       std::vector<std::shared_ptr<Node>> GetNeighbors_(const Node&);
       
+      std::function<double(const Node&, const Node&, double, void*)> cost_f;
+      void* cost_data_;
   };
-} // end namespace supercharger
+} // end namespace supercharger::algorithm

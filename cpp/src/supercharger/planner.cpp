@@ -109,6 +109,7 @@ namespace supercharger
   void RoutePlanner::SetPlanningAlgorithm(
     AlgoType algo_type, CostFcnType cost_type)
   {
+    // TODO: Don't need to use std::move here.
     std::unique_ptr<PlanningAlgorithm> new_algo = 
       PlanningAlgorithm::GetPlanningAlgorithm(
         this, std::move(algo_type), std::move(cost_type));

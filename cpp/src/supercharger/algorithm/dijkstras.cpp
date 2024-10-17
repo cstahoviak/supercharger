@@ -62,7 +62,7 @@ namespace supercharger::algorithm
       current_node->visited = true;
 
       // If the current node is the destination node, we're done!
-      if ( current_node->name() == destination) {
+      if ( current_node->name() == destination ) {
         DEBUG("Final route cost: " << current_node->cost << " hrs.");
         return { ConstructFinalRoute_(*current_node), current_node->cost,
           route_planner_->max_range(), route_planner_->speed() };
@@ -138,6 +138,9 @@ namespace supercharger::algorithm
   {
     return current.cost + ComputeChargeTime_(current, neighbor) +
       math::distance(current, neighbor) / route_planner_->speed();
+
+    // TODO: Treat the cost function as a callable object.
+    // return cost_f(current, neighbor, route_planner_->speed(), cost_data_);
   }
 
   /**
@@ -150,7 +153,7 @@ namespace supercharger::algorithm
    * capacity, a new chunk has to be allocated and elements re-assigned. You
    * cannot do this with const elements.
    * 
-   * @param current The current node (a const pointer to a const Node).
+   * @param current The current node.
    * @return A vector of neighbors as shared Node pointers.
    */
   std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(const Node& current)

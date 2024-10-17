@@ -67,6 +67,8 @@ namespace supercharger
 
         enum class CostFunctionType {
           // So far, these only apply to the Naive planning algorithm.
+          // TODO: This enum should probably fall within the scope of the
+          // NaivePlanner class.
           MINIMIZE_DIST_TO_NEXT,
           MINIMIZE_DIST_REMAINING,
           MINIMIZE_TIME_REMAINING,
@@ -94,11 +96,14 @@ namespace supercharger
         std::unordered_map<std::string, std::shared_ptr<Node>> nodes_;
 
         // Utility functions
+        // TODO: In order to implement the Dijkstra's cost function as a
+        // callable via std::function, it might be necessary to decouple these
+        // functions from the PlanningAlgorithm class. Is that a good idea?
+        // Free function vs. member function?
         double ComputeChargeTime_(const Node&, const Node&) const;
         double ComputeArrivalRange_(const Node&, const Node&) const;
         double ComputeDepartureRange_(const Node&) const;
     };
   } // end namespace supercharger::algorithm
-
 } // end namespace supercharger
 
