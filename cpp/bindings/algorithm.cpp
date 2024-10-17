@@ -153,7 +153,7 @@ void initPlanningAlgorithm(py::module_& m)
     // .def("_construct_final_route", &PlanningAlgorithm::ConstructFinalRoute_)
   ;
 
-  py::class_<Naive, PlanningAlgorithm>(m, "NaivePlanner")
+  py::class_<NaivePlanner, PlanningAlgorithm>(m, "NaivePlanner")
     .def(py::init<RoutePlanner*, CostFcnType>(),
       py::arg("rp"), py::arg("cost_type"));
   ;

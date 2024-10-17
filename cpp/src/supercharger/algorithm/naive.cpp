@@ -35,7 +35,7 @@ namespace supercharger::algorithm
    * @param destination The destination node.
    * @return PlannerResult The planner result.
    */
-  PlannerResult Naive::PlanRoute(
+  PlannerResult NaivePlanner::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
     // Initially, populate the route with the origin node.
@@ -59,7 +59,7 @@ namespace supercharger::algorithm
    * @param origin The origin node.
    * @param destination The destination node.
    */
-  void Naive::PlanRouteRecursive_(
+  void NaivePlanner::PlanRouteRecursive_(
     const std::string& origin, const std::string& destination)
   {
     // Get the current node and mark it as visited.
@@ -202,7 +202,9 @@ namespace supercharger::algorithm
    * @param candidate The candidate "next" node.
    * @return double The cost to reach the candidate node from the current node.
    */
-  double Naive::ComputeCost(const Node& current, const Node& candidate) const {
+  double NaivePlanner::ComputeCost(
+    const Node& current, const Node& candidate) const
+  {
     // Define the cost
     double cost{0};
     
@@ -256,7 +258,7 @@ namespace supercharger::algorithm
    * 
    * @return std::vector<Node> 
    */
-  std::vector<Node> Naive::ConstructFinalRoute_(const Node& final) {
+  std::vector<Node> NaivePlanner::ConstructFinalRoute_(const Node& final) {
     // Construct the route.
     std::vector<Node> route;
     for ( const std::shared_ptr<const Node>& node : route_ ) {
@@ -273,7 +275,7 @@ namespace supercharger::algorithm
    * @brief Updates the route cost up to and including the charging time at
    * the most recently added node to the route.
    */
-  void Naive::UpdateRouteCost_() {
+  void NaivePlanner::UpdateRouteCost_() {
     // Cost update can only take place for the second node onward.
     if ( route_.size() > 1 ) {
       // Get the current and previous nodes
