@@ -83,6 +83,9 @@ namespace supercharger
       double speed_{0};       // [km/hr]
 
       // Store the network of chargers.
+      // TODO: Maybe just copy the Chargers because they're lightweight enough
+      // and there are only 300 of them. That way we don't have a pointer to
+      // something that could possibly be changed elsewhere.
       std::unordered_map<std::string, const Charger*> network_;
 
       // Store the path planning algorithm.

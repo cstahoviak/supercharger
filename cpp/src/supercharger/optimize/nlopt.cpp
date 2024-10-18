@@ -210,7 +210,7 @@ namespace supercharger::optimize
     result.assign(arrival_ranges.cbegin(), arrival_ranges.cend() - 1);
   }
 
-    /**
+  /**
    * @brief The equality constraint function. The equality constraint applies
    * to the last node - a time optimal route will have an arrival range of zero
    * at the final node.

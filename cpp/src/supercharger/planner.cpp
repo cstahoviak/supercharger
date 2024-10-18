@@ -98,6 +98,7 @@ namespace supercharger
     PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
     if ( result.route.back().name() != destination_.name ) {
+      // TODO: "failure_modes" never gets here.
       INFO("Search terminated. Solution not found.");
       return {};
     }

@@ -30,6 +30,12 @@ namespace supercharger::optimize
       // Optimizer() = default;
       static std::unique_ptr<Optimizer> GetOptimizer(OptimizerType);
       
+      // TODO: Consider passing a more limited scope of data to Optimize bc
+      // the info contained by a complete PlannerResult contains more info than
+      // is necessary to perfom the optimization. Byt passing a PlannerResult,
+      // we couple the idea of a "Node" to the Optimizer. We want the Optimizer
+      // to be agnostic to any given definition of a Node (so long as that Node
+      // contains charging rates an durations).
       virtual PlannerResult Optimize(const PlannerResult&) const = 0;
   };
 } // end namespace supercharger

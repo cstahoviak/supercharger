@@ -67,7 +67,12 @@ find_package(NLopt REQUIRED)
 add_subdirectory(cpp/thirdparty)
 
 # Build all app executables
-file( GLOB APP_SOURCES cpp/app/*.cpp )
+# file( GLOB APP_SOURCES cpp/app/*.cpp )
+set(APP_SOURCES
+  "cpp/app/algorithm_comparison.cpp"
+  "cpp/app/failure_modes.cpp"
+  "cpp/app/supercharger.cpp"
+)
 foreach( testsourcefile ${APP_SOURCES} )
     # Cut off the file extension and directory path
     get_filename_component( testname ${testsourcefile} NAME_WE )
