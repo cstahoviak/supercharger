@@ -8,19 +8,19 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 
 namespace supercharger::algorithm
 {
   /**
    * @brief My "naive" path planner.
    */
-  class NaivePlanner : public PlanningAlgorithm
+  class NaivePlanner : public Planner
   {
     public:
       // NOTE: Calls the base class via initializer list "constructor chaining"
       NaivePlanner(Supercharger* rp, CostFunctionType type) : 
-        PlanningAlgorithm(rp), type_(type) {};
+        Planner(rp), type_(type) {};
 
       PlannerResult PlanRoute(const std::string&, const std::string&) override;
       double ComputeCost(const Node&, const Node&) const override;

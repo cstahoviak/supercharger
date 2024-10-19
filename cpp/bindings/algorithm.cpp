@@ -1,19 +1,18 @@
 /**
  * @file algorithm.cpp
  * @author Carl Stahoviak
- * @brief Pybind11 bindings for the PlanningAlgorithm (and 
- *  PlanningAlgorithm-derived) classes.
+ * @brief Pybind11 bindings for the Planner (and Planner-derived) classes.
  * @version 0.1
  * @date 2024-10-03
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 #include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/algorithm/naive.h"
 
 // NOTE: Must include the Supercharger header otherwise an "invalid use of
-// incomplete type" error will occur when binding the PlanningAlgorithm ctor.
+// incomplete type" error will occur when binding the Planner ctor.
 #include "supercharger/supercharger.h"
 
 #include <pybind11/pybind11.h>
@@ -28,14 +27,14 @@
 namespace supercharger::algorithm
 {
   /**
-   * @brief The PyPlanningAlgorithm "trampline" class allows the Optimizer class
+   * @brief The PyPlanner "trampline" class allows the Optimizer class
    * to be extensible on the python side.
    */
-  class PyPlanningAlgorithm : PlanningAlgorithm
+  class PyPlanner : Planner
   {
     public:
       // Inherit the constructor(s)
-      using PlanningAlgorithm::PlanningAlgorithm;
+      using Planner::Planner;
 
       // "Trampoline" function(s) (required for each virtual function)
       PlannerResult PlanRoute(const std::string&, const std::string&) override;
@@ -46,36 +45,36 @@ namespace supercharger::algorithm
       std::vector<Node> ConstructFinalRoute_(const Node&) override;
   };
 
-  PlannerResult PyPlanningAlgorithm::PlanRoute(
+  PlannerResult PyPlanner::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
     PYBIND11_OVERRIDE_PURE(
       PlannerResult,      // Return type
-      PlanningAlgorithm,  // Parent class
+      Planner,            // Parent class
       PlanRoute,          // Name of C++ function (must match python name)
       origin,             // Argument(s)
       destination
     );
   }
 
-  double PyPlanningAlgorithm::ComputeCost(
+  double PyPlanner::ComputeCost(
     const Node& current, const Node& neighbor) const
   {
     PYBIND11_OVERRIDE_PURE(
       double,             // Return type
-      PlanningAlgorithm,  // Parent class
+      Planner,            // Parent class
       ComputeCost,        // Name of C++ function (must match python name)
       current,            // Arguments(s)
       neighbor
     );
   }
 
-  std::vector<Node> PyPlanningAlgorithm::ConstructFinalRoute_(
+  std::vector<Node> PyPlanner::ConstructFinalRoute_(
     const Node& final)
   {
     PYBIND11_OVERRIDE_PURE(
       std::vector<Node>,    // Return type
-      PlanningAlgorithm,    // Parent class
+      Planner,              // Parent class
       ConstructFinalRoute_, // Name of C++ function (must match python name)
       final                 // Arguments(s)
     );
@@ -86,8 +85,8 @@ namespace py = pybind11;
 using namespace supercharger;
 using namespace supercharger::algorithm;
 
-using AlgoType = PlanningAlgorithm::AlgorithmType;
-using CostFcnType = PlanningAlgorithm::CostFunctionType;
+using AlgoType = Planner::AlgorithmType;
+using CostFcnType = Planner::CostFunctionType;
 
 std::string to_string(const PlannerResult& result) {
   std::ostringstream os;
@@ -140,25 +139,25 @@ void initPlanningAlgorithm(py::module_& m)
     .export_values()
   ;
   
-  py::class_<PlanningAlgorithm, PyPlanningAlgorithm>(m, "PlanningAlgorithm")
+  py::class_<Planner, PyPlanner>(m, "Planner")
     .def(py::init<Supercharger*>(), py::arg("rp"))
-    .def_static("get_planning_algorithm", &PlanningAlgorithm::GetPlanningAlgorithm,
+    .def_static("get_planning_algorithm", &Planner::GetPlanningAlgorithm,
       py::arg("rp"), py::arg("algo_type"), py::arg("cost_type"))
-    .def("plan_route", &PlanningAlgorithm::PlanRoute, 
+    .def("plan_route", &Planner::PlanRoute, 
       py::arg("origin"), py::arg("destination"))
-    .def("compute_cost", &PlanningAlgorithm::ComputeCost,
+    .def("compute_cost", &Planner::ComputeCost,
       py::arg("current"), py::arg("neighbor"))
-    .def("reset", &PlanningAlgorithm::Reset)
+    .def("reset", &Planner::Reset)
     // NOTE: Cannot bind protected or private members.
-    // .def("_construct_final_route", &PlanningAlgorithm::ConstructFinalRoute_)
+    // .def("_construct_final_route", &Planner::ConstructFinalRoute_)
   ;
 
-  py::class_<NaivePlanner, PlanningAlgorithm>(m, "NaivePlanner")
+  py::class_<NaivePlanner, Planner>(m, "NaivePlanner")
     .def(py::init<Supercharger*, CostFcnType>(),
       py::arg("rp"), py::arg("cost_type"));
   ;
 
-    py::class_<Dijkstras, PlanningAlgorithm>(m, "Dijkstras")
+    py::class_<Dijkstras, Planner>(m, "Dijkstras")
     .def(py::init<Supercharger*>(), py::arg("rp"));
   ;   
 }

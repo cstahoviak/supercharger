@@ -8,7 +8,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 
 #include <functional>
 
@@ -17,14 +17,14 @@ namespace supercharger::algorithm
   /**
    * @brief Implements Dijkstra's algorithm.
    */
-  class Dijkstras : public PlanningAlgorithm
+  class Dijkstras : public Planner
   {
     public:
-      Dijkstras(Supercharger* rp) : PlanningAlgorithm(rp) {};
+      Dijkstras(Supercharger* rp) : Planner(rp) {};
       Dijkstras(
         Supercharger* rp,
         std::function<double(const Node&, const Node&, double, void*)> cost_f) :
-          PlanningAlgorithm(rp), cost_f(std::move(cost_f)) {};
+          Planner(rp), cost_f(std::move(cost_f)) {};
 
 
       PlannerResult PlanRoute(const std::string&, const std::string&) override;

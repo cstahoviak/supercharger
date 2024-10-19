@@ -30,7 +30,7 @@ namespace supercharger
      * result contains both a path and a total cost (duration in hours) of the
      * planned route.
      * 
-     * TODO: Think of a way to distinguish the output of a PlanningAlgorithm
+     * TODO: Think of a way to distinguish the output of a Planner
      * from the output of an Optimizer.
      */
     struct PlannerResult
@@ -59,7 +59,7 @@ namespace supercharger
     /**
      * @brief Defines the public interface for all planning algorithm classes.
      */
-    class PlanningAlgorithm
+    class Planner
     {
       public:
         enum class AlgorithmType {
@@ -78,9 +78,9 @@ namespace supercharger
           NONE
         };
 
-        PlanningAlgorithm(Supercharger*);
+        Planner(Supercharger*);
 
-        static std::unique_ptr<PlanningAlgorithm> GetPlanningAlgorithm(
+        static std::unique_ptr<Planner> GetPlanningAlgorithm(
           Supercharger*, AlgorithmType, CostFunctionType);
         
         virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
@@ -101,7 +101,7 @@ namespace supercharger
         // Utility functions
         // TODO: In order to implement the Dijkstra's cost function as a
         // callable via std::function, it might be necessary to decouple these
-        // functions from the PlanningAlgorithm class. Is that a good idea?
+        // functions from the Planner class. Is that a good idea?
         // Free function vs. member function?
         // Note: If no private/protected data from class is used, make it a free
         // function.

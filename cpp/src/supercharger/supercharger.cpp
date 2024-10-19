@@ -7,7 +7,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 #include "supercharger/logging.h"
 #include "supercharger/math/math.h"
 #include "supercharger/supercharger.h"
@@ -72,7 +72,7 @@ namespace supercharger
     }
 
     // Create the planning algorithm.
-    planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
+    planning_algo_ = Planner::GetPlanningAlgorithm(
       this, algo_type, cost_type);
 
     // Create the optimizer.
@@ -80,7 +80,7 @@ namespace supercharger
   }
 
   /**
-   * @brief Plan the route with the provided PlanningAlgorithm and Optimizer.
+   * @brief Plan the route with the provided Planner and Optimizer.
    * 
    * @param origin The origin node.
    * @param destination The destination node.
@@ -111,8 +111,8 @@ namespace supercharger
     AlgoType algo_type, CostFcnType cost_type)
   {
     // TODO: Don't need to use std::move here.
-    std::unique_ptr<PlanningAlgorithm> new_algo = 
-      PlanningAlgorithm::GetPlanningAlgorithm(
+    std::unique_ptr<Planner> new_algo = 
+      Planner::GetPlanningAlgorithm(
         this, std::move(algo_type), std::move(cost_type));
     planning_algo_.swap(new_algo);
   }

@@ -21,10 +21,10 @@ include_directories("cpp/include")
 
 set(LIB_SOURCES
   "cpp/src/supercharger/algorithm/cost_functions/dijkstras.cpp"
-  "cpp/src/supercharger/algorithm/algorithm.cpp"
   "cpp/src/supercharger/algorithm/astar.cpp"
   "cpp/src/supercharger/algorithm/dijkstras.cpp"
   "cpp/src/supercharger/algorithm/naive.cpp"
+  "cpp/src/supercharger/algorithm/planner.cpp"
   "cpp/src/supercharger/optimize/naive.cpp"
   "cpp/src/supercharger/optimize/nlopt.cpp"
   "cpp/src/supercharger/optimize/optimizer.cpp"
@@ -35,10 +35,10 @@ set(LIB_SOURCES
 
 set(LIB_HEADERS
   "cpp/include/supercharger/algorithm/cost_functions/dijkstras.h"
-  "cpp/include/supercharger/algorithm/algorithm.h"
   "cpp/include/supercharger/algorithm/astar.h"
   "cpp/include/supercharger/algorithm/dijkstras.h"
   "cpp/include/supercharger/algorithm/naive.h"
+  "cpp/include/supercharger/algorithm/planner.h"
   "cpp/include/supercharger/math/math.h"
   "cpp/include/supercharger/optimize/naive.h"
   "cpp/include/supercharger/optimize/nlopt.h"

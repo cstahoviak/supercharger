@@ -8,7 +8,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 #include "supercharger/optimize/optimizer.h"
 #include "supercharger/network.h"
 #include "supercharger/node.h"
@@ -21,12 +21,12 @@
 
 namespace supercharger
 {  
-  using AlgoType = algorithm::PlanningAlgorithm::AlgorithmType;
-  using CostFcnType = algorithm::PlanningAlgorithm::CostFunctionType;
+  using AlgoType = algorithm::Planner::AlgorithmType;
+  using CostFcnType = algorithm::Planner::CostFunctionType;
   using OptimizerType = optimize::Optimizer::OptimizerType;
 
   using PlannerResult = algorithm::PlannerResult;
-  using PlanningAlgorithm = algorithm::PlanningAlgorithm;
+  using Planner = algorithm::Planner;
   using Optimizer = optimize::Optimizer;
 
   class Supercharger
@@ -89,7 +89,7 @@ namespace supercharger
       std::unordered_map<std::string, const Charger*> network_;
 
       // Store the path planning algorithm.
-      std::unique_ptr<PlanningAlgorithm> planning_algo_;
+      std::unique_ptr<Planner> planning_algo_;
 
       // Store the route optimizer.
       std::unique_ptr<Optimizer> optimizer_;
