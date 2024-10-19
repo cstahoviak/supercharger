@@ -12,9 +12,9 @@
 #include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/algorithm/naive.h"
 
-// NOTE: Must include the RoutePlanner header otherwise an "invalid use of
+// NOTE: Must include the Supercharger header otherwise an "invalid use of
 // incomplete type" error will occur when binding the PlanningAlgorithm ctor.
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <pybind11/pybind11.h>
 // NOTE: required because PlannerResult::route is a std::vector.
@@ -141,7 +141,7 @@ void initPlanningAlgorithm(py::module_& m)
   ;
   
   py::class_<PlanningAlgorithm, PyPlanningAlgorithm>(m, "PlanningAlgorithm")
-    .def(py::init<RoutePlanner*>(), py::arg("rp"))
+    .def(py::init<Supercharger*>(), py::arg("rp"))
     .def_static("get_planning_algorithm", &PlanningAlgorithm::GetPlanningAlgorithm,
       py::arg("rp"), py::arg("algo_type"), py::arg("cost_type"))
     .def("plan_route", &PlanningAlgorithm::PlanRoute, 
@@ -154,11 +154,11 @@ void initPlanningAlgorithm(py::module_& m)
   ;
 
   py::class_<NaivePlanner, PlanningAlgorithm>(m, "NaivePlanner")
-    .def(py::init<RoutePlanner*, CostFcnType>(),
+    .def(py::init<Supercharger*, CostFcnType>(),
       py::arg("rp"), py::arg("cost_type"));
   ;
 
     py::class_<Dijkstras, PlanningAlgorithm>(m, "Dijkstras")
-    .def(py::init<RoutePlanner*>(), py::arg("rp"));
+    .def(py::init<Supercharger*>(), py::arg("rp"));
   ;   
 }

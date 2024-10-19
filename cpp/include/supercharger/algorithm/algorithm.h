@@ -19,9 +19,9 @@
 
 namespace supercharger
 {
-  // Forward declare the RoutePlanner
+  // Forward declare the Supercharger
   // NOTE: MUST include "planner.h" in "algorithm.cpp"
-  class RoutePlanner;
+  class Supercharger;
 
   namespace algorithm
   {
@@ -78,10 +78,10 @@ namespace supercharger
           NONE
         };
 
-        PlanningAlgorithm(RoutePlanner*);
+        PlanningAlgorithm(Supercharger*);
 
         static std::unique_ptr<PlanningAlgorithm> GetPlanningAlgorithm(
-          RoutePlanner*, AlgorithmType, CostFunctionType);
+          Supercharger*, AlgorithmType, CostFunctionType);
         
         virtual PlannerResult PlanRoute(const std::string&, const std::string&) = 0;
         virtual double ComputeCost(const Node&, const Node&) const = 0;
@@ -92,8 +92,8 @@ namespace supercharger
         // Constructs the final route.
         virtual std::vector<Node> ConstructFinalRoute_(const Node&) = 0;
 
-        // Store a reference to the top-level RoutePlanner instance.
-        RoutePlanner* route_planner_{nullptr};
+        // Store a reference to the top-level Supercharger instance.
+        Supercharger* route_planner_{nullptr};
 
         // Store all of the nodes in the network.
         std::unordered_map<std::string, std::shared_ptr<Node>> nodes_;

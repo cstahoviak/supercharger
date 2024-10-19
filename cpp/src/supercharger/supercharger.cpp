@@ -1,7 +1,7 @@
 /**
- * @file planner.cpp
+ * @file supercharger.cpp
  * @author Carl Stahoviak
- * @brief The RoutePlanner class definition.
+ * @brief The Supercharger class definition.
  * @version 0.1
  * @date 2024-08-03
  * 
@@ -10,7 +10,7 @@
 #include "supercharger/algorithm/algorithm.h"
 #include "supercharger/logging.h"
 #include "supercharger/math/math.h"
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <algorithm>
 #include <cmath>
@@ -57,7 +57,7 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(
+  Supercharger::Supercharger(
     AlgoType algo_type,
     CostFcnType cost_type,
     OptimizerType optimizer_type) {
@@ -86,7 +86,7 @@ namespace supercharger
    * @param destination The destination node.
    * @return PlannerResult The planner result.
    */
-  PlannerResult RoutePlanner::PlanRoute(
+  PlannerResult Supercharger::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
     // Initialize the route.
@@ -107,7 +107,7 @@ namespace supercharger
     return ( optimizer_ ) ? optimizer_.get()->Optimize(result) : result;    
   }
 
-  void RoutePlanner::SetPlanningAlgorithm(
+  void Supercharger::SetPlanningAlgorithm(
     AlgoType algo_type, CostFcnType cost_type)
   {
     // TODO: Don't need to use std::move here.
@@ -117,7 +117,7 @@ namespace supercharger
     planning_algo_.swap(new_algo);
   }
 
-  void RoutePlanner::SetOptimizer(OptimizerType type) {
+  void Supercharger::SetOptimizer(OptimizerType type) {
     // Reset the planning algorithm.
     planning_algo_.get()->Reset();
 
@@ -134,7 +134,7 @@ namespace supercharger
    * @param origin The origin node.
    * @param destination The destinatiion node.
    */
-  void RoutePlanner::Initialize_(
+  void Supercharger::Initialize_(
     const std::string& origin, const std::string& destination)
   {
     // Store the origin and destination chargers.

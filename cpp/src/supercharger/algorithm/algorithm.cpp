@@ -13,7 +13,7 @@
 #include "supercharger/algorithm/naive.h"
 #include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/logging.h"
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <algorithm>
 
@@ -29,7 +29,7 @@ namespace supercharger::algorithm
    * 
    * @param rp 
    */
-  PlanningAlgorithm::PlanningAlgorithm(RoutePlanner* rp) : route_planner_(rp) {
+  PlanningAlgorithm::PlanningAlgorithm(Supercharger* rp) : route_planner_(rp) {
     // Create a set of nodes from the route planner's charger network.
     for (const auto& [name, charger] : route_planner_->network() ) {
       // TODO: I should be able to use try_emplace to construct the shared_ptr
@@ -44,7 +44,7 @@ namespace supercharger::algorithm
   // I get a "not declared in this scope error" related to the derived planning
   // algorithm types (Naive, Dijkstra's, etc.). 
   std::unique_ptr<PlanningAlgorithm> PlanningAlgorithm::GetPlanningAlgorithm(
-    RoutePlanner* rp,
+    Supercharger* rp,
     AlgorithmType algo_type,
     CostFunctionType cost_type)
   {

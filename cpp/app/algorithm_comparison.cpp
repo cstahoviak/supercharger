@@ -19,7 +19,7 @@
  * @copyright Copyright (c) 2024
  */
 #include "supercharger/logging.h"
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <glog/logging.h>
 
@@ -62,44 +62,44 @@ int main(int argc, char** argv)
   std::map<std::string, double> algorithms;
 
   // Create the Route Planner
-  RoutePlanner planner(
+  Supercharger app(
     AlgoType::NAIVE,
     CostFcnType::MINIMIZE_TIME_REMAINING
   );
 
   // Set the vehicle's speed and max range
-  planner.max_range() = 320;
-  planner.speed() = 105;
+  app.max_range() = 320;
+  app.speed() = 105;
 
   // Test to make sure the network getter works.
-  const auto& network = planner.network();
+  const auto& network = app.network();
 
   // Plan the route via the "Naive" route planner
-  PlannerResult result1 = planner.PlanRoute(
+  PlannerResult result1 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );
   algorithms["NAIVE\t\t\t\t"] = result1.cost;
 
   // Plan the route via Dijkstra's algorithm.
-  planner.SetPlanningAlgorithm(AlgoType::DIJKSTRAS);
-  PlannerResult result2 = planner.PlanRoute(
+  app.SetPlanningAlgorithm(AlgoType::DIJKSTRAS);
+  PlannerResult result2 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );
   algorithms["DIJKTRA'S\t\t\t"] = result2.cost;
 
   // Improve on Dijkstra's via the "naive" optimizer.
-  planner.SetOptimizer(OptimizerType::NAIVE);
-  PlannerResult result3 = planner.PlanRoute(
+  app.SetOptimizer(OptimizerType::NAIVE);
+  PlannerResult result3 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );
   algorithms["DIJKTRA'S + NAIVE OPTIMIZER\t"] = result3.cost;
 
   // Improve on Dijkstra's via the "NLOPT" optimizer.
-  planner.SetOptimizer(OptimizerType::NLOPT);
-  PlannerResult result4 = planner.PlanRoute(
+  app.SetOptimizer(OptimizerType::NLOPT);
+  PlannerResult result4 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );

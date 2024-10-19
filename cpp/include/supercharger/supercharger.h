@@ -29,29 +29,29 @@ namespace supercharger
   using PlanningAlgorithm = algorithm::PlanningAlgorithm;
   using Optimizer = optimize::Optimizer;
 
-  class RoutePlanner
+  class Supercharger
   {
     public:
       // NOTE: Initially, the ctor args were rvalue references, but a more
       // common pattern is to consume by value and std::move in the initializer
       // list.
-      RoutePlanner(AlgoType, CostFcnType, OptimizerType);
+      Supercharger(AlgoType, CostFcnType, OptimizerType);
 
       // The following ctors are known as "delegating" ctors.
-      RoutePlanner(AlgoType algo_type, CostFcnType cost_type) : 
-        RoutePlanner(algo_type, cost_type, OptimizerType::NONE) {};
+      Supercharger(AlgoType algo_type, CostFcnType cost_type) : 
+        Supercharger(algo_type, cost_type, OptimizerType::NONE) {};
 
-      RoutePlanner(AlgoType algo_type, OptimizerType optim_type) : 
-        RoutePlanner(algo_type, CostFcnType::NONE, optim_type) {};
+      Supercharger(AlgoType algo_type, OptimizerType optim_type) : 
+        Supercharger(algo_type, CostFcnType::NONE, optim_type) {};
 
       // TODO: Now I have to add a ctor that adds a std::function type to its
       // signature? Having so many different overloaded ctors feels kind of
       // bloated to me. Maybe there's a better way to do this? It would be nice
-      // to decouple the PlanningAlgorithms from the RoutePlanner and maybe this
+      // to decouple the PlanningAlgorithms from the Supercharger and maybe this
       // is a good opportunity to do that.
 
-      RoutePlanner(AlgoType algo_type) : 
-        RoutePlanner(algo_type, CostFcnType::NONE, OptimizerType::NONE) {};
+      Supercharger(AlgoType algo_type) : 
+        Supercharger(algo_type, CostFcnType::NONE, OptimizerType::NONE) {};
 
       PlannerResult PlanRoute(const std::string&, const std::string&);
 

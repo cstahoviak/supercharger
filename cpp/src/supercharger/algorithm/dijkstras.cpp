@@ -10,7 +10,7 @@
  */
 #include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/logging.h"
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <algorithm>
 #include <queue>

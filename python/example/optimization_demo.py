@@ -12,7 +12,7 @@ from supercharger.utils.plotly import (
 
 from supercharger.pysupercharger import (
     AlgorithmType,
-    RoutePlanner
+    Supercharger
 )
 
 if __name__ == "__main__":
@@ -20,16 +20,16 @@ if __name__ == "__main__":
     origin = "Council_Bluffs_IA"
     destination = "Cadillac_MI"
 
-    # Create the route planner using Dijkstra's algorithm
-    planner = RoutePlanner(algo_type=AlgorithmType.DIJKSTRAS)
+    # Create the supercharger using Dijkstra's algorithm
+    supercharger = Supercharger(algo_type=AlgorithmType.DIJKSTRAS)
 
     # Set the vehicle's speed and max range
-    planner.max_range = 320
-    planner.speed = 105
+    supercharger.max_range = 320
+    supercharger.speed = 105
 
     # Plan the route with Dijkstra's algorithm
     start = perf_counter()
-    result = planner.plan_route(origin, destination)
+    result = supercharger.plan_route(origin, destination)
     stop = perf_counter()
     print(f"Route Planning time: {(stop - start) * 1e3:.2f} ms")
     print(f"Dijkstra's Planner Final Route (Cost: {result.cost:.4f} hrs)")

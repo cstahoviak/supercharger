@@ -14,7 +14,7 @@ from supercharger.pysupercharger import (
     AlgorithmType,
     distance,
     PlannerResult,
-    RoutePlanner
+    Supercharger
 )
 
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     destination = "Cadillac_MI"
 
     # Create the route planner using Dijkstra's algorithm
-    planner = RoutePlanner(algo_type=AlgorithmType.DIJKSTRAS)
+    planner = Supercharger(algo_type=AlgorithmType.DIJKSTRAS)
 
     # Set the vehicle's speed and max range
     planner.max_range = 320

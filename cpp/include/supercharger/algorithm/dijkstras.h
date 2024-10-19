@@ -20,9 +20,9 @@ namespace supercharger::algorithm
   class Dijkstras : public PlanningAlgorithm
   {
     public:
-      Dijkstras(RoutePlanner* rp) : PlanningAlgorithm(rp) {};
+      Dijkstras(Supercharger* rp) : PlanningAlgorithm(rp) {};
       Dijkstras(
-        RoutePlanner* rp,
+        Supercharger* rp,
         std::function<double(const Node&, const Node&, double, void*)> cost_f) :
           PlanningAlgorithm(rp), cost_f(std::move(cost_f)) {};
 

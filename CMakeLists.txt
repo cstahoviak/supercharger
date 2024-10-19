@@ -30,7 +30,7 @@ set(LIB_SOURCES
   "cpp/src/supercharger/optimize/optimizer.cpp"
   "cpp/src/supercharger/network.cpp"
   "cpp/src/supercharger/node.cpp"
-  "cpp/src/supercharger/planner.cpp"
+  "cpp/src/supercharger/supercharger.cpp"
 )
 
 set(LIB_HEADERS
@@ -46,7 +46,7 @@ set(LIB_HEADERS
   "cpp/include/supercharger/logging.h"
   "cpp/include/supercharger/network.h"
   "cpp/include/supercharger/node.h"
-  "cpp/include/supercharger/planner.h"
+  "cpp/include/supercharger/supercharger.h"
 )
 
 # Create the superchargerlib

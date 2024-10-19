@@ -11,7 +11,7 @@
 #include "supercharger/logging.h"
 // Need to include planner.h here to avoid "pointer or reference to incomplete
 // type is not allowed" errors related to using the route_planner_ pointer.
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <algorithm>
 #include <map>
