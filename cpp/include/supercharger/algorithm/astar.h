@@ -22,9 +22,13 @@ namespace supercharger::algorithm
   class AStar : public Dijkstras
   {
     public:
-      AStar(Supercharger* rp) : Dijkstras(rp) {};
-      PlannerResult PlanRoute(const std::string&, const std::string&) override;
-      double ComputeCost(const Node&, const Node&) const override;
+      PlannerResult PlanRoute(
+        const std::string&,
+        const std::string&,
+        double,
+        double) override;
+
+      double ComputeCost(const Node&, const Node&, double) const override;
 
     protected:
       std::vector<Node> ConstructFinalRoute_(const Node&) override;

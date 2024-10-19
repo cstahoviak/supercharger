@@ -9,9 +9,6 @@
  */
 #include "supercharger/algorithm/naive.h"
 #include "supercharger/logging.h"
-// Need to include planner.h here to avoid "pointer or reference to incomplete
-// type is not allowed" errors related to using the route_planner_ pointer.
-#include "supercharger/supercharger.h"
 
 #include <algorithm>
 #include <map>
@@ -33,24 +30,32 @@ namespace supercharger::algorithm
    * 
    * @param origin The origin node.
    * @param destination The destination node.
+   * @param max_range [km] The vehicle's max range.
+   * @param speed [km/hr] The vehicle's constant velocity.
    * @return PlannerResult The planner result.
    */
   PlannerResult NaivePlanner::PlanRoute(
-    const std::string& origin, const std::string& destination)
+    const std::string& origin,
+    const std::string& destination,
+    double max_range,
+    double speed)
   {
+    // Set the destination charger (required by the cost function).
+    destination_ = nodes_.at(destination).get()->charger();
+
     // Initially, populate the route with the origin node.
     if ( route_.empty() ) {
       // TODO: Should I treat this as a Node&, shared_ptr<Node>, or 
       // shared_ptr<Node>&?
       std::shared_ptr<Node>& origin_node = nodes_.at(origin);
-      origin_node->arrival_range = route_planner_->max_range();
+      origin_node->arrival_range = max_range;
       route_.push_back(origin_node);
     }
 
     // Plan the route via recursion.
-    PlanRouteRecursive_(origin, destination);
-    return { ConstructFinalRoute_(*nodes_.at(destination)), total_cost_,
-      route_planner_->max_range(), route_planner_->speed() };
+    PlanRouteRecursive_(origin, destination, max_range, speed);
+    return { ConstructFinalRoute_(*nodes_.at(destination)),
+      total_cost_, max_range, speed };
   }
 
   /**
@@ -58,9 +63,14 @@ namespace supercharger::algorithm
    * 
    * @param origin The origin node.
    * @param destination The destination node.
+   * @param max_range [km] The vehicle's max range.
+   * @param speed [km/hr] The vehicle's constant velocity.
    */
   void NaivePlanner::PlanRouteRecursive_(
-    const std::string& origin, const std::string& destination)
+    const std::string& origin,
+    const std::string& destination,
+    double max_range,
+    double speed)
   {
     // Get the current node and mark it as visited.
     std::shared_ptr<Node>& current = route_.back();
@@ -96,7 +106,7 @@ namespace supercharger::algorithm
 
       // If candidate node is within the maximum range of the vehicle, add the
       // candidate node to "reachable" set.
-      if ( current_to_candidate <= route_planner_->max_range() ) {
+      if ( current_to_candidate <= max_range ) {
         is_reachable = true;
       }
 
@@ -110,7 +120,7 @@ namespace supercharger::algorithm
       // the current node, add it to the map of candidate nodes.
       if ( is_reachable && is_closer ) {
         // Compute the cost for the candidate charger.
-        double cost = ComputeCost(*current, *node);
+        double cost = ComputeCost(*current, *node, speed);
 
         // Add the charger to the map of candidate chargers.
         const auto& pair = candidates.try_emplace(cost, node);
@@ -133,11 +143,11 @@ namespace supercharger::algorithm
       current->duration = ComputeChargeTime_(*current, *end_node);
 
       // Update the total route cost at the current node.
-      UpdateRouteCost_();
+      UpdateRouteCost_(speed);
 
       // Finally, add the travel time to the destination to the total cost.
       total_cost_ += 
-        math::distance(*current, *end_node) / route_planner_->speed();
+        math::distance(*current, *end_node) / speed;
 
       // Construct the final route and return the planner result.
       return;
@@ -159,7 +169,7 @@ namespace supercharger::algorithm
       current->departure_range = ComputeDepartureRange_(*current);
 
       // Update the total cost at the current node.
-      UpdateRouteCost_();
+      UpdateRouteCost_(speed);
     }
 
     // Compute the range remaining after arriving at the next node.
@@ -168,7 +178,7 @@ namespace supercharger::algorithm
     // Add the next node to the route and continue iteration. Note that the
     // charge duration at the next node will be computed on the next iteration.
     route_.emplace_back(next_node);
-    PlanRouteRecursive_(origin, destination);
+    PlanRouteRecursive_(origin, destination, max_range, speed);
 
     // NOTE: My initial thought was to not choose a single "next charger", but
     // recursively call PlanRoute on ALL candidate chargers. Thus allowing the
@@ -200,42 +210,42 @@ namespace supercharger::algorithm
    * 
    * @param current The current node.
    * @param candidate The candidate "next" node.
+   * @param speed The vehicle's constant velocity.
    * @return double The cost to reach the candidate node from the current node.
    */
   double NaivePlanner::ComputeCost(
-    const Node& current, const Node& candidate) const
+    const Node& current, const Node& candidate, double speed) const
   {
     // Define the cost
     double cost{0};
     
     switch ( type_ )
     {
-      case CostFcnType::MINIMIZE_DIST_TO_NEXT:
+      case Planner::CostFunctionType::MINIMIZE_DIST_TO_NEXT:
       {
         // Effectively the same as Dijkstra's
         cost = math::distance(current, candidate);
         break;
       }
 
-      case CostFcnType::MINIMIZE_DIST_REMAINING:
+      case Planner::CostFunctionType::MINIMIZE_DIST_REMAINING:
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
         cost = 
-          math::distance(candidate.charger(), route_planner_->destination());
+          math::distance(candidate.charger(), destination_);
         break;
       }
       
-      case CostFcnType::MINIMIZE_TIME_REMAINING:
+      case Planner::CostFunctionType::MINIMIZE_TIME_REMAINING:
       {
         // Compute distances
         double candidate_to_destination = 
-          math::distance(candidate.charger(), route_planner_->destination());
+          math::distance(candidate.charger(), destination_);
         double current_to_candidate = math::distance(current, candidate);
 
         // Compute times
-        double time_to_destination = 
-          candidate_to_destination / route_planner_->speed();
+        double time_to_destination = candidate_to_destination / speed;
         double time_to_charge = current_to_candidate / candidate.charger().rate;
 
         // The cost is the total time to drive the remaining distance between
@@ -275,7 +285,7 @@ namespace supercharger::algorithm
    * @brief Updates the route cost up to and including the charging time at
    * the most recently added node to the route.
    */
-  void NaivePlanner::UpdateRouteCost_() {
+  void NaivePlanner::UpdateRouteCost_(double speed) {
     // Cost update can only take place for the second node onward.
     if ( route_.size() > 1 ) {
       // Get the current and previous nodes
@@ -283,8 +293,7 @@ namespace supercharger::algorithm
       const std::shared_ptr<Node>& previous = route_.rbegin()[1];
 
       // Add the travel time between the previous and current nodes
-      total_cost_ +=
-        math::distance(*previous, *current) / route_planner_->speed();
+      total_cost_ += math::distance(*previous, *current) / speed;
 
       // Add the time to charge at the current node
       total_cost_ += current->duration;

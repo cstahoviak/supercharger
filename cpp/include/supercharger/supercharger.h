@@ -89,7 +89,7 @@ namespace supercharger
       std::unordered_map<std::string, const Charger*> network_;
 
       // Store the path planning algorithm.
-      std::unique_ptr<Planner> planning_algo_;
+      std::unique_ptr<Planner> planner_;
 
       // Store the route optimizer.
       std::unique_ptr<Optimizer> optimizer_;

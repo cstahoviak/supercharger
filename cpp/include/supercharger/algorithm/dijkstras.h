@@ -20,21 +20,25 @@ namespace supercharger::algorithm
   class Dijkstras : public Planner
   {
     public:
-      Dijkstras(Supercharger* rp) : Planner(rp) {};
+      Dijkstras() = default;
       Dijkstras(
-        Supercharger* rp,
         std::function<double(const Node&, const Node&, double, void*)> cost_f) :
-          Planner(rp), cost_f(std::move(cost_f)) {};
+          cost_f(std::move(cost_f)) {};
 
 
-      PlannerResult PlanRoute(const std::string&, const std::string&) override;
-      double ComputeCost(const Node&, const Node&) const override;
+      PlannerResult PlanRoute(
+        const std::string&,
+        const std::string&,
+        double,
+        double) override;
+
+      double ComputeCost(const Node&, const Node&, double) const override;
 
     protected:
       std::vector<Node> ConstructFinalRoute_(const Node&) override;
 
     private:
-      std::vector<std::shared_ptr<Node>> GetNeighbors_(const Node&);
+      std::vector<std::shared_ptr<Node>> GetNeighbors_(const Node&, double);
       
       std::function<double(const Node&, const Node&, double, void*)> cost_f;
       void* cost_data_;

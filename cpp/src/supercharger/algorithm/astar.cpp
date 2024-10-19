@@ -13,12 +13,18 @@
 namespace supercharger::algorithm
 {
   PlannerResult AStar::PlanRoute(
-    const std::string& origin, const std::string& destination)
+    const std::string& origin,
+    const std::string& destination,
+    double max_range,
+    double speed)
   {
     return {};
   }
 
-  double AStar::ComputeCost(const Node& current, const Node& neighbor) const 
+  double AStar::ComputeCost(
+    const Node& current,
+    const Node& neighbor,
+    double speed) const 
   {
     return 0;
   }

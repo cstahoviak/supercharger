@@ -10,7 +10,6 @@
  */
 #include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/logging.h"
-#include "supercharger/supercharger.h"
 
 #include <algorithm>
 #include <queue>
@@ -23,10 +22,15 @@ namespace supercharger::algorithm
    * 
    * @param origin The origin node.
    * @param destination The destination node.
+   * @param max_range [km] The maximum range of the vehicle.
+   * @param speed [km/hr] The vehicle's constant velocity.
    * @return PlannerResult The planner result.
    */
   PlannerResult Dijkstras::PlanRoute(
-    const std::string& origin, const std::string& destination)
+    const std::string& origin,
+    const std::string& destination,
+    double max_range,
+    double speed)
   {
     // Define a lambda function for priority queue comparison.
     auto compare = [](
@@ -43,7 +47,7 @@ namespace supercharger::algorithm
 
     // Update the origin node's data and add it to the unvisited set.
     std::shared_ptr<Node>& origin_node = nodes_.at(origin);
-    origin_node->arrival_range = route_planner_->max_range();
+    origin_node->arrival_range = max_range;
     origin_node->cost = 0;
     unvisited.push(origin_node);
 
@@ -65,18 +69,18 @@ namespace supercharger::algorithm
       if ( current_node->name() == destination ) {
         DEBUG("Final route cost: " << current_node->cost << " hrs.");
         return { ConstructFinalRoute_(*current_node), current_node->cost,
-          route_planner_->max_range(), route_planner_->speed() };
+          max_range, speed };
       }
 
       // For the current node, consider all of its unvisited neighbors and
       // update their cost through the current node.
       double cost{0};
-      for ( std::shared_ptr<Node>& neighbor : GetNeighbors_(*current_node) ) {
+      for ( std::shared_ptr<Node>& neighbor : GetNeighbors_(*current_node, max_range) ) {
         // Compute the cost to get to the neighbor through the current node.
         // TODO: Is dereferencing here the right choice? Would it be better to
         // pass the shared pointer itself? Or a reference to the shared pointer
         // so as to not increase the reference count?
-        cost = ComputeCost(*current_node, *neighbor);
+        cost = ComputeCost(*current_node, *neighbor, speed);
 
         if ( cost < neighbor->cost ) {
           // If the cost to the neighbor node through the current node is less
@@ -130,17 +134,19 @@ namespace supercharger::algorithm
    * NOT include the charging rate or time at the neighbor node because we have
    * no information about the node that may come after the neighbor.
    * 
-   * @param current 
-   * @param neighbor 
-   * @return double 
+   * @param current The current Node.
+   * @param neighbor  The neighbor Node.
+   * @param speed The vehicle's constant velocity.
+   * @return double The cost to the neighbor node through the current node.
    */
-  double Dijkstras::ComputeCost(const Node& current, const Node& neighbor) const
+  double Dijkstras::ComputeCost(
+    const Node& current, const Node& neighbor, double speed) const
   {
     return current.cost + ComputeChargeTime_(current, neighbor) +
-      math::distance(current, neighbor) / route_planner_->speed();
+      math::distance(current, neighbor) / speed;
 
     // TODO: Treat the cost function as a callable object.
-    // return cost_f(current, neighbor, route_planner_->speed(), cost_data_);
+    // return cost_f(current, neighbor, speed, cost_data_);
   }
 
   /**
@@ -156,14 +162,15 @@ namespace supercharger::algorithm
    * @param current The current node.
    * @return A vector of neighbors as shared Node pointers.
    */
-  std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(const Node& current)
+  std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(
+    const Node& current, double max_range)
   {
     std::vector<std::shared_ptr<Node>> neighbors;
     double current_to_neighbor{0};
 
     for ( const auto& [name, node] : nodes_ ) {
       current_to_neighbor = math::distance(current, *node);
-      if ( current_to_neighbor <= route_planner_->max_range() && !node->visited )
+      if ( current_to_neighbor <= max_range && !node->visited )
       {
         neighbors.push_back(node);
       }

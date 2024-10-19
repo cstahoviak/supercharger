@@ -29,13 +29,13 @@ namespace supercharger::algorithm
    * 
    * @param rp 
    */
-  Planner::Planner(Supercharger* rp) : route_planner_(rp) {
+  Planner::Planner() {
     // Create a set of nodes from the route planner's charger network.
-    for (const auto& [name, charger] : route_planner_->network() ) {
+    for ( const Charger& charger : supercharger::network ) {
       // TODO: I should be able to use try_emplace to construct the shared_ptr
       // in place rather than moving it, but I haven't gotten it to work.
-      std::shared_ptr<Node> node = std::make_shared<Node>(*charger);
-      nodes_.try_emplace(name, std::move(node));
+      std::shared_ptr<Node> node = std::make_shared<Node>(charger);
+      nodes_.try_emplace(charger.name, std::move(node));
     }
   }
 
@@ -43,8 +43,7 @@ namespace supercharger::algorithm
   // NOTE: I think this must be defined at the cpp file level because otherwise
   // I get a "not declared in this scope error" related to the derived planning
   // algorithm types (Naive, Dijkstra's, etc.). 
-  std::unique_ptr<Planner> Planner::GetPlanningAlgorithm(
-    Supercharger* rp,
+  std::unique_ptr<Planner> Planner::GetPlanner(
     AlgorithmType algo_type,
     CostFunctionType cost_type)
   {
@@ -56,13 +55,13 @@ namespace supercharger::algorithm
         // unique_ptr of the base class (the return type of this function) can
         // be initialized from a unique_ptr of the derived class: public
         // inheritance allows this, but protected inheritance does not. But why?
-        return std::make_unique<NaivePlanner>(rp, cost_type);
+        return std::make_unique<NaivePlanner>(cost_type);
 
       case AlgorithmType::DIJKSTRAS:
-        return std::make_unique<Dijkstras>(rp);
+        return std::make_unique<Dijkstras>();
 
       case AlgorithmType::ASTAR:
-        return std::make_unique<AStar>(rp);
+        return std::make_unique<AStar>();
       
       default:
         return std::unique_ptr<Planner>(nullptr);

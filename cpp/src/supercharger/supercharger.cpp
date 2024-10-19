@@ -72,8 +72,7 @@ namespace supercharger
     }
 
     // Create the planning algorithm.
-    planning_algo_ = Planner::GetPlanningAlgorithm(
-      this, algo_type, cost_type);
+    planner_ = Planner::GetPlanner(algo_type, cost_type);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);
@@ -95,10 +94,11 @@ namespace supercharger
     // Plan the route.
     DEBUG("Planning route between '" << origin << "' and '" << destination 
       << "'.");
-    PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
+    PlannerResult result = 
+      planner_.get()->PlanRoute(origin, destination, max_range_, speed_);
 
     if ( result.route.back().name() != destination_.name ) {
-      // TODO: "failure_modes" never gets here.
+      // TODO: "failure_modes" segfaults before it gets here.
       INFO("Search terminated. Solution not found.");
       return {};
     }
@@ -110,16 +110,14 @@ namespace supercharger
   void Supercharger::SetPlanningAlgorithm(
     AlgoType algo_type, CostFcnType cost_type)
   {
-    // TODO: Don't need to use std::move here.
     std::unique_ptr<Planner> new_algo = 
-      Planner::GetPlanningAlgorithm(
-        this, std::move(algo_type), std::move(cost_type));
-    planning_algo_.swap(new_algo);
+      Planner::GetPlanner(algo_type, cost_type);
+    planner_.swap(new_algo);
   }
 
   void Supercharger::SetOptimizer(OptimizerType type) {
     // Reset the planning algorithm.
-    planning_algo_.get()->Reset();
+    planner_.get()->Reset();
 
     // Swap the optimizer.
     std::unique_ptr<Optimizer> new_optimizer = 
