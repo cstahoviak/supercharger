@@ -37,8 +37,12 @@ namespace supercharger::algorithm
       using Planner::Planner;
 
       // "Trampoline" function(s) (required for each virtual function)
-      PlannerResult PlanRoute(const std::string&, const std::string&) override;
-      double ComputeCost(const Node&, const Node&) const override;
+      PlannerResult PlanRoute(
+        const std::string&,
+        const std::string&,
+        double,
+        double) override;
+      double ComputeCost(const Node&, const Node&, double) const override;
 
     protected:
       // TODO: I might not be able to bind proctected (and private) members??
@@ -46,7 +50,10 @@ namespace supercharger::algorithm
   };
 
   PlannerResult PyPlanner::PlanRoute(
-    const std::string& origin, const std::string& destination)
+    const std::string& origin,
+    const std::string& destination,
+    double max_range,
+    double speed)
   {
     PYBIND11_OVERRIDE_PURE(
       PlannerResult,      // Return type
@@ -58,7 +65,7 @@ namespace supercharger::algorithm
   }
 
   double PyPlanner::ComputeCost(
-    const Node& current, const Node& neighbor) const
+    const Node& current, const Node& neighbor, double max_range) const
   {
     PYBIND11_OVERRIDE_PURE(
       double,             // Return type
@@ -140,24 +147,23 @@ void initPlanningAlgorithm(py::module_& m)
   ;
   
   py::class_<Planner, PyPlanner>(m, "Planner")
-    .def(py::init<Supercharger*>(), py::arg("rp"))
-    .def_static("get_planning_algorithm", &Planner::GetPlanningAlgorithm,
-      py::arg("rp"), py::arg("algo_type"), py::arg("cost_type"))
+    .def(py::init<>())
+    .def_static("get_planning_algorithm", &Planner::GetPlanner,
+      py::arg("algo_type"), py::arg("cost_type"))
     .def("plan_route", &Planner::PlanRoute, 
-      py::arg("origin"), py::arg("destination"))
+      py::arg("origin"), py::arg("destination"), py::arg("max_range"), py::arg("speed"))
     .def("compute_cost", &Planner::ComputeCost,
-      py::arg("current"), py::arg("neighbor"))
+      py::arg("current"), py::arg("neighbor"), py::arg("speed"))
     .def("reset", &Planner::Reset)
     // NOTE: Cannot bind protected or private members.
     // .def("_construct_final_route", &Planner::ConstructFinalRoute_)
   ;
 
   py::class_<NaivePlanner, Planner>(m, "NaivePlanner")
-    .def(py::init<Supercharger*, CostFcnType>(),
-      py::arg("rp"), py::arg("cost_type"));
+    .def(py::init<CostFcnType>(), py::arg("cost_type"));
   ;
 
     py::class_<Dijkstras, Planner>(m, "Dijkstras")
-    .def(py::init<Supercharger*>(), py::arg("rp"));
+    .def(py::init<>());
   ;   
 }
