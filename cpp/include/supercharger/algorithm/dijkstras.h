@@ -8,7 +8,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 
 #include <functional>
 
@@ -17,24 +17,28 @@ namespace supercharger::algorithm
   /**
    * @brief Implements Dijkstra's algorithm.
    */
-  class Dijkstras : public PlanningAlgorithm
+  class Dijkstras : public Planner
   {
     public:
-      Dijkstras(RoutePlanner* rp) : PlanningAlgorithm(rp) {};
+      Dijkstras() = default;
       Dijkstras(
-        RoutePlanner* rp,
         std::function<double(const Node&, const Node&, double, void*)> cost_f) :
-          PlanningAlgorithm(rp), cost_f(std::move(cost_f)) {};
+          cost_f(std::move(cost_f)) {};
 
 
-      PlannerResult PlanRoute(const std::string&, const std::string&) override;
-      double ComputeCost(const Node&, const Node&) const override;
+      PlannerResult PlanRoute(
+        const std::string&,
+        const std::string&,
+        double,
+        double) override;
+
+      double ComputeCost(const Node&, const Node&, double) const override;
 
     protected:
       std::vector<Node> ConstructFinalRoute_(const Node&) override;
 
     private:
-      std::vector<std::shared_ptr<Node>> GetNeighbors_(const Node&);
+      std::vector<std::shared_ptr<Node>> GetNeighbors_(const Node&, double);
       
       std::function<double(const Node&, const Node&, double, void*)> cost_f;
       void* cost_data_;

@@ -23,7 +23,7 @@ from supercharger.optimize.constraints import (
 from supercharger.pysupercharger import (
     AlgorithmType,
     distance,
-    RoutePlanner
+    Supercharger
 )
 
 
@@ -37,15 +37,15 @@ def planner_result():
     origin = "Council_Bluffs_IA"
     destination = "Cadillac_MI"
 
-    # Create the route planner using Dijkstra's algorithm
-    planner = RoutePlanner(algo_type=AlgorithmType.DIJKSTRAS)
+    # Create the supercharger app using Dijkstra's algorithm
+    supercharger = Supercharger(algo_type=AlgorithmType.DIJKSTRAS)
 
     # Set the vehicle's speed and max range
-    planner.max_range = 320
-    planner.speed = 105
+    supercharger.max_range = 320
+    supercharger.speed = 105
 
     # Plan the route with Dijkstra's algorithm
-    return planner.plan_route(origin, destination)
+    return supercharger.plan_route(origin, destination)
 
 
 @pytest.fixture

@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  */
 
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <iostream>
 
@@ -27,14 +27,14 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Create the Route Planner
-  RoutePlanner planner(AlgoType::DIJKSTRAS, OptimizerType::NLOPT);
+  Supercharger app(AlgoType::DIJKSTRAS, OptimizerType::NLOPT);
 
   // Set a vehicle range that is not great enough to get to any neighboring nodes
-  planner.max_range() = 10;
-  planner.speed() = 105;
+  app.max_range() = 10;
+  app.speed() = 105;
 
   // Plan the route
-  PlannerResult result = planner.PlanRoute(
+  PlannerResult result = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );

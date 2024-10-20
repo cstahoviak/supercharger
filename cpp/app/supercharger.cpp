@@ -14,7 +14,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <glog/logging.h>
 
@@ -38,14 +38,14 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Create the Route Planner
-  RoutePlanner planner(AlgoType::DIJKSTRAS, OptimizerType::NLOPT);
+  Supercharger app(AlgoType::DIJKSTRAS, OptimizerType::NLOPT);
 
   // Set the vehicle's speed and max range
-  planner.max_range() = 320;
-  planner.speed() = 105;
+  app.max_range() = 320;
+  app.speed() = 105;
 
   // Plan the route
-  PlannerResult result = planner.PlanRoute(
+  PlannerResult result = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );

@@ -8,27 +8,31 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 
 namespace supercharger::algorithm
 {
   /**
    * @brief My "naive" path planner.
    */
-  class NaivePlanner : public PlanningAlgorithm
+  class NaivePlanner : public Planner
   {
     public:
-      // NOTE: Calls the base class via initializer list "constructor chaining"
-      NaivePlanner(RoutePlanner* rp, CostFunctionType type) : 
-        PlanningAlgorithm(rp), type_(type) {};
+      NaivePlanner(CostFunctionType type) : type_(type) {};
 
-      PlannerResult PlanRoute(const std::string&, const std::string&) override;
-      double ComputeCost(const Node&, const Node&) const override;
+      PlannerResult PlanRoute(
+        const std::string&,
+        const std::string&,
+        double,
+        double) override;
+        
+      double ComputeCost(const Node&, const Node&, double) const override;
 
     protected:
       std::vector<Node> ConstructFinalRoute_(const Node&) override;
 
     private:
+      Charger destination_;
       CostFunctionType type_;
 
       // Store the planned route.
@@ -45,8 +49,12 @@ namespace supercharger::algorithm
       double total_cost_{0};
 
       // The "naive" route planner is implemented as a recursive algorithm.
-      void PlanRouteRecursive_(const std::string&, const std::string&);
+      void PlanRouteRecursive_(
+        const std::string&,
+        const std::string&,
+        double,
+        double);
       
-      void UpdateRouteCost_();
+      void UpdateRouteCost_(double);
   };
 } // end namespace supercharger

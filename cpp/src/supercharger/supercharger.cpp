@@ -1,16 +1,16 @@
 /**
- * @file planner.cpp
+ * @file supercharger.cpp
  * @author Carl Stahoviak
- * @brief The RoutePlanner class definition.
+ * @brief The Supercharger class definition.
  * @version 0.1
  * @date 2024-08-03
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/algorithm.h"
+#include "supercharger/algorithm/planner.h"
 #include "supercharger/logging.h"
 #include "supercharger/math/math.h"
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <algorithm>
 #include <cmath>
@@ -57,7 +57,7 @@ namespace supercharger
     return stream;
   }
 
-  RoutePlanner::RoutePlanner(
+  Supercharger::Supercharger(
     AlgoType algo_type,
     CostFcnType cost_type,
     OptimizerType optimizer_type) {
@@ -72,21 +72,20 @@ namespace supercharger
     }
 
     // Create the planning algorithm.
-    planning_algo_ = PlanningAlgorithm::GetPlanningAlgorithm(
-      this, algo_type, cost_type);
+    planner_ = Planner::GetPlanner(algo_type, cost_type);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);
   }
 
   /**
-   * @brief Plan the route with the provided PlanningAlgorithm and Optimizer.
+   * @brief Plan the route with the provided Planner and Optimizer.
    * 
    * @param origin The origin node.
    * @param destination The destination node.
    * @return PlannerResult The planner result.
    */
-  PlannerResult RoutePlanner::PlanRoute(
+  PlannerResult Supercharger::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
     // Initialize the route.
@@ -95,10 +94,11 @@ namespace supercharger
     // Plan the route.
     DEBUG("Planning route between '" << origin << "' and '" << destination 
       << "'.");
-    PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
+    PlannerResult result = 
+      planner_.get()->PlanRoute(origin, destination, max_range_, speed_);
 
     if ( result.route.back().name() != destination_.name ) {
-      // TODO: "failure_modes" never gets here.
+      // TODO: "failure_modes" segfaults before it gets here.
       INFO("Search terminated. Solution not found.");
       return {};
     }
@@ -107,19 +107,17 @@ namespace supercharger
     return ( optimizer_ ) ? optimizer_.get()->Optimize(result) : result;    
   }
 
-  void RoutePlanner::SetPlanningAlgorithm(
+  void Supercharger::SetPlanningAlgorithm(
     AlgoType algo_type, CostFcnType cost_type)
   {
-    // TODO: Don't need to use std::move here.
-    std::unique_ptr<PlanningAlgorithm> new_algo = 
-      PlanningAlgorithm::GetPlanningAlgorithm(
-        this, std::move(algo_type), std::move(cost_type));
-    planning_algo_.swap(new_algo);
+    std::unique_ptr<Planner> new_algo = 
+      Planner::GetPlanner(algo_type, cost_type);
+    planner_.swap(new_algo);
   }
 
-  void RoutePlanner::SetOptimizer(OptimizerType type) {
+  void Supercharger::SetOptimizer(OptimizerType type) {
     // Reset the planning algorithm.
-    planning_algo_.get()->Reset();
+    planner_.get()->Reset();
 
     // Swap the optimizer.
     std::unique_ptr<Optimizer> new_optimizer = 
@@ -134,7 +132,7 @@ namespace supercharger
    * @param origin The origin node.
    * @param destination The destinatiion node.
    */
-  void RoutePlanner::Initialize_(
+  void Supercharger::Initialize_(
     const std::string& origin, const std::string& destination)
   {
     // Store the origin and destination chargers.

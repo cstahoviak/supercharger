@@ -4,7 +4,7 @@ Demos the supercharger application for the route shown in the README.
 from supercharger.pysupercharger import (
     AlgorithmType,
     CostFunctionType,
-    RoutePlanner
+    Supercharger
 )
 
 if __name__ == "__main__":
@@ -12,8 +12,8 @@ if __name__ == "__main__":
     origin = "Council_Bluffs_IA"
     destination = "Cadillac_MI"
 
-    # Create the route planner using the "naive" planning algorithm
-    naive_planner = RoutePlanner(
+    # Create the supercharger app using the "naive" planning algorithm
+    naive_planner = Supercharger(
         algo_type=AlgorithmType.NAIVE,
         cost_type=CostFunctionType.MINIMIZE_TIME_REMAINING
     )
@@ -31,8 +31,8 @@ if __name__ == "__main__":
     print(f"Naive Planner Final Route (Cost: {result.cost:.4f} hrs)")
     print(result)
 
-    # Create the route planner using Dijkstra's planning algorithm
-    dijkstras_planner = RoutePlanner(algo_type=AlgorithmType.DIJKSTRAS)
+    # Create the supercharger app using Dijkstra's planning algorithm
+    dijkstras_planner = Supercharger(algo_type=AlgorithmType.DIJKSTRAS)
 
     # Set the vehicle's speed and max range
     dijkstras_planner.max_range = 320

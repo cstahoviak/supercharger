@@ -12,7 +12,7 @@ set(SOURCES
   "network.cpp"
   "node.cpp"
   "optimize.cpp"
-  "planner.cpp"
+  "supercharger.cpp"
 
   "module.cpp"
 )

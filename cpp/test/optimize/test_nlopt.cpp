@@ -9,7 +9,7 @@
  * 
  */
 #include "supercharger/optimize/nlopt.h"
-#include "supercharger/planner.h"
+#include "supercharger/supercharger.h"
 
 #include <gtest/gtest.h>
 
@@ -30,7 +30,7 @@ class NLOptimizerTestFixture : public testing::Test
       const std::string goal_charger_name = "Cadillac_MI";
 
       // Create the Route Planner
-      RoutePlanner planner(AlgoType::DIJKSTRAS);
+      Supercharger planner(AlgoType::DIJKSTRAS);
 
       // Set the vehicle's speed and max range
       planner.max_range() = 320;
