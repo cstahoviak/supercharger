@@ -210,7 +210,7 @@ namespace supercharger::optimize
     result.assign(arrival_ranges.cbegin(), arrival_ranges.cend() - 1);
   }
 
-    /**
+  /**
    * @brief The equality constraint function. The equality constraint applies
    * to the last node - a time optimal route will have an arrival range of zero
    * at the final node.
@@ -291,7 +291,7 @@ namespace supercharger::optimize
 
     // Set the upper bounds on the charging rates.
     std::vector<double> ub = std::vector<double>(dim, HUGE_VAL);
-    size_t idx {0};
+    size_t idx{0};
     for (const double& rate : constr_data.rates ) {
       ub[idx] = 
         (result.max_range - result.route.at(idx + 1).arrival_range) / rate;
@@ -300,7 +300,7 @@ namespace supercharger::optimize
     opt.set_upper_bounds(ub);
 
     // Set the objective function.
-    opt.set_min_objective(cost_fcn, NULL);
+    opt.set_min_objective(cost_fcn, nullptr);
 
     // Add the inequality constraints on the arrival ranges, [3, N-1].
     unsigned m = dim - 1;
@@ -330,7 +330,7 @@ namespace supercharger::optimize
       DEBUG("NLOpt found minimum at f(x) = " << std::setprecision(10) << minf);
     }
     catch( std::exception &e ) {
-      INFO("nlopt failed: " << e.what());
+      INFO("NLOpt failed: " << e.what());
     }
 
     return CreateOptimizedResult_(result, x);
@@ -363,6 +363,8 @@ namespace supercharger::optimize
       Node& current = *iter;
 
       // Update the arrival range at the current node.
+      // TODO: If ComputeArrivalRange is a free function (decoupled from the
+      // PlanningAlgorithm), I could use it here.
       current.arrival_range = previous.arrival_range + \
         previous.duration * previous.charger().rate - \
         math::distance(previous, current);
@@ -372,6 +374,8 @@ namespace supercharger::optimize
         math::distance(previous, current) / result.speed;
 
       // For all nodes but the final node, update the departure range.
+      // TODO: If ComputeDepartureRange is a free function (decoupled from the
+      // PlanningAlgorithm), I could use it here.
       if ( iter != optimized.route.end() - 1 ) {
         current.departure_range = current.arrival_range + \
           current.duration * current.charger().rate;

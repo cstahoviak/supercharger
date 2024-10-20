@@ -9,6 +9,8 @@ include(FetchContent)
 # build directory seems nice in theory because it reduces the end-user overhead,
 # but at the expense of bloating the build system.
 
+# TODO: Look into ccache for handling larger builds.
+
 # Add pybind11
 # FetchContent_Declare(
 #   pybind11

@@ -20,6 +20,7 @@ message(STATUS "DEBUG_INFO: ${DEBUG_INFO}")
 include_directories("cpp/include")
 
 set(LIB_SOURCES
+  "cpp/src/supercharger/algorithm/cost_functions/dijkstras.cpp"
   "cpp/src/supercharger/algorithm/algorithm.cpp"
   "cpp/src/supercharger/algorithm/astar.cpp"
   "cpp/src/supercharger/algorithm/dijkstras.cpp"
@@ -33,6 +34,7 @@ set(LIB_SOURCES
 )
 
 set(LIB_HEADERS
+  "cpp/include/supercharger/algorithm/cost_functions/dijkstras.h"
   "cpp/include/supercharger/algorithm/algorithm.h"
   "cpp/include/supercharger/algorithm/astar.h"
   "cpp/include/supercharger/algorithm/dijkstras.h"
@@ -65,7 +67,12 @@ find_package(NLopt REQUIRED)
 add_subdirectory(cpp/thirdparty)
 
 # Build all app executables
-file( GLOB APP_SOURCES cpp/app/*.cpp )
+# file( GLOB APP_SOURCES cpp/app/*.cpp )
+set(APP_SOURCES
+  "cpp/app/algorithm_comparison.cpp"
+  "cpp/app/failure_modes.cpp"
+  "cpp/app/supercharger.cpp"
+)
 foreach( testsourcefile ${APP_SOURCES} )
     # Cut off the file extension and directory path
     get_filename_component( testname ${testsourcefile} NAME_WE )

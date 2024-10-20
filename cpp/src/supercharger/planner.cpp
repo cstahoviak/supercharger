@@ -98,6 +98,7 @@ namespace supercharger
     PlannerResult result = planning_algo_.get()->PlanRoute(origin, destination);
 
     if ( result.route.back().name() != destination_.name ) {
+      // TODO: "failure_modes" never gets here.
       INFO("Search terminated. Solution not found.");
       return {};
     }
@@ -109,6 +110,7 @@ namespace supercharger
   void RoutePlanner::SetPlanningAlgorithm(
     AlgoType algo_type, CostFcnType cost_type)
   {
+    // TODO: Don't need to use std::move here.
     std::unique_ptr<PlanningAlgorithm> new_algo = 
       PlanningAlgorithm::GetPlanningAlgorithm(
         this, std::move(algo_type), std::move(cost_type));

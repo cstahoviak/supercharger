@@ -44,6 +44,12 @@ namespace supercharger
       RoutePlanner(AlgoType algo_type, OptimizerType optim_type) : 
         RoutePlanner(algo_type, CostFcnType::NONE, optim_type) {};
 
+      // TODO: Now I have to add a ctor that adds a std::function type to its
+      // signature? Having so many different overloaded ctors feels kind of
+      // bloated to me. Maybe there's a better way to do this? It would be nice
+      // to decouple the PlanningAlgorithms from the RoutePlanner and maybe this
+      // is a good opportunity to do that.
+
       RoutePlanner(AlgoType algo_type) : 
         RoutePlanner(algo_type, CostFcnType::NONE, OptimizerType::NONE) {};
 
@@ -77,6 +83,9 @@ namespace supercharger
       double speed_{0};       // [km/hr]
 
       // Store the network of chargers.
+      // TODO: Maybe just copy the Chargers because they're lightweight enough
+      // and there are only 300 of them. That way we don't have a pointer to
+      // something that could possibly be changed elsewhere.
       std::unordered_map<std::string, const Charger*> network_;
 
       // Store the path planning algorithm.

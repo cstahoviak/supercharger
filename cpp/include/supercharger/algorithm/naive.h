@@ -15,11 +15,11 @@ namespace supercharger::algorithm
   /**
    * @brief My "naive" path planner.
    */
-  class Naive : public PlanningAlgorithm
+  class NaivePlanner : public PlanningAlgorithm
   {
     public:
       // NOTE: Calls the base class via initializer list "constructor chaining"
-      Naive(RoutePlanner* rp, CostFunctionType type) : 
+      NaivePlanner(RoutePlanner* rp, CostFunctionType type) : 
         PlanningAlgorithm(rp), type_(type) {};
 
       PlannerResult PlanRoute(const std::string&, const std::string&) override;

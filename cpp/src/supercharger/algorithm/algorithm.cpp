@@ -56,7 +56,7 @@ namespace supercharger::algorithm
         // unique_ptr of the base class (the return type of this function) can
         // be initialized from a unique_ptr of the derived class: public
         // inheritance allows this, but protected inheritance does not. But why?
-        return std::make_unique<Naive>(rp, cost_type);
+        return std::make_unique<NaivePlanner>(rp, cost_type);
 
       case AlgorithmType::DIJKSTRAS:
         return std::make_unique<Dijkstras>(rp);
