@@ -140,7 +140,7 @@ namespace supercharger::algorithm
       != candidate_names.end() )
     {
       // Compute the charge time to make it to the final destination
-      current->duration = ComputeChargeTime_(*current, *end_node);
+      current->duration = GetChargeTime(*current, *end_node);
 
       // Update the total route cost at the current node.
       UpdateRouteCost_(speed);
@@ -161,19 +161,19 @@ namespace supercharger::algorithm
     // TODO: Maybe make this whole block its own function (UpdateCurrentNode_?)
     {
       // Compute the charge time and the departure range for the current node.
-      current->duration = ComputeChargeTime_(*current, *next_node);
+      current->duration = GetChargeTime(*current, *next_node);
       DEBUG("Charge duration at " << current->name() << ": " << 
         current->duration);
 
       // Update the departure range for the current node.
-      current->departure_range = ComputeDepartureRange_(*current);
+      current->departure_range = GetDepartureRange(*current);
 
       // Update the total cost at the current node.
       UpdateRouteCost_(speed);
     }
 
     // Compute the range remaining after arriving at the next node.
-    next_node->arrival_range = ComputeArrivalRange_(*current, *next_node);
+    next_node->arrival_range = GetArrivalRange(*current, *next_node);
 
     // Add the next node to the route and continue iteration. Note that the
     // charge duration at the next node will be computed on the next iteration.
@@ -221,14 +221,14 @@ namespace supercharger::algorithm
     
     switch ( type_ )
     {
-      case Planner::CostFunctionType::MINIMIZE_DIST_TO_NEXT:
+      case NaiveCostType::MINIMIZE_DIST_TO_NEXT:
       {
         // Effectively the same as Dijkstra's
         cost = math::distance(current, candidate);
         break;
       }
 
-      case Planner::CostFunctionType::MINIMIZE_DIST_REMAINING:
+      case NaiveCostType::MINIMIZE_DIST_REMAINING:
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
@@ -237,7 +237,7 @@ namespace supercharger::algorithm
         break;
       }
       
-      case Planner::CostFunctionType::MINIMIZE_TIME_REMAINING:
+      case NaiveCostType::MINIMIZE_TIME_REMAINING:
       {
         // Compute distances
         double candidate_to_destination = 

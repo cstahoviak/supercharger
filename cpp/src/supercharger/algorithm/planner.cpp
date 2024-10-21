@@ -27,7 +27,8 @@ namespace supercharger::algorithm
   /**
    * @brief Planner constructor.
    * 
-   * @param rp 
+   * TODO: It might make more sense (or be more explicit) for the Charger
+   * network to be passed in as an input arg.
    */
   Planner::Planner() {
     // Create a set of nodes from the route planner's charger network.
@@ -45,7 +46,8 @@ namespace supercharger::algorithm
   // algorithm types (Naive, Dijkstra's, etc.). 
   std::unique_ptr<Planner> Planner::GetPlanner(
     AlgorithmType algo_type,
-    CostFunctionType cost_type)
+    NaiveCostType naive_cost_type,
+    DijkstrasCostFcnType cost_f)
   {
     switch ( algo_type )
     {
@@ -55,13 +57,13 @@ namespace supercharger::algorithm
         // unique_ptr of the base class (the return type of this function) can
         // be initialized from a unique_ptr of the derived class: public
         // inheritance allows this, but protected inheritance does not. But why?
-        return std::make_unique<NaivePlanner>(cost_type);
+        return std::make_unique<NaivePlanner>(naive_cost_type);
 
       case AlgorithmType::DIJKSTRAS:
-        return std::make_unique<Dijkstras>();
+        return std::make_unique<Dijkstras>(cost_f);
 
       case AlgorithmType::ASTAR:
-        return std::make_unique<AStar>();
+        return std::make_unique<AStar>(cost_f);
       
       default:
         return std::unique_ptr<Planner>(nullptr);
@@ -86,8 +88,7 @@ namespace supercharger::algorithm
    * @return double The charge time required to make it to the next node. The
    * arrival range at the 'next' node will be zero.
    */
-  double Planner::ComputeChargeTime_(
-    const Node& current, const Node& next) const
+  double GetChargeTime(const Node& current, const Node& next)
   {
     // Compute the distance to the next charger.
     double current_to_next = math::distance(current, next);
@@ -110,8 +111,7 @@ namespace supercharger::algorithm
    * @param next The next node.
    * @return double The arrival range at the 'next' node.
    */
-  double Planner::ComputeArrivalRange_(
-    const Node& current, const Node& next) const
+  double GetArrivalRange(const Node& current, const Node& next)
   {
     // The range remaining after arriving at the next node is the departure
     // range at the current node - the distance to the next charger.
@@ -125,7 +125,8 @@ namespace supercharger::algorithm
    * @param current The current node.
    * @return double The departure range after charging at the current node.
    */
-  double Planner::ComputeDepartureRange_(const Node& current) const {
+  double GetDepartureRange(const Node& current)
+  {
     // The departure range at the current node is the arrival range at the
     // current node + range added by charging.
     return current.arrival_range + current.duration * current.charger().rate;

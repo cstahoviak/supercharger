@@ -59,8 +59,10 @@ namespace supercharger
 
   Supercharger::Supercharger(
     AlgoType algo_type,
-    CostFcnType cost_type,
-    OptimizerType optimizer_type) {
+    NaiveCostFcnType naive_cost_type,
+    DijkstrasCostFcnType cost_f,
+    OptimizerType optimizer_type)
+  {
     // Create the network map (must do this before creating the planning algo).
     for ( const Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
@@ -72,7 +74,7 @@ namespace supercharger
     }
 
     // Create the planning algorithm.
-    planner_ = Planner::GetPlanner(algo_type, cost_type);
+    planner_ = Planner::GetPlanner(algo_type, naive_cost_type, cost_f);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);
@@ -107,11 +109,11 @@ namespace supercharger
     return ( optimizer_ ) ? optimizer_.get()->Optimize(result) : result;    
   }
 
-  void Supercharger::SetPlanningAlgorithm(
-    AlgoType algo_type, CostFcnType cost_type)
+  void Supercharger::SetPlanner(
+    AlgoType algo_type, NaiveCostFcnType cost_type, DijkstrasCostFcnType cost_f)
   {
     std::unique_ptr<Planner> new_algo = 
-      Planner::GetPlanner(algo_type, cost_type);
+      Planner::GetPlanner(algo_type, cost_type, cost_f);
     planner_.swap(new_algo);
   }
 

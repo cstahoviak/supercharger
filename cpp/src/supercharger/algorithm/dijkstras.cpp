@@ -95,7 +95,7 @@ namespace supercharger::algorithm
           // these values during ConstructFinalRoute_().
 
           // Compute the charge time at the current node to reach the neighbor.
-          double duration = ComputeChargeTime_(*current_node, *neighbor);
+          double duration = GetChargeTime(*current_node, *neighbor);
 
           // Compute the departure range at the current node.
           double departure_range = current_node->arrival_range + 
@@ -142,11 +142,7 @@ namespace supercharger::algorithm
   double Dijkstras::ComputeCost(
     const Node& current, const Node& neighbor, double speed) const
   {
-    return current.cost + ComputeChargeTime_(current, neighbor) +
-      math::distance(current, neighbor) / speed;
-
-    // TODO: Treat the cost function as a callable object.
-    // return cost_f(current, neighbor, speed, cost_data_);
+    return cost_f(current, neighbor, speed);
   }
 
   /**
@@ -219,18 +215,30 @@ namespace supercharger::algorithm
       Node& next = *(iter + 1);
 
       // Compute the charge time at the current node to reach the neighbor.
-      current.duration = ComputeChargeTime_(current, next);
+      current.duration = GetChargeTime(current, next);
       DEBUG(current.name() << " updated charge time: " << current.duration << 
         " hrs");
 
       // Compute the departure range at the current node.
-      current.departure_range = ComputeDepartureRange_(current);
+      current.departure_range = GetDepartureRange(current);
 
       // Compute the arrival range at the neighbor node (this may be
       // unnecessary because it was computed during PlanRoute).
-      next.arrival_range = ComputeArrivalRange_(current, next);
+      next.arrival_range = GetArrivalRange(current, next);
     }
 
     return route;
+  }
+
+  double SimpleCost(const Node& current, const Node& neighbor, double speed)
+  {
+    return current.cost + GetChargeTime(current, neighbor) +
+      math::distance(current, neighbor) / speed;
+  }
+
+  double OptimizedCost(const Node& current, const Node& neighbor, double speed)
+  {
+    // TODO: Implement the "optimized" cost function.
+    return 0;
   }
 } // end namespace supercharger::algorithm

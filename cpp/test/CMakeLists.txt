@@ -4,6 +4,7 @@ set(TEST_NAME test_${PROJECT_NAME})
 
 set(TEST_SOURCES
   "optimize/test_nlopt.cpp"
+  "test_algorithm.cpp"
   "test_math.cpp"
 )
 

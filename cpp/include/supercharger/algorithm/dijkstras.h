@@ -20,11 +20,10 @@ namespace supercharger::algorithm
   class Dijkstras : public Planner
   {
     public:
-      Dijkstras() = default;
-      Dijkstras(
-        std::function<double(const Node&, const Node&, double, void*)> cost_f) :
-          cost_f(std::move(cost_f)) {};
+      using DijkstrasCostFcnType =
+        std::function<double(const Node&, const Node&, double)>;
 
+      Dijkstras(DijkstrasCostFcnType cost_f) : cost_f(std::move(cost_f)) {};
 
       PlannerResult PlanRoute(
         const std::string&,
@@ -40,7 +39,21 @@ namespace supercharger::algorithm
     private:
       std::vector<std::shared_ptr<Node>> GetNeighbors_(const Node&, double);
       
-      std::function<double(const Node&, const Node&, double, void*)> cost_f;
-      void* cost_data_;
+      DijkstrasCostFcnType cost_f;
   };
+
+  /**
+   * @brief Implements a "simple" cost function for Dijkstra's algorithm.
+   * 
+   * @return double 
+   */
+  double SimpleCost(const Node&, const Node&, double);
+
+  /**
+   * @brief Implements an "optimized" cost function for Dijkstra's algorithm.
+   * The optimized cost function uses a constrained optimization scheme to...
+   * 
+   * @return double 
+   */
+  double OptimizedCost(const Node&, const Node&, double);
 } // end namespace supercharger::algorithm

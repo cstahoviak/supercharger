@@ -363,7 +363,7 @@ namespace supercharger::optimize
       Node& current = *iter;
 
       // Update the arrival range at the current node.
-      // TODO: If ComputeArrivalRange is a free function (decoupled from the
+      // TODO: If GetArrivalRange is a free function (decoupled from the
       // Planner), I could use it here.
       current.arrival_range = previous.arrival_range + \
         previous.duration * previous.charger().rate - \
@@ -374,7 +374,7 @@ namespace supercharger::optimize
         math::distance(previous, current) / result.speed;
 
       // For all nodes but the final node, update the departure range.
-      // TODO: If ComputeDepartureRange is a free function (decoupled from the
+      // TODO: If GetDepartureRange is a free function (decoupled from the
       // Planner), I could use it here.
       if ( iter != optimized.route.end() - 1 ) {
         current.departure_range = current.arrival_range + \

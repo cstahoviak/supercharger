@@ -13,12 +13,16 @@
 #include "supercharger/node.h"
 
 #include <memory>
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace supercharger::algorithm
 {
+  using DijkstrasCostFcnType = 
+    std::function<double(const Node&, const Node&, double)>;
+
   /**
    * @brief Stores the resulting output of a path planning algorithm. The
    * result contains both a path and a total cost (duration in hours) of the
@@ -62,10 +66,7 @@ namespace supercharger::algorithm
         NAIVE
       };
 
-      enum class CostFunctionType {
-        // So far, these only apply to the Naive planning algorithm.
-        // TODO: This enum should probably fall within the scope of the
-        // NaivePlanner class.
+     enum class NaiveCostType {
         MINIMIZE_DIST_TO_NEXT,
         MINIMIZE_DIST_REMAINING,
         MINIMIZE_TIME_REMAINING,
@@ -75,7 +76,7 @@ namespace supercharger::algorithm
       Planner();
 
       static std::unique_ptr<Planner> GetPlanner(
-        AlgorithmType, CostFunctionType);
+        AlgorithmType, NaiveCostType, DijkstrasCostFcnType);
       
       virtual PlannerResult PlanRoute(
         const std::string&,
@@ -93,17 +94,14 @@ namespace supercharger::algorithm
 
       // Store all of the nodes in the network.
       std::unordered_map<std::string, std::shared_ptr<Node>> nodes_;
-
-      // Utility functions
-      // TODO: In order to implement the Dijkstra's cost function as a
-      // callable via std::function, it might be necessary to decouple these
-      // functions from the Planner class. Is that a good idea?
-      // Free function vs. member function?
-      // Note: If no private/protected data from class is used, make it a free
-      // function.
-      double ComputeChargeTime_(const Node&, const Node&) const;
-      double ComputeArrivalRange_(const Node&, const Node&) const;
-      double ComputeDepartureRange_(const Node&) const;
   };
+
+  // Utility functions
+  // RoT: If no private/protected data from class is used, make it a free
+  // function.
+  double GetChargeTime(const Node&, const Node&);
+  double GetArrivalRange(const Node&, const Node&);
+  double GetDepartureRange(const Node&);
+
 } // end namespace supercharger
 

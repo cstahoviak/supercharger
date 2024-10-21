@@ -1,15 +1,14 @@
 /**
  * @file test_nloptimizer.cpp
- * @author your name (you@domain.com)
- * @brief Unit tests for math functions
+ * @author Carl Stahoviak
+ * @brief Unit tests for the NLOptimizer class.
  * @version 0.1
  * @date 2024-08-05
  * 
  * @copyright Copyright (c) 2024
- * 
  */
+#include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/optimize/nlopt.h"
-#include "supercharger/supercharger.h"
 
 #include <gtest/gtest.h>
 
@@ -29,18 +28,16 @@ class NLOptimizerTestFixture : public testing::Test
       const std::string initial_charger_name = "Council_Bluffs_IA";
       const std::string goal_charger_name = "Cadillac_MI";
 
-      // Create the Route Planner
-      Supercharger planner(AlgoType::DIJKSTRAS);
+      // Define some vehicle constants
+      const double max_range{320};
+      const double speed{105};
 
-      // Set the vehicle's speed and max range
-      planner.max_range() = 320;
-      planner.speed() = 105;
+      // Create the route planner
+      auto planner = algorithm::Dijkstras(algorithm::SimpleCost);
 
       // Plan the route
       planner_result = planner.PlanRoute(
-        initial_charger_name,
-        goal_charger_name
-      );
+        initial_charger_name, goal_charger_name, max_range, speed);
 
       // Define the optimization problem dimensionality and create the
       // constraint data.
@@ -54,7 +51,7 @@ class NLOptimizerTestFixture : public testing::Test
     }
 
     // Store the result of Dijkstra's planning algorithm.
-    PlannerResult planner_result;
+    algorithm::PlannerResult planner_result;
 
     // Store data related to the optimization problem.
     unsigned n;
