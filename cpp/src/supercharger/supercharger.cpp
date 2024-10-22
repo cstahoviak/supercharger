@@ -20,43 +20,6 @@
 
 namespace supercharger
 {
-  /**
-   * @brief Formats the final route output to comply with the format expected
-   * by the provided "checker" executables.
-   * 
-   * @param stream 
-   * @param route 
-   * @return std::ostream& 
-   */
-  std::ostream& operator<<(std::ostream& stream, const std::vector<Node>& route)
-  {
-    size_t sz = route.size();
-    size_t idx = 0;
-    for ( const Node& node : route ) {
-      stream << node;
-      if ( idx < sz - 1 ) {
-        stream << ", ";
-      }
-      idx++;
-    }
-    return stream;
-  }
-
-  std::ostream& operator<<(
-    std::ostream& stream, const std::vector<std::shared_ptr<Node>>& route)
-  {
-    size_t sz = route.size();
-    size_t idx = 0;
-    for ( const std::shared_ptr<Node>& node : route ) {
-      stream << *node;
-      if ( idx < sz - 1 ) {
-        stream << ", ";
-      }
-      idx++;
-    }
-    return stream;
-  }
-
   Supercharger::Supercharger(
     AlgoType algo_type,
     NaiveCostFcnType naive_cost_type,

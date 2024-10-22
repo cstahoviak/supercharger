@@ -12,6 +12,7 @@
 
 #include <limits>
 #include <memory>
+#include <vector>
 
 namespace supercharger
 {
@@ -61,6 +62,11 @@ namespace supercharger
       std::weak_ptr<Node> parent_;
   };
 
+  // Overload the string stream operator to output a Node.
   std::ostream& operator<<(std::ostream&, const Node&);
   std::ostream& operator<<(std::ostream&, const Node* const);
+
+  // Overload the string stream operator to output the route.
+  std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
 } // end namespace supercharger

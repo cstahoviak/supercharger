@@ -89,6 +89,9 @@ namespace supercharger::algorithm
       void Reset();
 
     protected:
+      // Initializes the node graph.
+      void InitializeNodeGraph_();
+
       // Constructs the final route.
       virtual std::vector<Node> ConstructFinalRoute_(const Node&) = 0;
 

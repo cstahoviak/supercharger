@@ -79,6 +79,20 @@ namespace supercharger::algorithm
     }
   }
 
+  void Planner::InitializeNodeGraph_() {
+    bool node_graph_stale{false};
+    for (const auto& [name, node] : nodes_ ) {
+      if ( node.get()->visited )
+        // If even a single node is marked 'visited', the graph must be reset.
+        node_graph_stale = true;
+        break;
+    }
+
+    if ( node_graph_stale ) {
+      Reset();
+    }
+  }
+
   /**
    * @brief Computes the charge time at the current node required to make it to
    * the next node.

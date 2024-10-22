@@ -32,6 +32,11 @@ namespace supercharger::algorithm
     double max_range,
     double speed)
   {
+    // TODO: Is there a good way to implement something like this at the
+    // base-class level rather than requiring each derived class to call an
+    // "initialization" function?
+    InitializeNodeGraph_();
+
     // Define a lambda function for priority queue comparison.
     auto compare = [](
       const std::shared_ptr<Node>& lhs, const std::shared_ptr<Node>& rhs)
