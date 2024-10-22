@@ -12,6 +12,7 @@
 #include "supercharger/optimize/optimizer.h"
 #include "supercharger/network.h"
 #include "supercharger/node.h"
+#include "supercharger/utils.h"
 
 #include <memory>
 #include <ostream>
@@ -22,7 +23,8 @@
 namespace supercharger
 {  
   using AlgoType = algorithm::Planner::AlgorithmType;
-  using CostFcnType = algorithm::Planner::CostFunctionType;
+  using NaiveCostFcnType = algorithm::Planner::NaiveCostType;
+  using DijkstrasCostFcnType = algorithm::DijkstrasCostFcnType;
   using OptimizerType = optimize::Optimizer::OptimizerType;
 
   using PlannerResult = algorithm::PlannerResult;
@@ -30,34 +32,47 @@ namespace supercharger
   using Optimizer = optimize::Optimizer;
 
   class Supercharger
-  {
+  {    
     public:
       // NOTE: Initially, the ctor args were rvalue references, but a more
       // common pattern is to consume by value and std::move in the initializer
       // list.
-      Supercharger(AlgoType, CostFcnType, OptimizerType);
+      Supercharger(
+        AlgoType,
+        NaiveCostFcnType,
+        DijkstrasCostFcnType,
+        OptimizerType
+      );
+      // Supercharger(
+      //   AlgoType,
+      //   NaiveCostFcnType = NaiveCostFcnType::NAIVE,
+      //   DijkstrasCostFcnType = nullfunc,
+      //   OptimizerType = OptimizerType::NONE
+      // );
 
       // The following ctors are known as "delegating" ctors.
-      Supercharger(AlgoType algo_type, CostFcnType cost_type) : 
-        Supercharger(algo_type, cost_type, OptimizerType::NONE) {};
+      Supercharger(NaiveCostFcnType naive_cost_type) :
+        Supercharger(AlgoType::NAIVE, naive_cost_type, {}, OptimizerType::NONE) {};
 
-      Supercharger(AlgoType algo_type, OptimizerType optim_type) : 
-        Supercharger(algo_type, CostFcnType::NONE, optim_type) {};
+      Supercharger(NaiveCostFcnType naive_cost_type, OptimizerType optim_type) :
+        Supercharger(AlgoType::NAIVE, naive_cost_type, {}, optim_type) {};
 
-      // TODO: Now I have to add a ctor that adds a std::function type to its
-      // signature? Having so many different overloaded ctors feels kind of
-      // bloated to me. Maybe there's a better way to do this? It would be nice
-      // to decouple the PlanningAlgorithms from the Supercharger and maybe this
-      // is a good opportunity to do that.
+      Supercharger(DijkstrasCostFcnType cost_f) :
+        Supercharger(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f, OptimizerType::NONE) {};
 
-      Supercharger(AlgoType algo_type) : 
-        Supercharger(algo_type, CostFcnType::NONE, OptimizerType::NONE) {};
+      Supercharger(DijkstrasCostFcnType cost_f, OptimizerType optim_type) :
+        Supercharger(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f, optim_type) {};
 
       PlannerResult PlanRoute(const std::string&, const std::string&);
 
-      void SetPlanningAlgorithm(AlgoType, CostFcnType);
-      void SetPlanningAlgorithm(AlgoType algo_type) {
-        SetPlanningAlgorithm(algo_type, CostFcnType::NONE);
+      // TODO: Maybe for simplicity, there should should only be two of these
+      // Set...() functions: one that accepts a Planner, and one that accepts an
+      // Optimizer.
+      void SetPlanner(NaiveCostFcnType naive_cost_type) {
+        SetPlanner_(AlgoType::NAIVE, naive_cost_type, nullcostfunc);
+      }
+      void SetPlanner(DijkstrasCostFcnType cost_f) {
+        SetPlanner_(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f);
       }
       void SetOptimizer(OptimizerType);
 
@@ -95,10 +110,7 @@ namespace supercharger
       std::unique_ptr<Optimizer> optimizer_;
 
       void Initialize_(const std::string&, const std::string&);
+      void SetPlanner_(AlgoType, NaiveCostFcnType, DijkstrasCostFcnType);
+
   };
-
-  // Overload the string stream operator to output the route
-  std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
-  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
-
 } // end namespace supercharger

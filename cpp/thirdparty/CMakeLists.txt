@@ -33,8 +33,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 # Add glog
-FetchContent_Declare(
-  glog
-  URL https://github.com/google/glog/archive/refs/tags/v0.7.1.tar.gz
-)
-FetchContent_MakeAvailable(glog)
+# FetchContent_Declare(
+#   glog
+#   URL https://github.com/google/glog/archive/refs/tags/v0.7.1.tar.gz
+# )
+# FetchContent_MakeAvailable(glog)

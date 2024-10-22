@@ -52,6 +52,8 @@ void initOptimizer(py::module_& m)
 {
   py::enum_<Optimizer::OptimizerType>(m, "OptimizerType")
     .value("NAIVE", Optimizer::OptimizerType::NAIVE)
+    .value("NLOPT", Optimizer::OptimizerType::NLOPT)
+    .value("NONE", Optimizer::OptimizerType::NONE)
     .export_values()
   ;
 

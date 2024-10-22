@@ -11,6 +11,9 @@
 #include "supercharger/supercharger.h"
 
 #include <pybind11/pybind11.h>
+// Need to include the funcional header in any translation unit where 
+// DijkstrasCostFcnType appears.
+#include <pybind11/functional.h>
 // Required for automatic type conversions between python lists and std::vector
 #include <pybind11/stl.h>
 
@@ -26,22 +29,23 @@ void initSupercharger(py::module_& m)
   //   py::overload_cast<std::ostream&, const std::vector<Node*>&>(&operator<<));
 
   py::class_<Supercharger>(m, "Supercharger")
-    .def(py::init<AlgoType, CostFcnType, OptimizerType>(),
-      py::arg("algo_type"), py::arg("cost_type"), py::arg("optim_type"))
-    .def(py::init<AlgoType, OptimizerType>(),
-      py::arg("algo_type"), py::arg("optim_type"))
-    .def(py::init<AlgoType, CostFcnType>(),
-      py::arg("algo_type"), py::arg("cost_type"))
-    .def(py::init<AlgoType>(), py::arg("algo_type"))
+    // Bindings for "top-level" Supercharger ctor intentionally omitted.
+    .def(py::init<NaiveCostFcnType>(), py::arg("naive_cost_type"))
+    .def(py::init<NaiveCostFcnType, OptimizerType>(),
+      py::arg("naive_cost_type"), py::arg("optim_type"))
+    .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"))
+    .def(py::init<DijkstrasCostFcnType, OptimizerType>(),
+      py::arg("cost_f"), py::arg("optim_type"))
 
     .def("plan_route", &Supercharger::PlanRoute,
       py::arg("origin"), py::arg("destination"))
-    .def("set_planning_algorithm",
-      py::overload_cast<AlgoType, CostFcnType>(&Supercharger::SetPlanningAlgorithm),
-      py::arg("algo_type"), py::arg("cost_type"))
-    .def("set_planning_algorithm",
-      py::overload_cast<AlgoType>(&Supercharger::SetPlanningAlgorithm),
-      py::arg("algo_type"))
+
+    .def("set_planner",
+      py::overload_cast<NaiveCostFcnType>(&Supercharger::SetPlanner),
+      py::arg("naive_cost_type"))
+    .def("set_planner",
+      py::overload_cast<DijkstrasCostFcnType>(&Supercharger::SetPlanner),
+      py::arg("cost_f"))
     .def("set_optimizer", &Supercharger::SetOptimizer, py::arg("type"))
 
     .def_property_readonly("network", &Supercharger::network)

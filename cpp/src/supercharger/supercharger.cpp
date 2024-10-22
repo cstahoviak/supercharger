@@ -20,47 +20,12 @@
 
 namespace supercharger
 {
-  /**
-   * @brief Formats the final route output to comply with the format expected
-   * by the provided "checker" executables.
-   * 
-   * @param stream 
-   * @param route 
-   * @return std::ostream& 
-   */
-  std::ostream& operator<<(std::ostream& stream, const std::vector<Node>& route)
-  {
-    size_t sz = route.size();
-    size_t idx = 0;
-    for ( const Node& node : route ) {
-      stream << node;
-      if ( idx < sz - 1 ) {
-        stream << ", ";
-      }
-      idx++;
-    }
-    return stream;
-  }
-
-  std::ostream& operator<<(
-    std::ostream& stream, const std::vector<std::shared_ptr<Node>>& route)
-  {
-    size_t sz = route.size();
-    size_t idx = 0;
-    for ( const std::shared_ptr<Node>& node : route ) {
-      stream << *node;
-      if ( idx < sz - 1 ) {
-        stream << ", ";
-      }
-      idx++;
-    }
-    return stream;
-  }
-
   Supercharger::Supercharger(
     AlgoType algo_type,
-    CostFcnType cost_type,
-    OptimizerType optimizer_type) {
+    NaiveCostFcnType naive_cost_type,
+    DijkstrasCostFcnType cost_f,
+    OptimizerType optimizer_type)
+  {
     // Create the network map (must do this before creating the planning algo).
     for ( const Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
@@ -72,7 +37,7 @@ namespace supercharger
     }
 
     // Create the planning algorithm.
-    planner_ = Planner::GetPlanner(algo_type, cost_type);
+    planner_ = Planner::GetPlanner(algo_type, naive_cost_type, cost_f);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);
@@ -107,22 +72,19 @@ namespace supercharger
     return ( optimizer_ ) ? optimizer_.get()->Optimize(result) : result;    
   }
 
-  void Supercharger::SetPlanningAlgorithm(
-    AlgoType algo_type, CostFcnType cost_type)
-  {
-    std::unique_ptr<Planner> new_algo = 
-      Planner::GetPlanner(algo_type, cost_type);
-    planner_.swap(new_algo);
-  }
-
   void Supercharger::SetOptimizer(OptimizerType type) {
-    // Reset the planning algorithm.
-    planner_.get()->Reset();
-
     // Swap the optimizer.
     std::unique_ptr<Optimizer> new_optimizer = 
       Optimizer::GetOptimizer(type);
     optimizer_.swap(new_optimizer);
+  }
+
+  void Supercharger::SetPlanner_(
+    AlgoType algo_type, NaiveCostFcnType cost_type, DijkstrasCostFcnType cost_f)
+  {
+    std::unique_ptr<Planner> new_algo = 
+      Planner::GetPlanner(algo_type, cost_type, cost_f);
+    planner_.swap(new_algo);
   }
 
   /**

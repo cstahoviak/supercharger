@@ -22,6 +22,8 @@ namespace supercharger::algorithm
   class AStar : public Dijkstras
   {
     public:
+      AStar(DijkstrasCostFcnType cost_f) : Dijkstras(cost_f) {};
+
       PlannerResult PlanRoute(
         const std::string&,
         const std::string&,

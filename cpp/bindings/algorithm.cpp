@@ -16,6 +16,9 @@
 #include "supercharger/supercharger.h"
 
 #include <pybind11/pybind11.h>
+// Need to include the funcional header in any translation unit where 
+// DijkstrasCostFcnType appears.
+#include <pybind11/functional.h>
 // NOTE: required because PlannerResult::route is a std::vector.
 // NOTE: When you include any of the optional casters (pybind11/eigen.h, 
 // pybind11/stl.h, etc.), you need to include them consistently in every 
@@ -93,7 +96,7 @@ using namespace supercharger;
 using namespace supercharger::algorithm;
 
 using AlgoType = Planner::AlgorithmType;
-using CostFcnType = Planner::CostFunctionType;
+using NaiveCostType = Planner::NaiveCostType;
 
 std::string to_string(const PlannerResult& result) {
   std::ostringstream os;
@@ -110,6 +113,10 @@ std::string to_string(const PlannerResult& result) {
 
 void initPlanningAlgorithm(py::module_& m)
 {
+  m.def("get_charge_time", &GetChargeTime, py::arg("current"), py::arg("next"));
+  m.def("get_arrival_range", &GetArrivalRange, py::arg("current"), py::arg("next"));
+  m.def("get_departure_range", &GetDepartureRange, py::arg("current"));
+
   py::class_<PlannerResult>(m, "PlannerResult")
     .def(py::init<>())
     .def(py::init<std::vector<Node>, double, double, double>(),
@@ -118,6 +125,7 @@ void initPlanningAlgorithm(py::module_& m)
     .def_readwrite("cost", &PlannerResult::cost)
     .def_readwrite("max_range", &PlannerResult::max_range)
     .def_readwrite("speed", &PlannerResult::speed)
+    .def_property_readonly("durations", &PlannerResult::durations)
     // TODO: I haven't figured out how to get the bindings for operator<< to
     // work yet, so for now, I'm stuck effectively re-writing them.
     .def("__str__", &to_string)
@@ -138,18 +146,18 @@ void initPlanningAlgorithm(py::module_& m)
     .export_values()
   ;
 
-  py::enum_<CostFcnType>(m, "CostFunctionType")
-    .value("MINIMIZE_DIST_TO_NEXT", CostFcnType::MINIMIZE_DIST_TO_NEXT)
-    .value("MINIMIZE_DIST_REMAINING", CostFcnType::MINIMIZE_DIST_REMAINING)
-    .value("MINIMIZE_TIME_REMAINING", CostFcnType::MINIMIZE_TIME_REMAINING)
-    .value("NONE", CostFcnType::NONE)
+  py::enum_<NaiveCostType>(m, "NaiveCostType")
+    .value("MINIMIZE_DIST_TO_NEXT", NaiveCostType::MINIMIZE_DIST_TO_NEXT)
+    .value("MINIMIZE_DIST_REMAINING", NaiveCostType::MINIMIZE_DIST_REMAINING)
+    .value("MINIMIZE_TIME_REMAINING", NaiveCostType::MINIMIZE_TIME_REMAINING)
+    .value("NONE", NaiveCostType::NONE)
     .export_values()
   ;
   
   py::class_<Planner, PyPlanner>(m, "Planner")
     .def(py::init<>())
-    .def_static("get_planning_algorithm", &Planner::GetPlanner,
-      py::arg("algo_type"), py::arg("cost_type"))
+    .def_static("get_planner", &Planner::GetPlanner,
+      py::arg("algo_type"), py::arg("naive_cost_type"), py::arg("cost_f"))
     .def("plan_route", &Planner::PlanRoute, 
       py::arg("origin"), py::arg("destination"), py::arg("max_range"), py::arg("speed"))
     .def("compute_cost", &Planner::ComputeCost,
@@ -160,10 +168,15 @@ void initPlanningAlgorithm(py::module_& m)
   ;
 
   py::class_<NaivePlanner, Planner>(m, "NaivePlanner")
-    .def(py::init<CostFcnType>(), py::arg("cost_type"));
+    .def(py::init<NaiveCostType>(), py::arg("cost_type"));
   ;
 
-    py::class_<Dijkstras, Planner>(m, "Dijkstras")
-    .def(py::init<>());
-  ;   
+    py::class_<Dijkstras, Planner>(m, "DijkstrasPlanner")
+    .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"));
+  ;
+
+  m.def("DijkstrasSimpleCost", &algorithm::SimpleCost,
+    py::arg("current"), py::arg("neighbor"), py::arg("speed"));
+  m.def("DijkstrasOptimizedCost", &algorithm::OptimizedCost,
+    py::arg("current"), py::arg("neighbor"), py::arg("speed"));
 }

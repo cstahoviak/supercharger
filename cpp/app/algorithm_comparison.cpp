@@ -18,10 +18,11 @@
  * 
  * @copyright Copyright (c) 2024
  */
+#include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/logging.h"
 #include "supercharger/supercharger.h"
 
-#include <glog/logging.h>
+// #include <glog/logging.h>
 
 #include <algorithm>
 #include <iomanip>
@@ -51,8 +52,8 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  // Add glog
-  google::InitGoogleLogging(argv[0]); 
+  // TODO: Add glog
+  // google::InitGoogleLogging(argv[0]);
   
   // Parse the initial and goal charger names
   const std::string initial_charger_name = argv[1];
@@ -62,10 +63,7 @@ int main(int argc, char** argv)
   std::map<std::string, double> algorithms;
 
   // Create the Route Planner
-  Supercharger app(
-    AlgoType::NAIVE,
-    CostFcnType::MINIMIZE_TIME_REMAINING
-  );
+  Supercharger app(NaiveCostFcnType::MINIMIZE_TIME_REMAINING);
 
   // Set the vehicle's speed and max range
   app.max_range() = 320;
@@ -82,7 +80,7 @@ int main(int argc, char** argv)
   algorithms["NAIVE\t\t\t\t"] = result1.cost;
 
   // Plan the route via Dijkstra's algorithm.
-  app.SetPlanningAlgorithm(AlgoType::DIJKSTRAS);
+  app.SetPlanner(algorithm::SimpleCost);
   PlannerResult result2 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
@@ -116,5 +114,4 @@ int main(int argc, char** argv)
       << std::endl;
   }
   std::cout << "\n";
-
 }

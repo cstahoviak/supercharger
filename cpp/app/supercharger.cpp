@@ -3,10 +3,10 @@
  * @author Carl Stahoviak
  * @brief The top-level Tesla Supercharger route planning application. The
  * output of this application is a single string in the format required by the
- * 'checker_linux' application used for route validation. The required output
+ * 'checker_*' applications used for route validation. The required output
  * format looks like:
  * 
- * <origin>, <node-2>, <charging-time-2>, <node-3>, <charging-time-2>, ...
+ * <origin>, <node-1>, <charging-time-1>, <node-2>, <charging-time-2>, ...
  * <node-n>, <charging-time-n>, <destination>
  * 
  * @version 0.1
@@ -15,8 +15,9 @@
  * @copyright Copyright (c) 2024
  */
 #include "supercharger/supercharger.h"
+#include "supercharger/algorithm/dijkstras.h"
 
-#include <glog/logging.h>
+// #include <glog/logging.h>
 
 #include <iostream>
 
@@ -30,15 +31,15 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  // Add glog
-  google::InitGoogleLogging(argv[0]); 
+  // TODO: Add glog
+  // google::InitGoogleLogging(argv[0]);
   
   // Parse the initial and goal charger names
   const std::string initial_charger_name = argv[1];
   const std::string goal_charger_name = argv[2];
 
   // Create the Route Planner
-  Supercharger app(AlgoType::DIJKSTRAS, OptimizerType::NLOPT);
+  Supercharger app(algorithm::SimpleCost, OptimizerType::NLOPT);
 
   // Set the vehicle's speed and max range
   app.max_range() = 320;

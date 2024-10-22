@@ -26,7 +26,7 @@ target_include_directories(${TARGET} PRIVATE
 target_link_libraries(${TARGET} PRIVATE
   superchargerlib
   nlopt
-  glog::glog
+  # glog::glog
 )
 
 # Install the bindings to the python directory

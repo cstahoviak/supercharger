@@ -20,7 +20,6 @@ message(STATUS "DEBUG_INFO: ${DEBUG_INFO}")
 include_directories("cpp/include")
 
 set(LIB_SOURCES
-  "cpp/src/supercharger/algorithm/cost_functions/dijkstras.cpp"
   "cpp/src/supercharger/algorithm/astar.cpp"
   "cpp/src/supercharger/algorithm/dijkstras.cpp"
   "cpp/src/supercharger/algorithm/naive.cpp"
@@ -34,7 +33,6 @@ set(LIB_SOURCES
 )
 
 set(LIB_HEADERS
-  "cpp/include/supercharger/algorithm/cost_functions/dijkstras.h"
   "cpp/include/supercharger/algorithm/astar.h"
   "cpp/include/supercharger/algorithm/dijkstras.h"
   "cpp/include/supercharger/algorithm/naive.h"
@@ -47,6 +45,7 @@ set(LIB_HEADERS
   "cpp/include/supercharger/network.h"
   "cpp/include/supercharger/node.h"
   "cpp/include/supercharger/supercharger.h"
+  "cpp/include/supercharger/utils.h"
 )
 
 # Create the superchargerlib
@@ -67,10 +66,8 @@ find_package(NLopt REQUIRED)
 add_subdirectory(cpp/thirdparty)
 
 # Build all app executables
-# file( GLOB APP_SOURCES cpp/app/*.cpp )
 set(APP_SOURCES
   "cpp/app/algorithm_comparison.cpp"
-  "cpp/app/failure_modes.cpp"
   "cpp/app/supercharger.cpp"
 )
 foreach( testsourcefile ${APP_SOURCES} )
@@ -81,7 +78,7 @@ foreach( testsourcefile ${APP_SOURCES} )
     target_link_libraries( ${testname} 
       superchargerlib
       nlopt
-      glog::glog
+      # glog::glog
     )
     # Add debug info for each target
     if( DEBUG_INFO )
