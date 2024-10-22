@@ -12,6 +12,7 @@ from supercharger.utils.plotly import (
 
 from supercharger.pysupercharger import (
     AlgorithmType,
+    DijkstrasSimpleCost,
     Supercharger
 )
 
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     destination = "Cadillac_MI"
 
     # Create the supercharger using Dijkstra's algorithm
-    supercharger = Supercharger(algo_type=AlgorithmType.DIJKSTRAS)
+    supercharger = Supercharger(cost_f=DijkstrasSimpleCost)
 
     # Set the vehicle's speed and max range
     supercharger.max_range = 320

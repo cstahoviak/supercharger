@@ -6,7 +6,6 @@
  * @date 2024-09-05
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/math/math.h"
 
