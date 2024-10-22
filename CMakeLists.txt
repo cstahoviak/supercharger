@@ -93,5 +93,5 @@ enable_testing()
 add_subdirectory(cpp/test)
 
 # Add the python bindings
-# message(STATUS "Building the python bindings.")
-# add_subdirectory(cpp/bindings)
+message(STATUS "Building the python bindings.")
+add_subdirectory(cpp/bindings)

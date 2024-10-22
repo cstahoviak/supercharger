@@ -80,7 +80,7 @@ int main(int argc, char** argv)
   algorithms["NAIVE\t\t\t\t"] = result1.cost;
 
   // Plan the route via Dijkstra's algorithm.
-  app.SetPlanner(AlgoType::DIJKSTRAS, algorithm::SimpleCost);
+  app.SetPlanner(algorithm::SimpleCost);
   PlannerResult result2 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name

@@ -24,6 +24,7 @@ namespace supercharger
 {  
   using AlgoType = algorithm::Planner::AlgorithmType;
   using NaiveCostFcnType = algorithm::Planner::NaiveCostType;
+  using DijkstrasCostFcnType = algorithm::DijkstrasCostFcnType;
   using OptimizerType = optimize::Optimizer::OptimizerType;
 
   using PlannerResult = algorithm::PlannerResult;
@@ -31,10 +32,7 @@ namespace supercharger
   using Optimizer = optimize::Optimizer;
 
   class Supercharger
-  {
-    using DijkstrasCostFcnType =
-      std::function<double(const Node&, const Node&, double)>;
-    
+  {    
     public:
       // NOTE: Initially, the ctor args were rvalue references, but a more
       // common pattern is to consume by value and std::move in the initializer
@@ -70,12 +68,11 @@ namespace supercharger
       // TODO: Maybe for simplicity, there should should only be two of these
       // Set...() functions: one that accepts a Planner, and one that accepts an
       // Optimizer.
-      void SetPlanner(AlgoType, NaiveCostFcnType, DijkstrasCostFcnType);
-      void SetPlanner(AlgoType algo_type, NaiveCostFcnType naive_cost_type) {
-        SetPlanner(algo_type, naive_cost_type, nullcostfunc);
+      void SetPlanner(NaiveCostFcnType naive_cost_type) {
+        SetPlanner_(AlgoType::NAIVE, naive_cost_type, nullcostfunc);
       }
-      void SetPlanner(AlgoType algo_type, DijkstrasCostFcnType cost_f) {
-        SetPlanner(algo_type, NaiveCostFcnType::NONE, cost_f);
+      void SetPlanner(DijkstrasCostFcnType cost_f) {
+        SetPlanner_(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f);
       }
       void SetOptimizer(OptimizerType);
 
@@ -113,5 +110,7 @@ namespace supercharger
       std::unique_ptr<Optimizer> optimizer_;
 
       void Initialize_(const std::string&, const std::string&);
+      void SetPlanner_(AlgoType, NaiveCostFcnType, DijkstrasCostFcnType);
+
   };
 } // end namespace supercharger

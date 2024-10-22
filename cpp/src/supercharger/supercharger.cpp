@@ -72,19 +72,19 @@ namespace supercharger
     return ( optimizer_ ) ? optimizer_.get()->Optimize(result) : result;    
   }
 
-  void Supercharger::SetPlanner(
-    AlgoType algo_type, NaiveCostFcnType cost_type, DijkstrasCostFcnType cost_f)
-  {
-    std::unique_ptr<Planner> new_algo = 
-      Planner::GetPlanner(algo_type, cost_type, cost_f);
-    planner_.swap(new_algo);
-  }
-
   void Supercharger::SetOptimizer(OptimizerType type) {
     // Swap the optimizer.
     std::unique_ptr<Optimizer> new_optimizer = 
       Optimizer::GetOptimizer(type);
     optimizer_.swap(new_optimizer);
+  }
+
+  void Supercharger::SetPlanner_(
+    AlgoType algo_type, NaiveCostFcnType cost_type, DijkstrasCostFcnType cost_f)
+  {
+    std::unique_ptr<Planner> new_algo = 
+      Planner::GetPlanner(algo_type, cost_type, cost_f);
+    planner_.swap(new_algo);
   }
 
   /**
