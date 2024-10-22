@@ -81,9 +81,6 @@ namespace supercharger
   }
 
   void Supercharger::SetOptimizer(OptimizerType type) {
-    // Reset the planning algorithm.
-    planner_.get()->Reset();
-
     // Swap the optimizer.
     std::unique_ptr<Optimizer> new_optimizer = 
       Optimizer::GetOptimizer(type);
