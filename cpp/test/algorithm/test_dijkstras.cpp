@@ -39,7 +39,7 @@ TEST_F(PlannerTestFixture, TestDijkstrasPlanner)
     initial_charger_name, goal_charger_name, max_range, speed);
 
   // The expected stops along the route planned by Dijkstra's.
-  std::vector<std::string> stops{
+  std::vector<std::string> stops {
     "Council_Bluffs_IA",
     "Worthington_MN",
     "Albert_Lea_MN",
