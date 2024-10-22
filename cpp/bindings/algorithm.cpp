@@ -125,7 +125,7 @@ void initPlanningAlgorithm(py::module_& m)
     .def_readwrite("cost", &PlannerResult::cost)
     .def_readwrite("max_range", &PlannerResult::max_range)
     .def_readwrite("speed", &PlannerResult::speed)
-    // .def_readonly("durations", &PlannerResult::durations)
+    .def_property_readonly("durations", &PlannerResult::durations)
     // TODO: I haven't figured out how to get the bindings for operator<< to
     // work yet, so for now, I'm stuck effectively re-writing them.
     .def("__str__", &to_string)
