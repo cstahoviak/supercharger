@@ -90,3 +90,9 @@ TEST_F(DijkstrasPlannerTestFixture, TestPlanMultipleRoutes)
     EXPECT_DOUBLE_EQ(result.speed, speed);
   }
 }
+
+TEST_F(DijkstrasPlannerTestFixture, TestInsufficientRange)
+{
+  // TODO: Verify that the planner fails cleanly if an insifficient vehicle
+  // range is provided.
+}
