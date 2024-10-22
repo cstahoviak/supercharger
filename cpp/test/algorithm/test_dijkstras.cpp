@@ -13,7 +13,7 @@
 
 using namespace supercharger::algorithm;
 
-class PlannerTestFixture : public testing::Test
+class DijkstrasPlannerTestFixture : public testing::Test
 {
   protected:
     void SetUp() override
@@ -43,7 +43,7 @@ class PlannerTestFixture : public testing::Test
     };
 };
 
-TEST_F(PlannerTestFixture, TestPlanRoute)
+TEST_F(DijkstrasPlannerTestFixture, TestPlanRoute)
 {
   // Plan the route
   PlannerResult result = planner.PlanRoute(
@@ -63,7 +63,7 @@ TEST_F(PlannerTestFixture, TestPlanRoute)
   EXPECT_DOUBLE_EQ(result.speed, speed);
 }
 
-TEST_F(PlannerTestFixture, TestPlanMultipleRoutes)
+TEST_F(DijkstrasPlannerTestFixture, TestPlanMultipleRoutes)
 {
   std::vector<PlannerResult> results;
 

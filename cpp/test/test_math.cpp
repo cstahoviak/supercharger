@@ -1,7 +1,7 @@
 /**
  * @file test_math.cpp
- * @author your name (you@domain.com)
- * @brief Unit tests for math functions
+ * @author Carl Stahoviak
+ * @brief Unit tests for math functions.
  * @version 0.1
  * @date 2024-08-05
  * 
