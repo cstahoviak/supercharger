@@ -6,6 +6,7 @@ set(TEST_SOURCES
   "algorithm/test_dijkstras.cpp"
   "optimize/test_nlopt.cpp"
   "test_math.cpp"
+  "test_supercharger.cpp"
 )
 
 # Create the test executable

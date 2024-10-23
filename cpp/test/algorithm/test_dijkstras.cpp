@@ -25,9 +25,11 @@ class DijkstrasPlannerTestFixture : public testing::Test
     // Create the route planner
     Dijkstras planner{SimpleCost};
 
+    // Define the origin and destination charger names
     const std::string initial_charger_name{"Council_Bluffs_IA"};
     const std::string goal_charger_name{"Cadillac_MI"};
 
+    // Define some vehicle constants
     const double max_range{320};
     const double speed{105};
 
