@@ -49,7 +49,6 @@ void initSupercharger(py::module_& m)
     .def("set_optimizer", &Supercharger::SetOptimizer, py::arg("type"))
 
     .def_property_readonly("network", &Supercharger::network)
-    .def_property_readonly("destination", &Supercharger::destination)
     // Require a lambda to deal with getters and setters of the same name.
     .def_property("max_range",
       [](const Supercharger& self) { return self.max_range(); }, 
