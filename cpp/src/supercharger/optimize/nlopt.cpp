@@ -7,7 +7,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-
+#include "supercharger/algorithm/planner.h"
 #include "supercharger/optimize/nlopt.h"
 #include "supercharger/logging.h"
 
@@ -231,6 +231,8 @@ namespace supercharger::optimize
   PlannerResult NLOptimizer::CreateOptimizedResult_(
     const PlannerResult& result, const std::vector<double>& new_durations) const
   {
+    using namespace supercharger::algorithm;
+
     // Create the new result as a copy of the original.
     PlannerResult optimized = result;
 
@@ -248,22 +250,15 @@ namespace supercharger::optimize
       Node& current = *iter;
 
       // Update the arrival range at the current node.
-      // TODO: If GetArrivalRange is a free function (decoupled from the
-      // Planner), I could use it here.
-      current.arrival_range = previous.arrival_range + \
-        previous.duration * previous.charger().rate - \
-        math::distance(previous, current);
+      current.arrival_range = GetArrivalRange(previous, current);
 
-      // Update the cost at the current node
+      // Update the cost at the current node.
       current.cost = previous.cost + previous.duration + \
         math::distance(previous, current) / result.speed;
 
       // For all nodes but the final node, update the departure range.
-      // TODO: If GetDepartureRange is a free function (decoupled from the
-      // Planner), I could use it here.
       if ( iter != optimized.route.end() - 1 ) {
-        current.departure_range = current.arrival_range + \
-          current.duration * current.charger().rate;
+        current.departure_range = GetDepartureRange(current);
       }
     }
 
