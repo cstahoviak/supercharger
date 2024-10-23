@@ -43,12 +43,6 @@ namespace supercharger
         DijkstrasCostFcnType,
         OptimizerType
       );
-      // Supercharger(
-      //   AlgoType,
-      //   NaiveCostFcnType = NaiveCostFcnType::NAIVE,
-      //   DijkstrasCostFcnType = nullfunc,
-      //   OptimizerType = OptimizerType::NONE
-      // );
 
       // The following ctors are known as "delegating" ctors.
       Supercharger(NaiveCostFcnType naive_cost_type) :
@@ -67,7 +61,7 @@ namespace supercharger
 
       // TODO: Maybe for simplicity, there should should only be two of these
       // Set...() functions: one that accepts a Planner, and one that accepts an
-      // Optimizer.
+      // Optimizer?
       void SetPlanner(NaiveCostFcnType naive_cost_type) {
         SetPlanner_(AlgoType::NAIVE, naive_cost_type, nullcostfunc);
       }
@@ -81,7 +75,6 @@ namespace supercharger
       { 
         return network_;
       }
-      const Charger& destination() const { return destination_; }
       const double max_range() const { return max_range_; }
       const double speed() const { return speed_; }
 

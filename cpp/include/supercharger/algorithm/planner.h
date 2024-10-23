@@ -28,8 +28,8 @@ namespace supercharger::algorithm
    * result contains both a path and a total cost (duration in hours) of the
    * planned route.
    * 
-   * TODO: Think of a way to distinguish the output of a Planner
-   * from the output of an Optimizer.
+   * TODO: Think of a way to distinguish the output of a Planner from the
+   * output of an Optimizer.
    */
   struct PlannerResult
   {
@@ -43,6 +43,7 @@ namespace supercharger::algorithm
 
     const std::vector<double>& durations() {
       if ( durations_.size() != route.size() ) {
+        durations_.clear();
         for ( const Node& node : route ) {
           durations_.push_back(node.duration);
         }
@@ -100,8 +101,7 @@ namespace supercharger::algorithm
   };
 
   // Utility functions
-  // RoT: If no private/protected data from class is used, make it a free
-  // function.
+  // RoT: If no private/protected data from class is used, make it a free fcn.
   double GetChargeTime(const Node&, const Node&);
   double GetArrivalRange(const Node&, const Node&);
   double GetDepartureRange(const Node&);

@@ -10,6 +10,9 @@
  */
 #include "supercharger/algorithm/astar.h"
 
+#include <stdexcept>
+#include <sstream>
+
 namespace supercharger::algorithm
 {
   PlannerResult AStar::PlanRoute(
@@ -18,7 +21,10 @@ namespace supercharger::algorithm
     double max_range,
     double speed)
   {
-    return {};
+    std::ostringstream os;
+    os << "The A* algorithm is not implemented. Please use Dijkstra's " <<
+      "algorithm (supercharger::algorithm::AlgorithmType::DIJKSTRAS) instead.";
+    throw std::runtime_error(os.str());
   }
 
   double AStar::ComputeCost(

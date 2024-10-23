@@ -3,9 +3,11 @@ cmake_minimum_required(VERSION 3.10.2)
 set(TEST_NAME test_${PROJECT_NAME})
 
 set(TEST_SOURCES
+  "algorithm/test_astar.cpp"
   "algorithm/test_dijkstras.cpp"
   "optimize/test_nlopt.cpp"
   "test_math.cpp"
+  "test_supercharger.cpp"
 )
 
 # Create the test executable
