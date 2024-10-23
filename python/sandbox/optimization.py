@@ -18,7 +18,7 @@ from supercharger.pysupercharger import (
 )
 
 
-def cost_fcn(x: List[float]) -> float:
+def objective(x: List[float]) -> float:
     """
 
     Args:
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     #  https://github.com/scipy/scipy/issues/12310
     start = perf_counter()
     optimization_result = optimize.minimize(
-        fun=cost_fcn,
+        fun=objective,
         x0=np.array([node.duration for node in result.route[1:-1]]),
         bounds=bounds,
         constraints=nl_constraint)

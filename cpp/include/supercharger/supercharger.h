@@ -22,6 +22,7 @@
 
 namespace supercharger
 {  
+  // TODO: These aliases probably shouldn't be in the top-level namespace.
   using AlgoType = algorithm::Planner::AlgorithmType;
   using NaiveCostFcnType = algorithm::Planner::NaiveCostType;
   using DijkstrasCostFcnType = algorithm::DijkstrasCostFcnType;
@@ -34,15 +35,8 @@ namespace supercharger
   class Supercharger
   {    
     public:
-      // NOTE: Initially, the ctor args were rvalue references, but a more
-      // common pattern is to consume by value and std::move in the initializer
-      // list.
       Supercharger(
-        AlgoType,
-        NaiveCostFcnType,
-        DijkstrasCostFcnType,
-        OptimizerType
-      );
+        AlgoType, NaiveCostFcnType, DijkstrasCostFcnType, OptimizerType);
 
       // The following ctors are known as "delegating" ctors.
       Supercharger(NaiveCostFcnType naive_cost_type) :
@@ -57,11 +51,18 @@ namespace supercharger
       Supercharger(DijkstrasCostFcnType cost_f, OptimizerType optim_type) :
         Supercharger(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f, optim_type) {};
 
+      /**
+       * @brief Plan the route with the provided Planner and Optimizer.
+       * 
+       * @param origin The origin node.
+       * @param destination The destination node.
+       * @return PlannerResult The planner result.
+       */
       PlannerResult PlanRoute(const std::string&, const std::string&);
 
       // TODO: Maybe for simplicity, there should should only be two of these
       // Set...() functions: one that accepts a Planner, and one that accepts an
-      // Optimizer?
+      // Optimizer.
       void SetPlanner(NaiveCostFcnType naive_cost_type) {
         SetPlanner_(AlgoType::NAIVE, naive_cost_type, nullcostfunc);
       }
@@ -102,7 +103,15 @@ namespace supercharger
       // Store the route optimizer.
       std::unique_ptr<Optimizer> optimizer_;
 
+      /**
+       * @brief Sets the origin and destination chargers and validates the
+       * "max_range" and "speed" values. 
+       * 
+       * @param origin The origin node.
+       * @param destination The destinatiion node.
+       */
       void Initialize_(const std::string&, const std::string&);
+
       void SetPlanner_(AlgoType, NaiveCostFcnType, DijkstrasCostFcnType);
 
   };

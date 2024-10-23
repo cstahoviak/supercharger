@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <vector>
 
+
 namespace supercharger::algorithm
 {
   using DijkstrasCostFcnType = 
@@ -74,6 +75,12 @@ namespace supercharger::algorithm
         NONE
       };
 
+      /**
+       * @brief Planner constructor.
+       * 
+       * TODO: It might make more sense (or be more explicit) for the Charger
+       * network to be passed in as an input arg.
+       */
       Planner();
 
       static std::unique_ptr<Planner> GetPlanner(
@@ -87,24 +94,61 @@ namespace supercharger::algorithm
 
       virtual double ComputeCost(const Node&, const Node&, double) const = 0;
       
+      /**
+       * @brief Resets all nodes in the graph.
+       */
       void Reset();
 
     protected:
-      // Initializes the node graph.
+      /**
+       * @brief Initializes the node graph.
+       * 
+       * TODO: Is there a good way to implement something like this at the
+       * base-class level rather than requiring each derived class to call an
+       * "initialization" function?
+       */
       void InitializeNodeGraph_();
 
-      // Constructs the final route.
+      /**
+       * @brief Constructs the final route.
+       * 
+       * @return std::vector<Node> 
+       */
       virtual std::vector<Node> ConstructFinalRoute_(const Node&) = 0;
 
       // Store all of the nodes in the network.
       std::unordered_map<std::string, std::shared_ptr<Node>> nodes_;
   };
 
-  // Utility functions
-  // RoT: If no private/protected data from class is used, make it a free fcn.
+  /**
+   * @brief Computes the charge time at the current node required to make it to
+   * the next node.
+   * 
+   * @param current The current Node.
+   * @param next The next node.
+   * @return double The charge time required to make it to the next node.
+   * Assumes that the arrival range at the 'next' node will be zero.
+   */
   double GetChargeTime(const Node&, const Node&);
+
+  /**
+   * @brief Computes the arrival range at the 'next' node after departing the
+   * 'current' node.
+   * 
+   * @param current The current node.
+   * @param next The next node.
+   * @return double The arrival range at the 'next' node.
+   */
   double GetArrivalRange(const Node&, const Node&);
+
+  /**
+   * @brief Computes the departure range at the current node given the current
+   * node's arrival range and charging duration.
+   * 
+   * @param current The current node.
+   * @return double The departure range after charging at the current node.
+   */
   double GetDepartureRange(const Node&);
 
-} // end namespace supercharger
+} // end namespace supercharger::algorithm
 

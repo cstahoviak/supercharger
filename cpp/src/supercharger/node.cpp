@@ -14,9 +14,6 @@
 
 namespace supercharger
 {
-  /**
-   * @brief Resets the Node's attributes to their original values.
-   */
   void Node::Reset() {
     duration = 0.0;
     arrival_range = 0.0;
@@ -38,14 +35,6 @@ namespace supercharger
     return stream;
   }
 
-  /**
-   * @brief Formats the final route output to comply with the format expected
-   * by the provided "checker" executables.
-   * 
-   * @param stream 
-   * @param route 
-   * @return std::ostream& 
-   */
   std::ostream& operator<<(std::ostream& stream, const std::vector<Node>& route)
   {
     size_t sz = route.size();

@@ -24,14 +24,8 @@ namespace supercharger::algorithm
     std::vector<Node> route, double cost, double max_range, double speed) :
     route(std::move(route)), cost(cost), max_range(max_range), speed(speed) {}
 
-  /**
-   * @brief Planner constructor.
-   * 
-   * TODO: It might make more sense (or be more explicit) for the Charger
-   * network to be passed in as an input arg.
-   */
   Planner::Planner() {
-    // Create a set of nodes from the route planner's charger network.
+    // Create a set of nodes from the charger network.
     for ( const Charger& charger : supercharger::network ) {
       // TODO: I should be able to use try_emplace to construct the shared_ptr
       // in place rather than moving it, but I haven't gotten it to work.
@@ -40,10 +34,9 @@ namespace supercharger::algorithm
     }
   }
 
-  // NOTE: Do NOT repeat the 'static' keyword at the cpp file level.
   // NOTE: I think this must be defined at the cpp file level because otherwise
-  // I get a "not declared in this scope error" related to the derived planning
-  // algorithm types (Naive, Dijkstra's, etc.). 
+  // I get a "not declared in this scope error" related to the derived planner
+  // types (Naive, Dijkstra's, etc.). 
   std::unique_ptr<Planner> Planner::GetPlanner(
     AlgorithmType algo_type,
     NaiveCostType naive_cost_type,
@@ -70,9 +63,6 @@ namespace supercharger::algorithm
     }
   }
 
-  /**
-   * @brief Resets all nodes in the graph.
-   */
   void Planner::Reset() {
     for ( auto [name, node] : nodes_ ) {
       node.get()->Reset();
@@ -93,15 +83,6 @@ namespace supercharger::algorithm
     }
   }
 
-  /**
-   * @brief Computes the charge time at the current node required to make it to
-   * the next node.
-   * 
-   * @param current The current Node.
-   * @param next The next node.
-   * @return double The charge time required to make it to the next node. The
-   * arrival range at the 'next' node will be zero.
-   */
   double GetChargeTime(const Node& current, const Node& next)
   {
     // Compute the distance to the next charger.
@@ -117,14 +98,6 @@ namespace supercharger::algorithm
     return std::max(0.0, charge_time);
   }
 
-  /**
-   * @brief Computes the arrival range at the 'next' node after departing the
-   * 'current' node.
-   * 
-   * @param current The current node.
-   * @param next The next node.
-   * @return double The arrival range at the 'next' node.
-   */
   double GetArrivalRange(const Node& current, const Node& next)
   {
     // The range remaining after arriving at the next node is the departure
@@ -132,13 +105,6 @@ namespace supercharger::algorithm
     return current.departure_range - math::distance(current, next);
   }
 
-  /**
-   * @brief Computes the departure range at the current node given the current
-   * node's arrival range and charging duration.
-   * 
-   * @param current The current node.
-   * @return double The departure range after charging at the current node.
-   */
   double GetDepartureRange(const Node& current)
   {
     // The departure range at the current node is the arrival range at the

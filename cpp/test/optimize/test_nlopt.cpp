@@ -85,7 +85,7 @@ TEST_F(NLOptimizerTestFixture, TestCostFcn)
 
   std::vector<double> grad;
   EXPECT_DOUBLE_EQ(
-    cost_fcn(charging_times, grad, nullptr), total_charging_time);
+    objective(charging_times, grad, nullptr), total_charging_time);
 }
 
 TEST_F(NLOptimizerTestFixture, TestEqConstraint)

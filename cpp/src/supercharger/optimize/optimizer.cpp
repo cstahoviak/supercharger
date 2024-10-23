@@ -13,17 +13,12 @@
 
 namespace supercharger::optimize
 {
-  // NOTE: Do NOT repeat the 'static' keyword at the cpp file level.
+  // NOTE: Do not repeat the 'static' keyword at the cpp file level.
   std::unique_ptr<Optimizer> Optimizer::GetOptimizer(OptimizerType type)
   {
     switch ( type )
     {
       case Optimizer::OptimizerType::NAIVE:
-        // NOTE: There is an important difference between public and protected
-        // inheritance when it comes to the compiler "being aware" that a
-        // unique_ptr of the base class (the return type of this function) can
-        // be initialized from a unique_ptr of the derived class: public
-        // inheritance allows this, but protected inheritance does not. But why?
         return std::make_unique<NaiveOptimizer>();
 
       case Optimizer::OptimizerType::NLOPT:

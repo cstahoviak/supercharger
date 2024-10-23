@@ -11,10 +11,6 @@
 #include "supercharger/algorithm/dijkstras.h"
 #include "supercharger/algorithm/naive.h"
 
-// NOTE: Must include the Supercharger header otherwise an "invalid use of
-// incomplete type" error will occur when binding the Planner ctor.
-#include "supercharger/supercharger.h"
-
 #include <pybind11/pybind11.h>
 // Need to include the funcional header in any translation unit where 
 // DijkstrasCostFcnType appears.
@@ -26,6 +22,7 @@
 #include <pybind11/stl.h>
 
 #include <sstream>
+
 
 namespace supercharger::algorithm
 {
@@ -48,7 +45,7 @@ namespace supercharger::algorithm
       double ComputeCost(const Node&, const Node&, double) const override;
 
     protected:
-      // TODO: I might not be able to bind proctected (and private) members??
+      // NOTE: I might not be able to bind proctected (and private) members?
       std::vector<Node> ConstructFinalRoute_(const Node&) override;
   };
 

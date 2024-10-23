@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <sstream>
 
+
 namespace supercharger::algorithm
 {
   PlannerResult AStar::PlanRoute(

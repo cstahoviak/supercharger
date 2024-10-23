@@ -10,6 +10,7 @@
  */
 #include "supercharger/algorithm/planner.h"
 
+
 namespace supercharger::optimize
 {
   using PlannerResult = algorithm::PlannerResult;
@@ -26,16 +27,24 @@ namespace supercharger::optimize
         NONE
       };
 
-      // NOTE: We don't require a default ctor to use std::make_unique()
-      // Optimizer() = default;
+      /**
+       * @brief Gets a unique_ptr to an Optimizer instance.
+       * 
+       * @param OptimizerType The optimizer type.
+       * @return std::unique_ptr<Optimizer> 
+       */
       static std::unique_ptr<Optimizer> GetOptimizer(OptimizerType);
-      
-      // TODO: Consider passing a more limited scope of data to Optimize bc
-      // the info contained by a complete PlannerResult contains more info than
-      // is necessary to perfom the optimization. Byt passing a PlannerResult,
-      // we couple the idea of a "Node" to the Optimizer. We want the Optimizer
-      // to be agnostic to any given definition of a Node (so long as that Node
-      // contains charging rates an durations).
+
+      /**
+       * @brief Optimizes the provided PlanbnerResult.
+       * 
+       * TODO: Consider passing a more limited scope of data to Optimize. We
+       * only require charging rates and durations, and the distances between
+       * nodes to optimize a route.
+       * 
+       * @param result The ouput of a Planner.
+       * @return PlannerResult 
+       */
       virtual PlannerResult Optimize(const PlannerResult&) const = 0;
   };
 } // end namespace supercharger
