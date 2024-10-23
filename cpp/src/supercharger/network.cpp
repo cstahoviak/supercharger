@@ -3,6 +3,7 @@
 /*************************************************/
 #include "supercharger/network.h"
 
+
 namespace supercharger
 {
   std::ostream& operator<<(std::ostream& stream, const Charger& charger) {

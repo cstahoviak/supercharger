@@ -10,6 +10,7 @@
  */
 #include "supercharger/algorithm/dijkstras.h"
 
+
 namespace supercharger::algorithm
 {
   /**

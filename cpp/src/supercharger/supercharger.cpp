@@ -18,6 +18,7 @@
 #include <map>
 #include <sstream>
 
+
 namespace supercharger
 {
   Supercharger::Supercharger(
@@ -26,7 +27,7 @@ namespace supercharger
     DijkstrasCostFcnType cost_f,
     OptimizerType optimizer_type)
   {
-    // Create the network map (must do this before creating the planning algo).
+    // Create the network map (must do this before creating the planner).
     for ( const Charger& charger : supercharger::network ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
       const auto& pair = network_.try_emplace(charger.name, &charger);
@@ -36,20 +37,13 @@ namespace supercharger
       }
     }
 
-    // Create the planning algorithm.
+    // Create the planner.
     planner_ = Planner::GetPlanner(algo_type, naive_cost_type, cost_f);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);
   }
 
-  /**
-   * @brief Plan the route with the provided Planner and Optimizer.
-   * 
-   * @param origin The origin node.
-   * @param destination The destination node.
-   * @return PlannerResult The planner result.
-   */
   PlannerResult Supercharger::PlanRoute(
     const std::string& origin, const std::string& destination)
   {
@@ -63,7 +57,6 @@ namespace supercharger
       planner_.get()->PlanRoute(origin, destination, max_range_, speed_);
 
     if ( result.route.back().name() != destination_.name ) {
-      // TODO: "failure_modes" segfaults before it gets here.
       INFO("Search terminated. Solution not found.");
       return {};
     }
@@ -82,18 +75,12 @@ namespace supercharger
   void Supercharger::SetPlanner_(
     AlgoType algo_type, NaiveCostFcnType cost_type, DijkstrasCostFcnType cost_f)
   {
+    // Swap the planner.
     std::unique_ptr<Planner> new_algo = 
       Planner::GetPlanner(algo_type, cost_type, cost_f);
     planner_.swap(new_algo);
   }
 
-  /**
-   * @brief Sets the origin and destination chargers and validates the
-   * "max_range" and "speed" values. 
-   * 
-   * @param origin The origin node.
-   * @param destination The destinatiion node.
-   */
   void Supercharger::Initialize_(
     const std::string& origin, const std::string& destination)
   {

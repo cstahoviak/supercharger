@@ -14,6 +14,7 @@
 #include <memory>
 #include <vector>
 
+
 namespace supercharger
 {
   /**
@@ -52,6 +53,9 @@ namespace supercharger
     std::weak_ptr<Node> parent() const { return parent_; }
     void parent(std::shared_ptr<Node> parent) { parent_ = std::move(parent); }
 
+    /**
+     * @brief Resets the Node's attributes to their original values.
+     */
     void Reset();
 
     private:
@@ -66,7 +70,10 @@ namespace supercharger
   std::ostream& operator<<(std::ostream&, const Node&);
   std::ostream& operator<<(std::ostream&, const Node* const);
 
-  // Overload the string stream operator to output the route.
+  /**
+   * @brief Formats the final route output to comply with the format expected
+   * by the provided "checker" executables.
+   */
   std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
   std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
 } // end namespace supercharger

@@ -17,23 +17,6 @@
 
 namespace supercharger::algorithm
 {
-  /**
-   * @brief The "naive" route planner.
-   * 
-   * TODO: Consider using std::unordered_set to store the "reachable" (chargers 
-   * that are within the current range of the vehicle post-charging) and 
-   * "closer to" (chargers that are closer to the destination station than the 
-   * current charger) sets of candidate chargers. Then, the actual set of
-   * candidate chargers will be the intersection (std::set_intersection) of the
-   * "reachable" and "closer to" sets. I believe this will require defining
-   * both operator== and a hash function for the supercharger::Charger class.
-   * 
-   * @param origin The origin node.
-   * @param destination The destination node.
-   * @param max_range [km] The vehicle's max range.
-   * @param speed [km/hr] The vehicle's constant velocity.
-   * @return PlannerResult The planner result.
-   */
   PlannerResult NaivePlanner::PlanRoute(
     const std::string& origin,
     const std::string& destination,
@@ -45,8 +28,6 @@ namespace supercharger::algorithm
 
     // Initially, populate the route with the origin node.
     if ( route_.empty() ) {
-      // TODO: Should I treat this as a Node&, shared_ptr<Node>, or 
-      // shared_ptr<Node>&?
       std::shared_ptr<Node>& origin_node = nodes_.at(origin);
       origin_node->arrival_range = max_range;
       route_.push_back(origin_node);
@@ -58,14 +39,6 @@ namespace supercharger::algorithm
       total_cost_, max_range, speed };
   }
 
-  /**
-   * @brief The "naive" route planner is implemented via a recursive method.
-   * 
-   * @param origin The origin node.
-   * @param destination The destination node.
-   * @param max_range [km] The vehicle's max range.
-   * @param speed [km/hr] The vehicle's constant velocity.
-   */
   void NaivePlanner::PlanRouteRecursive_(
     const std::string& origin,
     const std::string& destination,
@@ -205,14 +178,6 @@ namespace supercharger::algorithm
     return;
   }
 
-  /**
-   * @brief The "naive" planning algorithm cost function.
-   * 
-   * @param current The current node.
-   * @param candidate The candidate "next" node.
-   * @param speed The vehicle's constant velocity.
-   * @return double The cost to reach the candidate node from the current node.
-   */
   double NaivePlanner::ComputeCost(
     const Node& current, const Node& candidate, double speed) const
   {
@@ -223,7 +188,6 @@ namespace supercharger::algorithm
     {
       case NaiveCostType::MINIMIZE_DIST_TO_NEXT:
       {
-        // Effectively the same as Dijkstra's
         cost = math::distance(current, candidate);
         break;
       }
@@ -263,11 +227,6 @@ namespace supercharger::algorithm
     return cost;
   }
 
-  /**
-   * @brief Construct the final route.
-   * 
-   * @return std::vector<Node> 
-   */
   std::vector<Node> NaivePlanner::ConstructFinalRoute_(const Node& final) {
     // Construct the route.
     std::vector<Node> route;
@@ -281,10 +240,6 @@ namespace supercharger::algorithm
     return route;
   }
 
-  /**
-   * @brief Updates the route cost up to and including the charging time at
-   * the most recently added node to the route.
-   */
   void NaivePlanner::UpdateRouteCost_(double speed) {
     // Cost update can only take place for the second node onward.
     if ( route_.size() > 1 ) {

@@ -12,15 +12,6 @@
 
 namespace supercharger::optimize
 {
-  /**
-   * @brief Implements the "naive" optimization scheme. The "naive" optimizer
-   * finds the node in the route with the max-rate charger (that is not the
-   * first, last or second-to-last node) and minimizes the route's total charge
-   * time by maximizing the charge time at the max-rate node.
-   * 
-   * @param result An "unoptimized" planner result.
-   * @return PlannerResult The optimized planner result.
-   */
   PlannerResult NaiveOptimizer::Optimize(const PlannerResult& result) const {
     const std::vector<Node>& route = result.route;
     if ( route.size() < 4 ) {
