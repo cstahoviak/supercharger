@@ -21,8 +21,8 @@ from supercharger.optimize.constraints import (
 )
 
 from supercharger.pysupercharger import (
-    AlgorithmType,
     distance,
+    DijkstrasSimpleCost,
     Supercharger
 )
 
@@ -38,7 +38,7 @@ def planner_result():
     destination = "Cadillac_MI"
 
     # Create the supercharger app using Dijkstra's algorithm
-    supercharger = Supercharger(algo_type=AlgorithmType.DIJKSTRAS)
+    supercharger = Supercharger(cost_f=DijkstrasSimpleCost)
 
     # Set the vehicle's speed and max range
     supercharger.max_range = 320
