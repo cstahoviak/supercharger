@@ -59,9 +59,6 @@ if( DEBUG_INFO )
   target_compile_definitions(superchargerlib PRIVATE DEBUG_INFO)
 endif()
 
-# Required packages
-find_package(NLopt REQUIRED)
-
 # Add third party libraries
 add_subdirectory(cpp/thirdparty)
 

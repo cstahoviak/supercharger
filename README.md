@@ -101,25 +101,11 @@ The solution needs to be self-contained with just the use of STL algorithms
 ### Dependencies
 The `supercharger` application depends on the following libraries:
 
-- [NLOpt](https://nlopt.readthedocs.io/en/latest/)
+- [GoogleTest](https://google.github.io/googletest/primer.html)
 - [pybind11](https://pybind11.readthedocs.io/en/latest/)
+- [NLOpt](https://nlopt.readthedocs.io/en/latest/)
 
-These libraries must be built and installed locally before building the `supercharger` application. These libraries can be cloned from the following locations
-
-```
-git clone https://github.com/stevengj/nlopt.git
-git clone https://github.com/pybind/pybind11.git
-```
-
-Building and installing each of the dependencies follows the standard CMake build process.
-
-```
-cd <package-dir>
-mkdir build && cd build
-cmake ..
-make
-sudo make install
-```
+These libraries are built and installed locally during the build process (see `cpp/thirdparty`) and do not need to be installed by the user prior to building the `supercharger` project.
 
 ### Building
 Build the `supercharger` application by following the standard CMake build process.
