@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 set(TARGET py${PROJECT_NAME})
 
 set(PYBIND11_FINDPYTHON ON)
-find_package(pybind11 CONFIG REQUIRED)
 
 # The SOURCES are the bindings
 set(SOURCES
