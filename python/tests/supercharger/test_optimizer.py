@@ -7,12 +7,13 @@ import numpy as np
 import pytest
 from scipy import optimize
 
-from supercharger.optimize.optimizer import (
+from supercharger.optimize._optimizer import (
     NonlinearOptimizer,
     objective,
     objective_grad
 )
-from supercharger.optimize.constraints import (
+
+from supercharger.optimize._constraints import (
     get_arrival_range,
     ineq_constraint,
     ineq_constraint_grad,
