@@ -10,12 +10,24 @@
 #include "supercharger/node.h"
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <memory>
 #include <sstream>
 
 namespace py = pybind11;
 using namespace supercharger;
+
+std::optional<std::shared_ptr<Node>> get_parent(const Node& node)
+{
+  if ( std::shared_ptr<Node> parent = node.parent().lock() ) {
+    return parent;
+  }
+  else {
+    return {};
+  }
+}
+
 
 void initNode(py::module_& m)
 {
@@ -30,7 +42,7 @@ void initNode(py::module_& m)
     .def_readwrite("cost", &Node::cost)
     // Require a lambda to deal with getters and setters of the same name.
     .def_property("parent",
-      [](const Node& self) { return self.parent(); },
+      [](const Node& self) { return get_parent(self); },
       [](Node& self, std::shared_ptr<Node> parent) { self.parent(parent); }
     )
     .def_property_readonly("name", &Node::name)
