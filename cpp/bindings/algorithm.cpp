@@ -172,8 +172,8 @@ void initPlanningAlgorithm(py::module_& m)
     .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"));
   ;
 
-  m.def("DijkstrasSimpleCost", &algorithm::SimpleCost,
+  m.def("dijkstras_simple_cost", &algorithm::SimpleCost,
     py::arg("current"), py::arg("neighbor"), py::arg("speed"));
-  m.def("DijkstrasOptimizedCost", &algorithm::OptimizedCost,
+  m.def("dijkstras_optimized_cost", &algorithm::OptimizedCost,
     py::arg("current"), py::arg("neighbor"), py::arg("speed"));
 }

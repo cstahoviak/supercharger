@@ -9,7 +9,7 @@ format looks like:
     <node-n>, <charging-time-n>, <destination>
 """
 from supercharger.pysupercharger import (
-    DijkstrasSimpleCost,
+    dijkstras_simple_cost,
     OptimizerType,
     Supercharger
 )
@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     # Create the supercharger using Dijkstra's algorithm
     supercharger = Supercharger(
-        cost_f=DijkstrasSimpleCost,
+        cost_f=dijkstras_simple_cost,
         optim_type=OptimizerType.NLOPT)
 
     # Set the vehicle's speed and max range
