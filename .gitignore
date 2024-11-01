@@ -3,3 +3,4 @@ debug/
 .vscode/
 .idea/
 __pycache__/
+*.so

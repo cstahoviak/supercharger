@@ -5,7 +5,7 @@ from time import perf_counter
 
 from supercharger.optimize import optimized_cost
 
-from supercharger.pysupercharger import (
+from pysupercharger import (
     dijkstras_simple_cost,
     OptimizerType,
     Supercharger

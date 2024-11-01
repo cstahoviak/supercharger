@@ -21,7 +21,7 @@ from supercharger.optimize._constraints import (
     eq_constraint_grad
 )
 
-from supercharger.pysupercharger import (
+from pysupercharger import (
     distance,
     dijkstras_simple_cost,
     Supercharger

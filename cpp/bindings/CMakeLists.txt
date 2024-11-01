@@ -29,7 +29,7 @@ target_link_libraries(${TARGET} PRIVATE
 )
 
 # Install the bindings to the python directory
-set(OUTPUT_PATH "${PROJECT_SOURCE_DIR}/python/src/supercharger")
+set(OUTPUT_PATH "${PROJECT_SOURCE_DIR}/python/src")
 set_target_properties(${TARGET} PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_PATH}/$<0:>
   LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_PATH}/$<0:>

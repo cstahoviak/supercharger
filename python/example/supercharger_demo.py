@@ -8,7 +8,7 @@ format looks like:
     <origin>, <node-1>, <charging-time-1>, <node-2>, <charging-time-2>, ...
     <node-n>, <charging-time-n>, <destination>
 """
-from supercharger.pysupercharger import (
+from pysupercharger import (
     dijkstras_simple_cost,
     OptimizerType,
     Supercharger

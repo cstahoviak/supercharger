@@ -3,7 +3,7 @@ An optimized cost function for Dijkstra's algorithm.
 """
 from supercharger.optimize._optimizer import NonlinearOptimizer
 
-from supercharger.pysupercharger import (
+from pysupercharger import (
     dijkstras_simple_cost,
     Node,
     get_charge_time,

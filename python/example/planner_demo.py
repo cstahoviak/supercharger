@@ -1,7 +1,7 @@
 """
 Demos the supercharger application for the route shown in the README.
 """
-from supercharger.pysupercharger import (
+from pysupercharger import (
     AlgorithmType,
     DijkstrasPlanner,
     dijkstras_simple_cost,

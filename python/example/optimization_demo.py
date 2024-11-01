@@ -10,7 +10,7 @@ from supercharger.utils.plotly import (
     plot_ranges
 )
 
-from supercharger.pysupercharger import (
+from pysupercharger import (
     AlgorithmType,
     dijkstras_simple_cost,
     Supercharger
