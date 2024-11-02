@@ -5,6 +5,7 @@ from collections import OrderedDict, namedtuple
 from time import perf_counter
 
 from supercharger.optimize import optimized_cost
+from supercharger.types import AlgoStats
 
 from pysupercharger import (
     dijkstras_simple_cost,
@@ -12,8 +13,6 @@ from pysupercharger import (
     OptimizerType,
     Supercharger
 )
-
-AlgoStats = namedtuple('AlgoStats', ['time', 'cost'])
 
 
 if __name__ == "__main__":
