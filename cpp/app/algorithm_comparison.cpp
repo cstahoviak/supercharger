@@ -62,7 +62,7 @@ int main(int argc, char** argv)
   // Store a map of planning algorithms and route costs
   std::map<std::string, double> algorithms;
 
-  // Create the Route Planner
+  // Create the Supercharger
   Supercharger app(NaiveCostFcnType::MINIMIZE_TIME_REMAINING);
 
   // Set the vehicle's speed and max range

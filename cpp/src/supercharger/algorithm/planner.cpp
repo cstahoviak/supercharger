@@ -70,16 +70,12 @@ namespace supercharger::algorithm
   }
 
   void Planner::InitializeNodeGraph_() {
-    bool node_graph_stale{false};
     for (const auto& [name, node] : nodes_ ) {
-      if ( node.get()->visited )
+      if ( node.get()->visited ) {
         // If even a single node is marked 'visited', the graph must be reset.
-        node_graph_stale = true;
+        Reset();
         break;
-    }
-
-    if ( node_graph_stale ) {
-      Reset();
+      }
     }
   }
 
