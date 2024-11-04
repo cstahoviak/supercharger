@@ -1,6 +1,13 @@
 # Tesla Coding Challenge
 
 ## Overview
+
+Sections:
+- [Problem Statement](#problem-statement)
+- [Solution](#solution)
+- [Results](#results)
+- [Future Work](#future-work)
+
 This repository implements a solution to the Tesla Supercharger coding challenge (described in more detail in the [Problem Statement](#problem-statement) section). The following is an overview of the solution method and supported features:
 
 - The route planning problem is solved as a two-step process:
