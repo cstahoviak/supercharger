@@ -19,15 +19,16 @@ Notes:
 from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor
 from datetime import timedelta
-from functools import partial
 from time import perf_counter
 import os
+from typing import no_type_check_decorator
 
 import numpy as np
 
 from supercharger.optimize import optimized_cost
 from supercharger.utils.logger import get_logger
 from supercharger.utils.paths import supercharger_build, supercharger_root
+from supercharger.utils.plotting import plot_cost_vs_distance
 from supercharger.utils.subprocess import run_executable
 from supercharger.types import AlgoStats
 
@@ -42,7 +43,7 @@ from pysupercharger import (
 # Get the logger
 logger = get_logger(os.path.basename(__file__))
 
-def get_reference_result(origin: str, destination: str) -> AlgoStats:
+def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
     """
     Args:
         origin: The origin node name.
@@ -52,37 +53,22 @@ def get_reference_result(origin: str, destination: str) -> AlgoStats:
         An AlgoStats instance containing the 'reference' cost of the route.
     """
     # Capture the "reference result" cost
-    route = run_executable(str(supercharger_path), origin, destination)
+    route = run_executable(str(supercharger_path), endpoints[0], endpoints[1])
     output = run_executable(str(checker_path), route)
     reference_cost = float(output.split('\n')[1].split()[-1])
     return AlgoStats(time=np.nan, cost=reference_cost)
 
 
-def plan_route(planner: Planner, endpoints: tuple[str, str]) -> AlgoStats:
-    """
-
-    Args:
-        planner:
-        endpoints:
-
-    Returns:
-
-    """
-    start = perf_counter()
-    result = planner.plan_route(endpoints[0], endpoints[1])
-    stop = perf_counter()
-    return AlgoStats(time=stop-start, cost=result.cost)
-
-
 if __name__ == "__main__":
     # Define some statistical variables
-    n_samples = 10
+    n_samples = 100
 
     # Set some vehicle parameters
     max_range = 320
     speed = 105
 
     planner_descriptions = {
+        "reference": "Reference",
         "planner_1": "Dijkstra's\t\t\t\t\t",
         "planner_2": "Dijkstra's + Post Optimization",
         "planner_3": "Diksrtra's + Optimized Cost\t"
@@ -106,70 +92,50 @@ if __name__ == "__main__":
     endpoints = []
     while len(endpoints) < n_samples:
         choice = np.random.choice(cities, size=2)
-        if distance(network[choice[0]], network[choice[1]]) > 4 * max_range:
+        if distance(network[choice[0]], network[choice[1]]) > 3 * max_range:
             endpoints.append(tuple(choice))
 
     # Define the application paths
     supercharger_path = supercharger_build() / 'supercharger'
     checker_path = supercharger_root() / 'checker_linux'
 
+    # Create the results dict.
     results = OrderedDict()
-    # NOTE: This worked for calling get_reference_result()
+    for name in planners.keys():
+        results[name] = []
+
+    # Process the reference results in batch via parallel processing.
     with ProcessPoolExecutor() as executor:
         reference_result = executor.map(get_reference_result, endpoints)
-        results["Reference"] = [result for result in reference_result]
+        results["reference"] = [result for result in reference_result]
+    results.move_to_end("reference", last=False)
 
-    # NOTE: This did not work because the Supercharger class is not pickleable.
-    for name, planner in planners.items():
-        with ProcessPoolExecutor() as executor:
-            func = partial(plan_route, planner=planner)
-            result = executor.map(func, endpoints)
-            results[name] = [item for item in result]
-
-    times0 = np.zeros((n_samples, len(planners) + 1))
-    costs0 = np.zeros((n_samples, len(planners) + 1))
-    cost_diff0 = np.zeros((n_samples, len(planners)))
-    for m, (name, result) in enumerate(results.items()):
-        logger.info(f"Unpacking data from '{name}' planner.")
-        # 'result' is a generator and generators cannot be iterated over more
-        # than once
-        result = list(result)
-        times0[:, m] = np.array([stat.time for stat in result])
-        costs0[:, m] = np.array([stat.cost for stat in result])
-
-
-    stats = []
-    distances = []
     for m, (origin, destination) in enumerate(endpoints):
         logger.info(f"({m}) Planning route between '{origin}' and "
                     f"'{destination}'.")
-
-        distances.append(distance(network[origin], network[destination]))
-        route_stats = [get_reference_result((origin, destination))]
 
         for n, (name, planner) in enumerate(planners.items()):
             # print(f"\t{n}. Planning route with '{planner_descriptions[name]}'.")
             start = perf_counter()
             result = planner.plan_route(origin, destination)
             stop = perf_counter()
-            route_stats.append(AlgoStats(time=stop -start, cost=result.cost))
-
-        stats.append(route_stats)
+            results[name].append(AlgoStats(time=stop-start, cost=result.cost))
 
     # Extract the timing and cost data
-    times = np.zeros((n_samples, len(planners)))
-    costs = np.zeros((n_samples, len(planners) + 1))
-    cost_diff = np.zeros((n_samples, len(planners)))
-    for m, route_stats in enumerate(stats):
-        times[m] = np.array([stat.time for stat in route_stats[1:]])
-        costs[m] = np.array([stat.cost for stat in route_stats])
+    times = np.zeros((n_samples, len(results)))
+    costs = np.zeros((n_samples, len(results)))
+    cost_diff = np.zeros((n_samples, len(results) - 1))
+    for m, algo_stats in enumerate(results.values()):
+        times[:, m] = np.array([stat.time for stat in algo_stats])
+        costs[:, m] = np.array([stat.cost for stat in algo_stats])
 
-        cost_diff[m, 0] = (route_stats[0].cost - route_stats[1].cost) * 60
-        cost_diff[m, 1] = (route_stats[0].cost - route_stats[2].cost) * 60
-        cost_diff[m, 2] = (route_stats[0].cost - route_stats[3].cost) * 60
+    # Compute difference between the reference result and each planner.
+    cost_diff[:, 0] = (costs[:, 0] - costs[:, 1]) * 60
+    cost_diff[:, 1] = (costs[:, 0] - costs[:, 2]) * 60
+    cost_diff[:, 2] = (costs[:, 0] - costs[:, 3]) * 60
 
-    # Convert times to milliseconds
-    times = times * 1e3
+    # Remove nans (from reference result) and convert times to milliseconds.
+    times = times[:, 1:] * 1e3
 
     # Output cost statistics
     print("\n\tPLANNER COSTS (relative to the reference result) [mins]")
@@ -183,8 +149,8 @@ if __name__ == "__main__":
 
     argmax = cost_diff[:, -1].argmax()
     time_saved = timedelta(hours=(costs[argmax, 0] - costs[argmax, -1]))
-    print(f"\nThe greatest time savings among the sampled routes was for the "
-          f"route between '{endpoints[argmax][0]}' and "
+    print(f"\nThe greatest time savings among the {n_samples} sampled routes "
+          f"was for the route between '{endpoints[argmax][0]}' and "
           f"'{endpoints[argmax][1]}'.\n"
           f"Reference Result: {costs[argmax, 0]:.4f}\n"
           f"Planner Result: {costs[argmax, -1]:.4f}\n"
@@ -195,7 +161,16 @@ if __name__ == "__main__":
     print(f'Planning Algorithm\t\t\t\tmean \t std\t max\t\t min')
     for idx, name in enumerate(planners.keys()):
         print(f'{planner_descriptions[name]}\t'
-              f'{times.mean(axis=0)[idx]:.2f}\t '
-              f'{times.std(axis=0)[idx]:.2f}\t '
-              f'{times.max(axis=0)[idx]:.2f}\t\t '
-              f'{times.min(axis=0)[idx]:.2f}')
+              f'{times.mean(axis=0)[idx]:.3f}\t '
+              f'{times.std(axis=0)[idx]:.3f}\t '
+              f'{times.max(axis=0)[idx]:.3f}\t\t '
+              f'{times.min(axis=0)[idx]:.3f}')
+
+    # Get route distance for all start and endpoints.
+    distances = np.array(
+        [distance(network[p1], network[p2]) for p1, p2 in endpoints])
+
+    # Plot route costs as a function of distance
+    # labels = [name.strip('\t') for name in planner_descriptions.values()]
+    # plot_cost_vs_distance(distances, costs, labels)
+

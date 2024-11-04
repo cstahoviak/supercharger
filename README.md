@@ -14,14 +14,6 @@ This repository implements a solution to the Tesla Supercharger coding challenge
 - The full set of results is described in detail in the [Results](#results) section.
 
 
-## Future Work
-
-1. Imporove the Dijkstra's cost function via NLOpt.
-2. Add Valgrind to the C++ unit tests.
-3. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
-4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
-5. Add benchmarking to `Planner::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c). 
-
 ## Problem Statement
 Your objective is to construct a search algorithm to find the minimum time path through the tesla network of supercharging stations. Each supercharger will refuel the vehicle at a different rate given in km/hr of charge time. Your route does not have to fully charge at every visited charger, so long as it never runs out of charge between two chargers. You should expect to need __no more than 4-6 hours__ to solve this problem. We suggest implementing a quick brute force method before attempting to find an optimal routine.
 
@@ -96,6 +88,7 @@ if your solution includes additional cpp files, include a README file with the a
 The solution needs to be self-contained with just the use of STL algorithms
 (i.e. do not use off-the-shelf packages).
 
+
 ## Solution
 
 ### Dependencies
@@ -132,27 +125,62 @@ The unit tests can be run via
 ./cpp/test/test_supercharger 
 ```
 
-### Results
-So far, the following results have been obtained. The _reference result_ provided by the `checker_linux` application is included for comparison. The last two columns indicate the percent improvement over the reference result, and the time saved compared to the reference result.
+## Results
 
-TODO: Add profiling for each algorithm.
+### Single Route Results: Council Bluffs, IA to Cadillac, MI
 
-| Algorithm                              | Cost     | Runtime | Pct Imprv. | Time Saved  |
-|:---------------------------------------|:--------:|:-------:|:----------:|:-----------:|
-|                                        | [hrs]    | [msecs] | [%]        | [mins:secs] |
-| _Naive_ Route Planner                  | 18.1017  | -       | -2.9185    | +50:55      |
-| Dijkstra's Algorithm                   | 17.2548  | -       | -0.0096    | +00:06      |
-| _Reference_ Result                     | 17.2531  | -       | -          | -           |
-| Dijkstra's + _Naive_ Optimizer         | 17.0697  | -       | 1.0630     | -11:00      | 
-| Dijkstra's + Constrained Optimization* | 16.8438  | -       | 2.3723     | -24:33      |
+The following table compares algorithm performance (as measured by route cost in hours) for the example route described in the [Problem Statement](#problem-statement). The _reference result_ provided by the `checker_linux` application is included for comparison. The last two columns indicate the percent improvement over the reference result, and the time saved compared to the reference result.
 
-*constrained optimization performed via NLopt's [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
+| Num | Algorithm                                    | Cost     | Pct Imprv. | Time Saved |
+|:---:|:---------------------------------------------|:--------:|:----------:|:----------:|
+|     |                                              | [hrs]    | [%]        | [min:sec]  |
+| 1   | _Naive_ Route Planner                        | 18.1017  | -2.9185    | +50:55     |
+| 2   | Dijkstra's Algorithm*                        | 17.2548  | -0.0096    | +00:06     |
+| 3   | _Reference_ Result                           | 17.2531  | -          | -          |
+| 4   | Dijkstra's + _Naive_ Optimizer               | 17.0697  | 1.0630     | -11:00     | 
+| 5   | Dijkstra's + Post Optimization**             | 16.8438  | 2.3723     | -24:33     |
+| 6   | Dijkstra's with _Optimized_ Cost Function*** | 16.8438  | 2.3723     | -24:33     |
 
-The following figure illustrates how the constrained optimization scheme maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
+Table 1: Algorithm performance for the sample route.
+
+*This version of Dijkstra's algorithm uses a _naive_ cost function that does fully account for the information encoded in the charging rate at each node. The cost for each node is computed as the travel time between nodes (distance / vehicle speed) plus a charging duration at each node that guarantees an arrival range of exactly 0 km at the next node. No "back-optimization" is performed to account for variable charge rates or to allow the vehicle to arrive at a given node along the route with greater than zero range.
+
+**_Post-optimization_ uses the result of algorithm (2) as its starting point, and then refines the charging durations at each node along the route via a constrained optimization scheme that uses NLopt's [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
+
+***Algorithm (6) borrows the same constrained optimization scheme used by algorithm (5), but rather than applying a single post-optimization step to the route, the optimization scheme is incorportated into the cost function used by Dijkstra's algorithm. This ensures that the cost that Dijkstra's algorithm computes for each node is truly optimal.
+
+The following figure illustrates how the constrained optimization scheme of algorithms (5) and (6) maximizes the charging time at nodes with relatively high charging rates, and decreases the charging time for nodes with low charging rates.
 
 ![charging durations](/figs/charging_durations_stacked.png "Charging Durations")
 
 Figure 1: The lighter area at the bottom of each bar represents the total charging time _up to_ that node, and the darker area at the top of the bar represents the charge time _at_ that node. Upon arrival at the destination node (Cadillac, MI), the constrained optimization scheme has succesfully reduced the total charging time from 6.8217 hrs (6:49) to 6.4107 hrs (6:24) for a total savings of over 24 minutes.
+
+### A Statistical Analysis of Planning Algorithms
+
+For the route considered in the preceding section, no advantage was gained by incorporating the optimization step into the cost function, as opposed to performing a single post-optimization step after the route had been determined by Dijkstra's algorithm using a _naive_ cost function. However, that is not the case once a larger sample of routes is considered.
+
+The following tables describe algorithm performance (in terms of both route cost in hours and algorithm runtime) for a sample of 1000 routes of varying lengths. Only several implementations of Dijkstra's algorithms (2, 5, 6) are evaluated here.
+
+| Num | Algorithm                                 | mean    | std     | max        | min     |
+|:---:|:------------------------------------------|:-------:|:-------:|:----------:|:-------:|
+|     |                                           | [mm:ss] | [mm:ss] | [hh:mm:ss] | [mm:ss] |
+| 2   | Dijkstra's Algorithm                      | -02:29  | -04:52  | -37:04     | +00:31  |
+| 5   | Dijkstra's + Post Optimization            | -32:33  | -21:34  | -01:41:56  | -00:16  |
+| 6   | Dijkstra's with _Optimized_ Cost Function | -37:49  | -23:35  | -02:05:01  | -00:16  |
+
+Table 2: Algorithm performance (in terms of route cost in hours) relative to the _reference_ result. Algorithm (6) has an average improvement 37:49 over the _reference_ result, and an average improvement of 5:16 over algorithm (5).
+
+| Num | Algorithm                                  | mean    | std    | max     | min  |
+|:---:|:-------------------------------------------|:-------:|:------:|:-------:|:----:|
+|     |                                            | [ms]    | [ms]   | [ms]    | [ms] |
+| 2   | Dijkstra's Algorithm                       | 4.66    | 1.72   | 10.98   | 0.76 |
+| 5   | Dijkstra's + Post Optimization             | 4.90    | 1.92   | 13.12   | 0.76 |
+| 6   | Dijkstra's with _Optimized_ Cost Function* | 218.75  | 243.43 | 1448.90 | 4.79 |
+
+Table 3: Planning Algorithm profiling (in milliseconds).
+
+*The _optimized_ cost function is currently implmented in python, and thus there's a large runtime discrepency between algorithm (6) and algorithms (2) and (5).
+
 
 ### Constrained Nonlinear Optimization with SciPy `minimize`
 Adding python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limitations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
@@ -180,3 +208,11 @@ Based on the information in the table, there are only three optimization algorit
 *The `COBYLA` method only supports inequality constraints (equality constraints are not supported). 
 
 A ✅ in the "Gradient" column indicates that a user-supplied gradient function is supported, but not required.
+
+## Future Work
+
+1. Imporove the Dijkstra's cost function via NLOpt.
+2. Add Valgrind to the C++ unit tests.
+3. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
+4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
+5. Add benchmarking to `Planner::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c). 
