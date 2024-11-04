@@ -1,12 +1,14 @@
 """
 Plotly plotting utility functions.
 """
+from typing import List
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objs as go
 
-from supercharger.pysupercharger import PlannerResult
+from pysupercharger import PlannerResult
 
 DIJKSTRAS_COLOR = 'rgb(55, 83, 109)'
 NL_COLOR = 'rgb(26, 118, 255)'
@@ -234,3 +236,31 @@ def plot_ranges(baseline: PlannerResult, optimized: PlannerResult):
                 'x': 1.02}
     )
     fig.show()
+
+
+def plot_cost_vs_distance(distances: np.ndarray,
+                          costs: np.ndarray,
+                          labels: List[str]):
+    """
+    """
+    idxs = np.argsort(distances)
+    d = distances[idxs]
+
+    # Plot route costs as a function of distance
+    fig, ax = plt.subplots(figsize=(12, 8))
+    for label, cost in zip(labels, costs.T):
+        # ax.scatter(
+        #     x=distances,
+        #     y=cost,
+        #     s=10,
+        #     facecolors='None',
+        #     label=label,
+        #     alpha=0.75
+        # )
+
+        ax.plot(d, cost[idxs], label=label, alpha=0.75)
+
+    ax.set_xlabel('Route distance [km]')
+    ax.set_ylabel('Route cost [hrs]')
+    ax.legend()
+    plt.show()

@@ -8,8 +8,7 @@ from warnings import warn
 import numpy as np
 import scipy
 
-from python.sandbox.optimization import constraint
-from supercharger.optimize.constraints import (
+from supercharger.optimize._constraints import (
     ConstraintData,
     ineq_constraint,
     ineq_constraint_grad,
@@ -17,7 +16,7 @@ from supercharger.optimize.constraints import (
     eq_constraint_grad
 )
 
-from supercharger.pysupercharger import (
+from pysupercharger import (
     distance,
     Optimizer,
     PlannerResult

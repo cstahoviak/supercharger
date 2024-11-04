@@ -7,12 +7,13 @@ import numpy as np
 import pytest
 from scipy import optimize
 
-from supercharger.optimize.optimizer import (
+from supercharger.optimize._optimizer import (
     NonlinearOptimizer,
     objective,
     objective_grad
 )
-from supercharger.optimize.constraints import (
+
+from supercharger.optimize._constraints import (
     get_arrival_range,
     ineq_constraint,
     ineq_constraint_grad,
@@ -20,9 +21,9 @@ from supercharger.optimize.constraints import (
     eq_constraint_grad
 )
 
-from supercharger.pysupercharger import (
+from pysupercharger import (
     distance,
-    DijkstrasSimpleCost,
+    dijkstras_simple_cost,
     Supercharger
 )
 
@@ -38,7 +39,7 @@ def planner_result():
     destination = "Cadillac_MI"
 
     # Create the supercharger app using Dijkstra's algorithm
-    supercharger = Supercharger(cost_f=DijkstrasSimpleCost)
+    supercharger = Supercharger(cost_f=dijkstras_simple_cost)
 
     # Set the vehicle's speed and max range
     supercharger.max_range = 320
@@ -89,7 +90,7 @@ def test_get_arrival_range(planner_result, constraint_data):
                                atol=1e-9)
 
 
-def test_cost_fcn_gradient(planner_result, eval_point):
+def test_objective_fcn_grad(planner_result, eval_point):
     """
     Validates the analytically derived cost function gradient against a
     (forward) finite-difference approximation of the gradient.

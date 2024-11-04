@@ -3,16 +3,16 @@ A demonstration of the Python route optimizer.
 """
 from time import perf_counter
 
-from supercharger.optimize.optimizer import NonlinearOptimizer
+from supercharger.optimize import NonlinearOptimizer
 from supercharger.utils.plotly import (
     plot_durations,
     plot_stacked_durations,
     plot_ranges
 )
 
-from supercharger.pysupercharger import (
+from pysupercharger import (
     AlgorithmType,
-    DijkstrasSimpleCost,
+    dijkstras_simple_cost,
     Supercharger
 )
 
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     destination = "Cadillac_MI"
 
     # Create the supercharger using Dijkstra's algorithm
-    supercharger = Supercharger(cost_f=DijkstrasSimpleCost)
+    supercharger = Supercharger(cost_f=dijkstras_simple_cost)
 
     # Set the vehicle's speed and max range
     supercharger.max_range = 320

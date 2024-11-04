@@ -160,20 +160,23 @@ void initPlanningAlgorithm(py::module_& m)
     .def("compute_cost", &Planner::ComputeCost,
       py::arg("current"), py::arg("neighbor"), py::arg("speed"))
     .def("reset", &Planner::Reset)
+
     // NOTE: Cannot bind protected or private members.
     // .def("_construct_final_route", &Planner::ConstructFinalRoute_)
   ;
 
   py::class_<NaivePlanner, Planner>(m, "NaivePlanner")
-    .def(py::init<NaiveCostType>(), py::arg("cost_type"));
+    .def(py::init<NaiveCostType>(), py::arg("cost_type"))
   ;
 
     py::class_<Dijkstras, Planner>(m, "DijkstrasPlanner")
-    .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"));
-  ;
+    .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"))
+    // TODO: Make the Dijkstras planner pickleable for multiprocessing. See
+    // https://pybind11.readthedocs.io/en/stable/advanced/classes.html#pickling-support
+    ;
 
-  m.def("DijkstrasSimpleCost", &algorithm::SimpleCost,
+  m.def("dijkstras_simple_cost", &algorithm::SimpleCost,
     py::arg("current"), py::arg("neighbor"), py::arg("speed"));
-  m.def("DijkstrasOptimizedCost", &algorithm::OptimizedCost,
+  m.def("dijkstras_optimized_cost", &algorithm::OptimizedCost,
     py::arg("current"), py::arg("neighbor"), py::arg("speed"));
 }
