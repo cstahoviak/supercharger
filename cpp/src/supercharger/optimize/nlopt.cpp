@@ -71,6 +71,8 @@ namespace supercharger::optimize
     std::copy(arrival_ranges.begin(), arrival_ranges.end() - 1, result);
 
     // Assign the mxn gradient values.
+    // Note that the gradient (grad) will always be valid at the first and
+    // last evaluation points, but may be NULL at evaluation points in between.
     if ( grad ) {
       for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
         for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
@@ -106,6 +108,8 @@ namespace supercharger::optimize
     std::copy(f.begin(), f.end(), result);
 
     // Assign the mxn gradient values.
+    // Note that the gradient (grad) will always be valid at the first and
+    // last evaluation points, but may be NULL at evaluation points in between.
     if ( grad ) {
       for ( size_t idx_m = 0; idx_m < m; idx_m++ ) {
         for ( size_t idx_n = 0; idx_n < n; idx_n++ ) {
@@ -114,7 +118,7 @@ namespace supercharger::optimize
         }
       }
     } else {
-      WARN("LHS inequality constraint gradient pointer is NULL.");
+      WARN("RHS inequality constraint gradient pointer is NULL.");
     }
   }
 
@@ -170,7 +174,9 @@ namespace supercharger::optimize
 
   PlannerResult NLOptimizer::Optimize(const PlannerResult& result) const
   {
-    // Define the optimization algorithm and dimensionality.
+    // Define the optimization algorithm and dimensionality. Note that the 
+    // algorithm and dimension parameters of the object are immutable (cannot be
+    // changed without creating a new object), but are queryable.
     size_t dim = result.route.size() - 2;
     nlopt::opt opt(algorithm_, dim);
 

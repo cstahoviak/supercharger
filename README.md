@@ -1,13 +1,13 @@
 # Tesla Coding Challenge
 
-## Overview
-
 Sections:
+- [Overview](#overview)
 - [Problem Statement](#problem-statement)
 - [Solution](#solution)
 - [Results](#results)
 - [Future Work](#future-work)
 
+## Overview
 This repository implements a solution to the Tesla Supercharger coding challenge (described in more detail in the [Problem Statement](#problem-statement) section). The following is an overview of the solution method and supported features:
 
 - The route planning problem is solved as a two-step process:
@@ -16,7 +16,7 @@ This repository implements a solution to the Tesla Supercharger coding challenge
   - This approach achieves a [24.5 minute (2.37%) improvement](#results) over the _reference result_.
 - Additionally, the `pysupercharger` module is provided to support python development.
   - The python bindings are written using the [`pybind11`](https://pybind11.readthedocs.io/en/stable/) library.
-  - Both the `Planner` and `Optimizer` classes are extensible on the python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimizer` module) inherits from the bound `Optimizer` class.
+  - Both the `Planner` and `Optimizer` classes are extensible on the python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimize` module) inherits from the bound `Optimizer` class.
   - This workflow enabled rapid prototyping of the constrained optimization improvement by allowing me to experiment with Scipy `minimize` before implementing the optimization solution in C++ via NLOpt.
 - The full set of results is described in detail in the [Results](#results) section.
 
@@ -141,7 +141,7 @@ The following table compares algorithm performance (as measured by route cost in
 | Num | Algorithm                                    | Cost     | Pct Imprv. | Time Saved |
 |:---:|:---------------------------------------------|:--------:|:----------:|:----------:|
 |     |                                              | [hrs]    | [%]        | [min:sec]  |
-| 1   | _Naive_ Route Planner                        | 18.1017  | -2.9185    | +50:55     |
+| 1   | _Naive_ Planner                              | 18.1017  | -2.9185    | +50:55     |
 | 2   | Dijkstra's Algorithm*                        | 17.2548  | -0.0096    | +00:06     |
 | 3   | _Reference_ Result                           | 17.2531  | -          | -          |
 | 4   | Dijkstra's + _Naive_ Optimizer               | 17.0697  | 1.0630     | -11:00     | 

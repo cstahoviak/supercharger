@@ -9,6 +9,7 @@
  * 
  */
 #include "supercharger/algorithm/dijkstras.h"
+#include "supercharger/optimize/optimizer.h"
 #include "supercharger/logging.h"
 
 #include <algorithm>
@@ -69,7 +70,9 @@ namespace supercharger::algorithm
       // For the current node, consider all of its unvisited neighbors and
       // update their cost through the current node.
       double cost{0};
-      for ( std::shared_ptr<Node>& neighbor : GetNeighbors_(*current_node, max_range) ) {
+      for ( std::shared_ptr<Node>& neighbor : 
+        GetNeighbors_(*current_node, max_range) )
+      {
         // Compute the cost to get to the neighbor through the current node.
         // TODO: Is dereferencing here the right choice? Would it be better to
         // pass the shared pointer itself? Or a reference to the shared pointer
@@ -141,6 +144,10 @@ namespace supercharger::algorithm
   }
 
   std::vector<Node> Dijkstras::ConstructFinalRoute_(const Node& final) {
+    return ConstructRoute(final);
+  }
+
+  std::vector<Node> ConstructRoute(const Node& final) {
     // Create the route and add the final node.
     std::vector<Node> route;
     route.push_back(final);
@@ -148,15 +155,13 @@ namespace supercharger::algorithm
     // Iterate over the parents of each node to construct the complete path.
     std::shared_ptr<const Node> current_node = final.shared_from_this();
     while ( std::shared_ptr<const Node> parent = current_node->parent().lock() )
-    {
-      DEBUG(current_node->name() << " cost: " << current_node->cost << " hrs");
-      
+    {      
       // Add the parent to the route.
       // NOTE: Below we will update the charging durations for each node, but 
       // the cost previously computed for this node will not change because it
       // represents the minimum time required to reach this node, and thus we
       // can copy the cost when making a copy of the Node.
-      route.push_back(*parent);
+      route.push_back(*parent.get());
       current_node.swap(parent);
     }
 
@@ -168,7 +173,7 @@ namespace supercharger::algorithm
     // are incorrect. The charge times represent the time required to charge at
     // a given node... (I need to think more about what's actually happening
     // during the Dijkstra's route planning process).
-    for ( auto iter = route.begin(); iter != route.end() - 1; ++iter) {
+    for ( auto iter = route.begin(); iter != route.end() - 1; ++iter ) {
       Node& current = *iter;
       Node& next = *(iter + 1);
 
@@ -195,7 +200,31 @@ namespace supercharger::algorithm
 
   double OptimizedCost(const Node& current, const Node& neighbor, double speed)
   {
-    // TODO: Implement the "optimized" cost function.
-    return 0;
+    // Create the optimizer as a local static variable.
+    using namespace supercharger::optimize;
+    static const auto optimizer =
+      Optimizer::GetOptimizer(Optimizer::OptimizerType::NLOPT);
+
+    // Store the neighbor's current parent and substitute the current node as
+    // the neighbor's parent.
+    const std::shared_ptr<Node> original_parent = neighbor.parent().lock();
+    const_cast<Node&>(neighbor).parent(
+      const_cast<Node&>(current).shared_from_this());
+
+    // Create the route as if the neighbor node were the destination.
+    std::vector<Node> route = ConstructRoute(neighbor);
+
+    // Reset the neighbor's parent.
+    const_cast<Node&>(neighbor).parent(original_parent);
+
+    if ( route.size() > 3 ) {
+      // Optimize the route
+      const PlannerResult result{ route, 0.0, 320.0, speed };
+      const PlannerResult optimized = optimizer.get()->Optimize(result);
+      return optimized.cost;
+    }
+    else {
+      return SimpleCost(current, neighbor, speed);
+    }
   }
 } // end namespace supercharger::algorithm

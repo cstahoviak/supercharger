@@ -95,13 +95,22 @@ int main(int argc, char** argv)
   );
   algorithms["DIJKTRA'S + NAIVE OPTIMIZER\t"] = result3.cost;
 
-  // Improve on Dijkstra's via the "NLOPT" optimizer.
+  // Improve on Dijkstra's via post-optimization
   app.SetOptimizer(OptimizerType::NLOPT);
   PlannerResult result4 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );
-  algorithms["DIJKTRA'S + NLOPT\t\t"] = result4.cost;
+  algorithms["DIJKTRA'S + POST OPTIMIZATION\t"] = result4.cost;
+
+  // Improve on post-optimization via an "optimized" cost function
+  app.SetPlanner(algorithm::OptimizedCost);
+  app.SetOptimizer(OptimizerType::NONE);
+  PlannerResult result5 = app.PlanRoute(
+    initial_charger_name,
+    goal_charger_name
+  );
+  algorithms["DIJKTRA'S + OPTIMIZED COST\t"] = result5.cost;
 
   // Now sorted by cost.
   std::multimap<double, std::string, std::greater<double>> algs_by_cost = 

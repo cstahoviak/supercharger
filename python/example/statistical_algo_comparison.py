@@ -19,7 +19,7 @@ Notes:
 from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor
 from datetime import timedelta
-from time import perf_counter
+from time import perf_counter, sleep
 import os
 from typing import no_type_check_decorator
 
@@ -33,6 +33,7 @@ from supercharger.utils.subprocess import run_executable
 from supercharger.types import AlgoStats
 
 from pysupercharger import (
+    dijkstras_optimized_cost,
     dijkstras_simple_cost,
     distance,
     Planner,
@@ -61,7 +62,7 @@ def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
 
 if __name__ == "__main__":
     # Define some statistical variables
-    n_samples = 10
+    n_samples = 500
 
     # Set some vehicle parameters
     max_range = 320
@@ -71,7 +72,7 @@ if __name__ == "__main__":
         "reference": "Reference",
         "planner_1": "Dijkstra's\t\t\t\t\t",
         "planner_2": "Dijkstra's + Post Optimization",
-        "planner_3": "Diksrtra's + Optimized Cost\t"
+        "planner_3": "Dijkstra's + Optimized Cost\t"
     }
 
     # Create the planners
@@ -79,7 +80,7 @@ if __name__ == "__main__":
     planners["planner_1"] = Supercharger(cost_f=dijkstras_simple_cost)
     planners["planner_2"] = Supercharger(cost_f=dijkstras_simple_cost,
                                          optim_type=OptimizerType.NLOPT)
-    planners["planner_3"] = Supercharger(cost_f=optimized_cost)
+    planners["planner_3"] = Supercharger(cost_f=dijkstras_optimized_cost)
 
     # Set the max range and speed for each planner
     for planner in planners.values():
@@ -115,7 +116,8 @@ if __name__ == "__main__":
                     f"'{destination}'.")
 
         for n, (name, planner) in enumerate(planners.items()):
-            # print(f"\t{n}. Planning route with '{planner_descriptions[name]}'.")
+            # logger.info(f"Planning route with "
+            #             f"'{planner_descriptions[name].strip('t')}'.")
             start = perf_counter()
             result = planner.plan_route(origin, destination)
             stop = perf_counter()
@@ -164,13 +166,13 @@ if __name__ == "__main__":
 
     # Output profiling statistics
     print("\n\t\t\t\t\t\tPLANNER PROFILING [ms]")
-    print(f'Planning Algorithm\t\t\t\tmean \t std\t max\t\t min')
+    print(f'Planning Algorithm\t\t\t\tmean\t std\t max\t\t min')
     for idx, name in enumerate(planners.keys()):
         print(f'{planner_descriptions[name]}\t'
-              f'{times.mean(axis=0)[idx]:.3f}\t '
-              f'{times.std(axis=0)[idx]:.3f}\t '
-              f'{times.max(axis=0)[idx]:.3f}\t\t '
-              f'{times.min(axis=0)[idx]:.3f}')
+              f'{times.mean(axis=0)[idx]:.3f}\t'
+              f' {times.std(axis=0)[idx]:.3f}\t'
+              f' {times.max(axis=0)[idx]:.3f}\t\t'
+              f' {times.min(axis=0)[idx]:.3f}')
 
     # Get route distance for all start and endpoints.
     distances = np.array(

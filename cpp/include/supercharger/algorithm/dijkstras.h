@@ -68,6 +68,15 @@ namespace supercharger::algorithm
   };
 
   /**
+   * @brief Constructs a route given the final node of the route. 
+   * 
+   * @param final The final node in the route. Assumes that the full route can
+   * be constructed via a linked list from the Node's 'parent' member.
+   * @return std::vector<Node> The full route.
+   */
+  std::vector<Node> ConstructRoute(const Node&);
+
+  /**
    * @brief The Dijkstra's "simple" cost function computes the cost at the
    * neighbor node as the sum of the cost at the current node + the charge time
    * required to reach the neighbor node from the current node + the travel time

@@ -175,6 +175,7 @@ void initPlanningAlgorithm(py::module_& m)
     // https://pybind11.readthedocs.io/en/stable/advanced/classes.html#pickling-support
     ;
 
+  m.def("ConstructRoute", &algorithm::ConstructRoute, py::arg("final"));
   m.def("dijkstras_simple_cost", &algorithm::SimpleCost,
     py::arg("current"), py::arg("neighbor"), py::arg("speed"));
   m.def("dijkstras_optimized_cost", &algorithm::OptimizedCost,
