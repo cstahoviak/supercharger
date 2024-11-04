@@ -61,7 +61,7 @@ def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
 
 if __name__ == "__main__":
     # Define some statistical variables
-    n_samples = 100
+    n_samples = 10
 
     # Set some vehicle parameters
     max_range = 320
@@ -137,15 +137,21 @@ if __name__ == "__main__":
     # Remove nans (from reference result) and convert times to milliseconds.
     times = times[:, 1:] * 1e3
 
+    def float_mins_to_str(value: float) -> str:
+        if value > 0:
+            return str(timedelta(minutes=value)).split('.')[0]
+        else:
+            return f"-{str(timedelta(minutes=-value)).split('.')[0]}"
+
     # Output cost statistics
     print("\n\tPLANNER COSTS (relative to the reference result) [mins]")
-    print(f'Planning Algorithm\t\t\t\tmean \t std\t max\t min')
+    print(f'Planning Algorithm\t\t\t\tmean\t std\t\t max\t\t min')
     for idx, name in enumerate(planners.keys()):
-        print(f'{planner_descriptions[name]}\t'
-              f'{cost_diff.mean(axis=0)[idx]:.2f}\t '
-              f'{cost_diff.std(axis=0)[idx]:.2f}\t '
-              f'{cost_diff.max(axis=0)[idx]:.2f}\t '
-              f'{cost_diff.min(axis=0)[idx]:.2f}')
+        print(f"{planner_descriptions[name]}\t"
+              f"{float_mins_to_str(cost_diff.mean(axis=0)[idx])}\t"
+              f" {float_mins_to_str(cost_diff.std(axis=0)[idx])}\t"
+              f" {float_mins_to_str(cost_diff.max(axis=0)[idx])}\t"
+              f" {float_mins_to_str(cost_diff.min(axis=0)[idx])}")
 
     argmax = cost_diff[:, -1].argmax()
     time_saved = timedelta(hours=(costs[argmax, 0] - costs[argmax, -1]))
