@@ -10,19 +10,29 @@ Sections:
 ## Overview
 This repository implements a solution to the Tesla Supercharger coding challenge (described in more detail in the [Problem Statement](#problem-statement) section). The following is an overview of the solution method and supported features:
 
-- The route planning problem is solved as a two-step process:
-  - First, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. The Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the vehicle's arrival range at each charger will be zero.
+### Solution Method
+
+- Algorithm (5) (see Tables 1, 2 and 3 in the [Rsesults](#results) section) approaches the route planning problem as a two-step process:
+  - First, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. In this implementation, Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the vehicle's arrival range at each charger will be zero.
   - Next, the solution is refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
-  - This approach achieves a [24.5 minute (2.37%) improvement](#results) over the _reference result_.
-- Additionally, the `pysupercharger` module is provided to support python development.
+  - This approach achieves an average improvement of over [32.5 minutes](#results) over the _reference result_.
+- Algorithm (6) borrows the same optimization scheme as described in the second part of Algorithm (5), but rather than applying a single post-optimization step to the route, the optimization step is built into the cost function used by Dijkstra's algorithm to guarantee that the cost computed for each node in the graph is truly optimal.
+	- Incorporating the optimization step into the cost function evaluation comes with a runtime penalty, but is able to acheive an average improvement of over [37.5 minutes](#results) over the _reference result_ (and a 5 minute improvement over Algorithm (5)).
+- The constrained optimization problem that both Algorithms (5) and (6) solve can be expressed as  follows
+
+	![Optimization Problem](/figs/optimization1.png "Charging Durations")
+
+	where the objective function is the sum of charging durations at nodes `[2, n-1]` (not including the origin and the destination), and the constraint function ensures that the arrival range at each node `[3, n]` is greater than zero, i.e. the vehicle does not run out of charge at any point along the route. The matrix `A` is a function of the charging rates, and the vectors `r` and `d` are the charging rates and distances between adjacent nodes, respectively.
+
+### Features
+- The `pysupercharger` module is provided to support python development.
   - The python bindings are written using the [`pybind11`](https://pybind11.readthedocs.io/en/stable/) library.
   - Both the `Planner` and `Optimizer` classes are extensible on the python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimize` module) inherits from the bound `Optimizer` class.
   - This workflow enabled rapid prototyping of the constrained optimization improvement by allowing me to experiment with Scipy `minimize` before implementing the optimization solution in C++ via NLOpt.
-- The full set of results is described in detail in the [Results](#results) section.
 
 
 ## Problem Statement
-Your objective is to construct a search algorithm to find the minimum time path through the tesla network of supercharging stations. Each supercharger will refuel the vehicle at a different rate given in km/hr of charge time. Your route does not have to fully charge at every visited charger, so long as it never runs out of charge between two chargers. You should expect to need __no more than 4-6 hours__ to solve this problem. We suggest implementing a quick brute force method before attempting to find an optimal routine.
+Your objective is to construct a search algorithm to find the minimum time path through the tesla network of supercharging stations. Each supercharger will refuel the vehicle at a different rate given in km/hr of charge time. Your route does not have to fully charge at every visited charger, so long as it never runs out of charge between two chargers. We suggest implementing a quick brute force method before attempting to find an optimal routine.
 
 You will be provided with a code skeleton which includes a header with the
 charger network data in the format:
