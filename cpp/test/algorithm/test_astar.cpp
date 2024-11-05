@@ -15,6 +15,7 @@
 
 using namespace supercharger::algorithm;
 
+
 class AStarPlannerTestFixture : public testing::Test
 {
   protected:
