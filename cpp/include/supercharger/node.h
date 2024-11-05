@@ -18,61 +18,92 @@
 namespace supercharger
 {
   /**
-   * @brief Represents a single node along the route.
+   * @brief An abstract base class for representing a single node in the
+   * network.
+   */
+  class Node
+  {
+    public:
+      /**
+       * @brief Resets the Node's attributes to their original values.
+       */
+      void Reset() { ResetNode(); }
+
+    protected:
+      /**
+       * @brief Each derived Node class must implement its own reset function.
+       */
+      virtual void ResetNode() = 0;
+  };
+
+  /**
+   * @brief A simple represenation of a single node in the network.
+   */
+  class SimpleNode : public Node
+  {
+    public:
+      // NOTE: Must define a ctor to make use of "emplace_back"-like functions.
+      SimpleNode(Charger charger) : charger_(std::move(charger)) {};
+
+      // The length of time charging at this node (hrs).
+      double duration{0};
+      // The range of the vehicle upon arriving at this node.
+      double arrival_range{0};
+      // The post-charging range of the vehicle when departing this node.
+      double departure_range{0};
+      
+      // "identity-oriented" getters
+      const Charger& charger() const { return charger_; }
+      const std::string& name() const { return charger_.name; }
+
+      /**
+       * @brief Resets the Node's attributes to their original values.
+       */
+      void ResetNode() override;
+
+    private:
+      // Store the charger associated with this node.
+      Charger charger_;
+  };
+
+  // Overload the string stream operator to output a Node.
+  std::ostream& operator<<(std::ostream&, const SimpleNode&);
+
+  /**
+   * @brief Formats the final route output to comply with the format expected
+   * by the provided "checker" executables.
+   */
+  std::ostream& operator<<(std::ostream&, const std::vector<SimpleNode>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<SimpleNode>>&);
+
+  /**
+   * @brief Dijkstra's Node adds a parent which it uses to traverse a linked
+   * list of parents from the destination node back to the origin.
    * 
    * See the following StackOverflow page on info related to implementing a
    * graph node using a weak_ptr to store the parent node:
    * 
    * https://stackoverflow.com/questions/61723200/returning-a-weak-ptr-member-variable
    */
-  struct Node : public std::enable_shared_from_this<Node>
+  class DijkstrasNode : 
+    public SimpleNode, public std::enable_shared_from_this<DijkstrasNode>
   {
-    // NOTE: Must define a ctor to make use of "emplace_back"-like functions.
-    Node(Charger charger) : charger_(std::move(charger)) {};
+    public:
+      // True if the node has been visited.
+      bool visited{false};
 
-    // The length of time charging at this node (hrs).
-    double duration{0};
-    // The range of the vehicle upon arriving at this node.
-    double arrival_range{0};
-    // The post-charging range of the vehicle when departing this node.
-    double departure_range{0}; 
+      // The cost from this Node to the route origin.
+      double cost{std::numeric_limits<double>::max()};
 
-    // The following were added for Dijkstra's implementation.
-    // True if the node has been visited.
-    bool visited{false};
-    // The cost from this Node to the route origin. For Dijkstra's algorithm,
-    // the cost is the total driving time plus total charging time upon arriving
-    // at this node. It does NOT include the charging time at this node.
-    double cost{std::numeric_limits<double>::max()};
-    
-    // "identity-oriented" getters
-    const Charger& charger() const { return charger_; }
-    const std::string& name() const { return charger_.name; }
+      // "value-oriented" getter and setter
+      std::weak_ptr<DijkstrasNode> parent() const { return parent_; }
+      void parent(std::shared_ptr<DijkstrasNode> parent) { parent_ = std::move(parent); }
 
-    // "value-oriented" getter and setter
-    std::weak_ptr<Node> parent() const { return parent_; }
-    void parent(std::shared_ptr<Node> parent) { parent_ = std::move(parent); }
-
-    /**
-     * @brief Resets the Node's attributes to their original values.
-     */
-    void Reset();
+    protected:
+      void ResetNode() override;
 
     private:
-      // Store the charger associated with this node.
-      Charger charger_;
-      
       // Store the previous node on the route.
-      std::weak_ptr<Node> parent_;
+      std::weak_ptr<DijkstrasNode> parent_;
   };
-
-  // Overload the string stream operator to output a Node.
-  std::ostream& operator<<(std::ostream&, const Node&);
-
-  /**
-   * @brief Formats the final route output to comply with the format expected
-   * by the provided "checker" executables.
-   */
-  std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
-  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
 } // end namespace supercharger
