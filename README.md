@@ -228,7 +228,7 @@ A ✅ in the "Gradient" column indicates that a user-supplied gradient function 
 
 ## Future Work
 
-1. Imporove the Dijkstra's cost function via NLOpt.
+1. Add support for asynchronous planning of multi-stop routes.
 2. Add Valgrind to the C++ unit tests.
 3. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
 4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
