@@ -177,16 +177,16 @@ The following tables describe algorithm performance (in terms of both route cost
 
 Table 2: Algorithm performance (in terms of route cost in hours) relative to the _reference_ result. Algorithm (6) has an average improvement 37:49 over the _reference_ result, and an average improvement of 5:16 over algorithm (5).
 
-| Num | Algorithm                                  | mean    | std    | max     | min  |
-|:---:|:-------------------------------------------|:-------:|:------:|:-------:|:----:|
-|     |                                            | [ms]    | [ms]   | [ms]    | [ms] |
-| 2   | Dijkstra's Algorithm                       | 4.66    | 1.72   | 10.98   | 0.76 |
-| 5   | Dijkstra's + Post Optimization             | 4.90    | 1.92   | 13.12   | 0.76 |
-| 6   | Dijkstra's with _Optimized_ Cost Function* | 218.75  | 243.43 | 1448.90 | 4.79 |
+| Num | Algorithm                                  | mean    | std     | max      | min   |
+|:---:|:-------------------------------------------|:-------:|:-------:|:--------:|:-----:|
+|     |                                            | [ms]    | [ms]    | [ms]     | [ms]  |
+| 2   | Dijkstra's Algorithm                       | 4.643   | 1.707   | 11.118   | 0.790 |
+| 5   | Dijkstra's + Post Optimization             | 4.858   | 1.873   | 11.441   | 0.835 |
+| 6   | Dijkstra's with _Optimized_ Cost Function* | 175.321 | 222.121 | 1425.543 | 2.343 |
 
 Table 3: Planning Algorithm profiling (in milliseconds).
 
-*The _optimized_ cost function is currently implmented in python, and thus there's a large runtime discrepency between algorithm (6) and algorithms (2) and (5).
+*The A-Star algorithm might be able to improve on this runtime performance by being more efficient in directing the exploration of nodes along the route.
 
 
 ### Constrained Nonlinear Optimization with SciPy `minimize`
