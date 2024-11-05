@@ -32,9 +32,13 @@ namespace supercharger::algorithm
         double,
         double) override;
 
-      double ComputeCost(const Node&, const Node&, double) const override;
+      double ComputeCost(
+        const Node&,
+        const Node&,
+        double,
+        double) const override;
 
     protected:
-      std::vector<Node> ConstructFinalRoute_(const Node&) override;
+      std::vector<Node> ConstructRoute_(const Node&) override;
   };
 } // end namespace supercharger

@@ -84,7 +84,7 @@ namespace supercharger::algorithm
       // If the current node is the destination node, we're done!
       if ( current_node->name() == destination ) {
         DEBUG("Final route cost: " << current_node->cost << " hrs.");
-        return { ConstructFinalRoute_(*current_node), current_node->cost,
+        return { ConstructRoute_(*current_node), current_node->cost,
           max_range, speed };
       }
 
@@ -98,7 +98,7 @@ namespace supercharger::algorithm
         // TODO: Is dereferencing here the right choice? Would it be better to
         // pass the shared pointer itself? Or a reference to the shared pointer
         // so as to not increase the reference count?
-        cost = ComputeCost(*current_node, *neighbor, speed);
+        cost = ComputeCost(*current_node, *neighbor, max_range, speed);
 
         if ( cost < neighbor->cost ) {
           // If the cost to the neighbor node through the current node is less
@@ -142,9 +142,12 @@ namespace supercharger::algorithm
   }
 
   double Dijkstras::ComputeCost(
-    const Node& current, const Node& neighbor, double speed) const
+    const Node& current,
+    const Node& neighbor,
+    double max_range,
+    double speed) const
   {
-    return cost_f(current, neighbor, speed);
+    return cost_f(current, neighbor, max_range, speed);
   }
 
   std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(
@@ -164,7 +167,7 @@ namespace supercharger::algorithm
     return neighbors;
   }
 
-  std::vector<Node> Dijkstras::ConstructFinalRoute_(const Node& final) {
+  std::vector<Node> Dijkstras::ConstructRoute_(const Node& final) {
     return ConstructRoute(final);
   }
 
@@ -213,13 +216,15 @@ namespace supercharger::algorithm
     return route;
   }
 
-  double SimpleCost(const Node& current, const Node& neighbor, double speed)
+  double SimpleCost(
+    const Node& current, const Node& neighbor, double max_range, double speed)
   {
     return current.cost + GetChargeTime(current, neighbor) +
       math::distance(current, neighbor) / speed;
   }
 
-  double OptimizedCost(const Node& current, const Node& neighbor, double speed)
+  double OptimizedCost(
+    const Node& current, const Node& neighbor, double max_range, double speed)
   {
     // Create the optimizer as a local static variable.
     using namespace supercharger::optimize;
@@ -240,12 +245,12 @@ namespace supercharger::algorithm
 
     if ( route.size() > 3 ) {
       // Optimize the route
-      const PlannerResult result{ route, 0.0, 320.0, speed };
+      const PlannerResult result{ route, 0.0, max_range, speed };
       const PlannerResult optimized = optimizer.get()->Optimize(result);
       return optimized.cost;
     }
     else {
-      return SimpleCost(current, neighbor, speed);
+      return SimpleCost(current, neighbor, max_range, speed);
     }
   }
 } // end namespace supercharger::algorithm

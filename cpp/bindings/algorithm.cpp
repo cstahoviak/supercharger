@@ -42,11 +42,16 @@ namespace supercharger::algorithm
         const std::string&,
         double,
         double) override;
-      double ComputeCost(const Node&, const Node&, double) const override;
+
+      double ComputeCost(
+        const Node&,
+        const Node&,
+        double,
+        double) const override;
 
     protected:
       // NOTE: I might not be able to bind proctected (and private) members?
-      std::vector<Node> ConstructFinalRoute_(const Node&) override;
+      std::vector<Node> ConstructRoute_(const Node&) override;
   };
 
   PlannerResult PyPlanner::PlanRoute(
@@ -60,29 +65,36 @@ namespace supercharger::algorithm
       Planner,            // Parent class
       PlanRoute,          // Name of C++ function (must match python name)
       origin,             // Argument(s)
-      destination
+      destination,
+      max_range,
+      speed
     );
   }
 
   double PyPlanner::ComputeCost(
-    const Node& current, const Node& neighbor, double max_range) const
+    const Node& current,
+    const Node& neighbor,
+    double max_range,
+    double speed) const
   {
     PYBIND11_OVERRIDE_PURE(
       double,             // Return type
       Planner,            // Parent class
       ComputeCost,        // Name of C++ function (must match python name)
       current,            // Arguments(s)
-      neighbor
+      neighbor,
+      max_range,
+      speed
     );
   }
 
-  std::vector<Node> PyPlanner::ConstructFinalRoute_(
+  std::vector<Node> PyPlanner::ConstructRoute_(
     const Node& final)
   {
     PYBIND11_OVERRIDE_PURE(
       std::vector<Node>,    // Return type
       Planner,              // Parent class
-      ConstructFinalRoute_, // Name of C++ function (must match python name)
+      ConstructRoute_,      // Name of C++ function (must match python name)
       final                 // Arguments(s)
     );
   }
@@ -162,7 +174,7 @@ void initPlanningAlgorithm(py::module_& m)
     .def("plan_route", &Planner::PlanRoute, 
       py::arg("origin"), py::arg("destination"), py::arg("max_range"), py::arg("speed"))
     .def("compute_cost", &Planner::ComputeCost,
-      py::arg("current"), py::arg("neighbor"), py::arg("speed"))
+      py::arg("current"), py::arg("neighbor"), py::arg("max_range"), py::arg("speed"))
     .def("reset", &Planner::Reset)
 
     // NOTE: Cannot bind protected or private members.
@@ -182,7 +194,7 @@ void initPlanningAlgorithm(py::module_& m)
 
   m.def("ConstructRoute", &algorithm::ConstructRoute, py::arg("final"));
   m.def("dijkstras_simple_cost", &algorithm::SimpleCost,
-    py::arg("current"), py::arg("neighbor"), py::arg("speed"));
+    py::arg("current"), py::arg("neighbor"), py::arg("max_range"), py::arg("speed"));
   m.def("dijkstras_optimized_cost", &algorithm::OptimizedCost,
-    py::arg("current"), py::arg("neighbor"), py::arg("speed"));
+    py::arg("current"), py::arg("neighbor"), py::arg("max_range"), py::arg("speed"));
 }

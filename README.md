@@ -150,7 +150,7 @@ The following table compares algorithm performance (as measured by route cost in
 
 Table 1: Algorithm performance for the sample route.
 
-*This version of Dijkstra's algorithm uses a _naive_ cost function that does fully account for the information encoded in the charging rate at each node. The cost for each node is computed as the travel time between nodes (distance / vehicle speed) plus a charging duration at each node that guarantees an arrival range of exactly 0 km at the next node. No "back-optimization" is performed to account for variable charge rates or to allow the vehicle to arrive at a given node along the route with greater than zero range.
+*This version of Dijkstra's algorithm uses a _naive_ cost function that does not fully account for the information encoded in the charging rate at each node. The cost for each node is computed as the travel time between nodes (distance / vehicle speed) plus a charging duration at each node that guarantees an arrival range of exactly 0 km at the next node. No "back-optimization" is performed to account for variable charge rates or to allow the vehicle to arrive at a given node along the route with greater than zero range.
 
 **_Post-optimization_ uses the result of algorithm (2) as its starting point, and then refines the charging durations at each node along the route via a constrained optimization scheme that uses NLopt's [SLSQP](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#slsqp) algorithm.
 

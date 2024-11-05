@@ -22,7 +22,7 @@ namespace supercharger::algorithm
   {
     public:
       using DijkstrasCostFcnType =
-        std::function<double(const Node&, const Node&, double)>;
+        std::function<double(const Node&, const Node&, double, double)>;
 
       Dijkstras(CostFunctionType cost_type);
       Dijkstras(DijkstrasCostFcnType cost_f) : cost_f(std::move(cost_f)) {};
@@ -43,7 +43,24 @@ namespace supercharger::algorithm
         double,
         double) override;
 
-      double ComputeCost(const Node&, const Node&, double) const override;
+      /**
+       * @brief Dijkstra's algorithm cost function. Can be one of
+       * Planner::CosFunctionType::DIJKSTRAS_SIMPLE or 
+       * Planner::CosFunctionType::DIJKSTRAS_OPTIMIZED, or a custom cost
+       * function provided as a callable object.
+       * 
+       * @param current The current node.
+       * @param candidate The candidate "next" node.
+       * @param max_range [km] The vehicle's max range.
+       * @param speed [km/hr] The vehicle's constant velocity.
+       * @return double The cost to reach the candidate node from the current
+       * node.
+       */
+      double ComputeCost(
+          const Node&,
+          const Node&,
+          double,
+          double) const override;
 
     protected:
       /**
@@ -54,7 +71,7 @@ namespace supercharger::algorithm
        * @return std::vector<Node> The final route from the origin node to the
        * destination node.
        */
-      std::vector<Node> ConstructFinalRoute_(const Node&) override;
+      std::vector<Node> ConstructRoute_(const Node&) override;
 
     private:
       DijkstrasCostFcnType cost_f;
@@ -63,6 +80,7 @@ namespace supercharger::algorithm
        * @brief Returns all unvisited neighbors of the current node.
        * 
        * @param current The current node.
+       * @param max_range [km] The maximum range of the vehicle.
        * @return A vector of neighbors as shared Node pointers.
        */
       std::vector<std::shared_ptr<Node>> GetNeighbors_(const Node&, double);
@@ -93,7 +111,7 @@ namespace supercharger::algorithm
    * @param speed The vehicle's constant velocity.
    * @return double The cost to the neighbor node through the current node.
    */
-  double SimpleCost(const Node&, const Node&, double);
+  double SimpleCost(const Node&, const Node&, double, double);
 
   /**
    * @brief Implements an "optimized" cost function for Dijkstra's algorithm.
@@ -101,5 +119,5 @@ namespace supercharger::algorithm
    * 
    * @return double 
    */
-  double OptimizedCost(const Node&, const Node&, double);
+  double OptimizedCost(const Node&, const Node&, double, double);
 } // end namespace supercharger::algorithm
