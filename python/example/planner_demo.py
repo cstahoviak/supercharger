@@ -2,10 +2,9 @@
 Demos the supercharger application for the route shown in the README.
 """
 from pysupercharger import (
-    AlgorithmType,
     DijkstrasPlanner,
     dijkstras_simple_cost,
-    NaiveCostType,
+    CostFunctionType,
     NaivePlanner
 )
 
@@ -20,7 +19,7 @@ if __name__ == "__main__":
 
     # Create the "naive" planner
     naive_planner = NaivePlanner(
-        cost_type=NaiveCostType.MINIMIZE_TIME_REMAINING)
+        cost_type=CostFunctionType.NAIVE_MINIMIZE_TIME_REMAINING)
 
     # Plan the route with the "naive" route planner
     result = naive_planner.plan_route(origin, destination, max_range, speed)
@@ -28,7 +27,8 @@ if __name__ == "__main__":
     print(result)
 
     # Plan the route with Dijkstra's algorithm
-    dijkstras_planner = DijkstrasPlanner(cost_f=dijkstras_simple_cost)
+    dijkstras_planner = DijkstrasPlanner(
+        cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
     result2 = dijkstras_planner.plan_route(origin, destination, max_range, speed)
     print(f"\nDijkstra's Planner Final Route (Cost: {result2.cost:.4f} hrs)")
     print(result2)

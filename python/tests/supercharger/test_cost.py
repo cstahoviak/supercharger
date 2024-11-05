@@ -6,7 +6,7 @@ import numpy as np
 from supercharger.optimize import optimized_cost
 
 from pysupercharger import (
-    dijkstras_optimized_cost,
+    CostFunctionType,
     DijkstrasPlanner
 )
 
@@ -26,7 +26,8 @@ def test_dijkstras_optimized_cost():
 
     # Create route planners
     py_planner = DijkstrasPlanner(cost_f=optimized_cost)
-    cpp_planner = DijkstrasPlanner(cost_f=dijkstras_optimized_cost)
+    cpp_planner = DijkstrasPlanner(
+        cost_type=CostFunctionType.DIJKSTRAS_OPTIMIZED)
 
     # Plan the routes
     py_result = py_planner.plan_route(origin, destination, max_range, speed)

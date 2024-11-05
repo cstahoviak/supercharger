@@ -19,9 +19,8 @@ Notes:
 from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor
 from datetime import timedelta
-from time import perf_counter, sleep
+from time import perf_counter
 import os
-from typing import no_type_check_decorator
 
 import numpy as np
 
@@ -33,8 +32,8 @@ from supercharger.utils.subprocess import run_executable
 from supercharger.types import AlgoStats
 
 from pysupercharger import (
-    dijkstras_optimized_cost,
-    dijkstras_simple_cost,
+    AlgorithmType,
+    CostFunctionType,
     distance,
     Planner,
     OptimizerType,
@@ -47,8 +46,7 @@ logger = get_logger(os.path.basename(__file__))
 def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
     """
     Args:
-        origin: The origin node name.
-        destination: The destination node name.
+        endpoints: A tuple containing the start and endpoints of the route.
 
     Returns:
         An AlgoStats instance containing the 'reference' cost of the route.
@@ -62,7 +60,7 @@ def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
 
 if __name__ == "__main__":
     # Define some statistical variables
-    n_samples = 500
+    n_samples = 2000
 
     # Set some vehicle parameters
     max_range = 320
@@ -77,10 +75,16 @@ if __name__ == "__main__":
 
     # Create the planners
     planners = OrderedDict()
-    planners["planner_1"] = Supercharger(cost_f=dijkstras_simple_cost)
-    planners["planner_2"] = Supercharger(cost_f=dijkstras_simple_cost,
-                                         optim_type=OptimizerType.NLOPT)
-    planners["planner_3"] = Supercharger(cost_f=dijkstras_optimized_cost)
+    planners["planner_1"] = Supercharger(
+        cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
+    planners["planner_2"] = Supercharger(
+        cost_type=CostFunctionType.DIJKSTRAS_SIMPLE,
+        optim_type=OptimizerType.NLOPT)
+    planners["planner_3"] = Supercharger(
+        # algo_type=AlgorithmType.DIJKSTRAS,
+        # cost_f=optimized_cost,
+        cost_type=CostFunctionType.DIJKSTRAS_OPTIMIZED
+    )
 
     # Set the max range and speed for each planner
     for planner in planners.values():
@@ -90,11 +94,12 @@ if __name__ == "__main__":
     # Choose a collection of random destinations from the network.
     network = planners["planner_1"].network
     cities = list(network.keys())
-    endpoints = []
+    endpoints = set()
     while len(endpoints) < n_samples:
         choice = np.random.choice(cities, size=2)
         if distance(network[choice[0]], network[choice[1]]) > 3 * max_range:
-            endpoints.append(tuple(choice))
+            endpoints.add(tuple(choice))
+    endpoints = list(endpoints)
 
     # Define the application paths
     supercharger_path = supercharger_build() / 'supercharger'
@@ -166,13 +171,13 @@ if __name__ == "__main__":
 
     # Output profiling statistics
     print("\n\t\t\t\t\t\tPLANNER PROFILING [ms]")
-    print(f'Planning Algorithm\t\t\t\tmean\t std\t max\t\t min')
+    print(f'Planning Algorithm\t\t\t\tmean\t std\t\t max\t\t min')
     for idx, name in enumerate(planners.keys()):
         print(f'{planner_descriptions[name]}\t'
               f'{times.mean(axis=0)[idx]:.3f}\t'
-              f' {times.std(axis=0)[idx]:.3f}\t'
+              f' {times.std(axis=0)[idx]:.3f}\t\t'
               f' {times.max(axis=0)[idx]:.3f}\t\t'
-              f' {times.min(axis=0)[idx]:.3f}')
+              f' {times.min(axis=0)[idx]:.3f}\t')
 
     # Get route distance for all start and endpoints.
     distances = np.array(
