@@ -24,7 +24,7 @@ namespace supercharger
 {  
   // TODO: These aliases probably shouldn't be in the top-level namespace.
   using AlgoType = algorithm::Planner::AlgorithmType;
-  using NaiveCostFcnType = algorithm::Planner::NaiveCostType;
+  using CostFcnType = algorithm::Planner::CostFunctionType;
   using DijkstrasCostFcnType = algorithm::DijkstrasCostFcnType;
   using OptimizerType = optimize::Optimizer::OptimizerType;
 
@@ -35,21 +35,15 @@ namespace supercharger
   class Supercharger
   {    
     public:
-      Supercharger(
-        AlgoType, NaiveCostFcnType, DijkstrasCostFcnType, OptimizerType);
+      Supercharger(CostFcnType, OptimizerType);
+      Supercharger(AlgoType, DijkstrasCostFcnType, OptimizerType);
 
       // The following ctors are known as "delegating" ctors.
-      Supercharger(NaiveCostFcnType naive_cost_type) :
-        Supercharger(AlgoType::NAIVE, naive_cost_type, {}, OptimizerType::NONE) {};
+      Supercharger(CostFcnType cost_type) :
+        Supercharger(cost_type, OptimizerType::NONE) {};
 
-      Supercharger(NaiveCostFcnType naive_cost_type, OptimizerType optim_type) :
-        Supercharger(AlgoType::NAIVE, naive_cost_type, {}, optim_type) {};
-
-      Supercharger(DijkstrasCostFcnType cost_f) :
-        Supercharger(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f, OptimizerType::NONE) {};
-
-      Supercharger(DijkstrasCostFcnType cost_f, OptimizerType optim_type) :
-        Supercharger(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f, optim_type) {};
+      Supercharger(AlgoType algo_type, DijkstrasCostFcnType cost_f) :
+        Supercharger(algo_type, cost_f, OptimizerType::NONE) {};
 
       /**
        * @brief Plan the route with the provided Planner and Optimizer.
@@ -63,12 +57,9 @@ namespace supercharger
       // TODO: Maybe for simplicity, there should should only be two of these
       // Set...() functions: one that accepts a Planner, and one that accepts an
       // Optimizer.
-      void SetPlanner(NaiveCostFcnType naive_cost_type) {
-        SetPlanner_(AlgoType::NAIVE, naive_cost_type, nullcostfunc);
-      }
-      void SetPlanner(DijkstrasCostFcnType cost_f) {
-        SetPlanner_(AlgoType::DIJKSTRAS, NaiveCostFcnType::NONE, cost_f);
-      }
+      void SetPlanner(CostFcnType);
+      void SetPlanner(AlgoType, DijkstrasCostFcnType);
+
       void SetOptimizer(OptimizerType);
 
       // Getters
@@ -104,15 +95,17 @@ namespace supercharger
       std::unique_ptr<Optimizer> optimizer_;
 
       /**
+       * @brief Initializes the network map.
+       */
+      void InitializeNetwork_();
+
+      /**
        * @brief Sets the origin and destination chargers and validates the
        * "max_range" and "speed" values. 
        * 
        * @param origin The origin node.
        * @param destination The destinatiion node.
        */
-      void Initialize_(const std::string&, const std::string&);
-
-      void SetPlanner_(AlgoType, NaiveCostFcnType, DijkstrasCostFcnType);
-
+      void InitializeRoute_(const std::string&, const std::string&);
   };
 } // end namespace supercharger

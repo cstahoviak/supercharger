@@ -9,14 +9,36 @@
  * 
  */
 #include "supercharger/algorithm/dijkstras.h"
+#include "supercharger/optimize/optimizer.h"
 #include "supercharger/logging.h"
 
 #include <algorithm>
 #include <queue>
+#include <sstream>
 
 
 namespace supercharger::algorithm
 {
+  Dijkstras::Dijkstras(CostFunctionType cost_type) {
+    switch ( cost_type )
+    {
+      case CostFunctionType::DIJKSTRAS_SIMPLE:
+        cost_f = SimpleCost;
+        break;
+
+      case CostFunctionType::DIJKSTRAS_OPTIMIZED:
+        cost_f = OptimizedCost;
+        break;
+
+      default:
+        std::ostringstream os;
+        os << "The cost function type '" << cost_type << "' is not " <<
+        "compatible with the Dijkstras or A* Planners.";
+        throw std::invalid_argument(os.str());
+        break;
+    }
+  }
+
   PlannerResult Dijkstras::PlanRoute(
     const std::string& origin,
     const std::string& destination,
@@ -62,19 +84,21 @@ namespace supercharger::algorithm
       // If the current node is the destination node, we're done!
       if ( current_node->name() == destination ) {
         DEBUG("Final route cost: " << current_node->cost << " hrs.");
-        return { ConstructFinalRoute_(*current_node), current_node->cost,
+        return { ConstructRoute_(*current_node), current_node->cost,
           max_range, speed };
       }
 
       // For the current node, consider all of its unvisited neighbors and
       // update their cost through the current node.
       double cost{0};
-      for ( std::shared_ptr<Node>& neighbor : GetNeighbors_(*current_node, max_range) ) {
+      for ( std::shared_ptr<Node>& neighbor : 
+        GetNeighbors_(*current_node, max_range) )
+      {
         // Compute the cost to get to the neighbor through the current node.
         // TODO: Is dereferencing here the right choice? Would it be better to
         // pass the shared pointer itself? Or a reference to the shared pointer
         // so as to not increase the reference count?
-        cost = ComputeCost(*current_node, *neighbor, speed);
+        cost = ComputeCost(*current_node, *neighbor, max_range, speed);
 
         if ( cost < neighbor->cost ) {
           // If the cost to the neighbor node through the current node is less
@@ -118,9 +142,12 @@ namespace supercharger::algorithm
   }
 
   double Dijkstras::ComputeCost(
-    const Node& current, const Node& neighbor, double speed) const
+    const Node& current,
+    const Node& neighbor,
+    double max_range,
+    double speed) const
   {
-    return cost_f(current, neighbor, speed);
+    return cost_f(current, neighbor, max_range, speed);
   }
 
   std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(
@@ -140,7 +167,11 @@ namespace supercharger::algorithm
     return neighbors;
   }
 
-  std::vector<Node> Dijkstras::ConstructFinalRoute_(const Node& final) {
+  std::vector<Node> Dijkstras::ConstructRoute_(const Node& final) {
+    return ConstructRoute(final);
+  }
+
+  std::vector<Node> ConstructRoute(const Node& final) {
     // Create the route and add the final node.
     std::vector<Node> route;
     route.push_back(final);
@@ -148,15 +179,13 @@ namespace supercharger::algorithm
     // Iterate over the parents of each node to construct the complete path.
     std::shared_ptr<const Node> current_node = final.shared_from_this();
     while ( std::shared_ptr<const Node> parent = current_node->parent().lock() )
-    {
-      DEBUG(current_node->name() << " cost: " << current_node->cost << " hrs");
-      
+    {      
       // Add the parent to the route.
       // NOTE: Below we will update the charging durations for each node, but 
       // the cost previously computed for this node will not change because it
       // represents the minimum time required to reach this node, and thus we
       // can copy the cost when making a copy of the Node.
-      route.push_back(*parent);
+      route.push_back(*parent.get());
       current_node.swap(parent);
     }
 
@@ -168,7 +197,7 @@ namespace supercharger::algorithm
     // are incorrect. The charge times represent the time required to charge at
     // a given node... (I need to think more about what's actually happening
     // during the Dijkstra's route planning process).
-    for ( auto iter = route.begin(); iter != route.end() - 1; ++iter) {
+    for ( auto iter = route.begin(); iter != route.end() - 1; ++iter ) {
       Node& current = *iter;
       Node& next = *(iter + 1);
 
@@ -187,15 +216,41 @@ namespace supercharger::algorithm
     return route;
   }
 
-  double SimpleCost(const Node& current, const Node& neighbor, double speed)
+  double SimpleCost(
+    const Node& current, const Node& neighbor, double max_range, double speed)
   {
     return current.cost + GetChargeTime(current, neighbor) +
       math::distance(current, neighbor) / speed;
   }
 
-  double OptimizedCost(const Node& current, const Node& neighbor, double speed)
+  double OptimizedCost(
+    const Node& current, const Node& neighbor, double max_range, double speed)
   {
-    // TODO: Implement the "optimized" cost function.
-    return 0;
+    // Create the optimizer as a local static variable.
+    using namespace supercharger::optimize;
+    static const auto optimizer =
+      Optimizer::GetOptimizer(Optimizer::OptimizerType::NLOPT);
+
+    // Store the neighbor's current parent and substitute the current node as
+    // the neighbor's parent.
+    const std::shared_ptr<Node> original_parent = neighbor.parent().lock();
+    const_cast<Node&>(neighbor).parent(
+      const_cast<Node&>(current).shared_from_this());
+
+    // Create the route as if the neighbor node were the destination.
+    std::vector<Node> route = ConstructRoute(neighbor);
+
+    // Reset the neighbor's parent.
+    const_cast<Node&>(neighbor).parent(original_parent);
+
+    if ( route.size() > 3 ) {
+      // Optimize the route
+      const PlannerResult result{ route, 0.0, max_range, speed };
+      const PlannerResult optimized = optimizer.get()->Optimize(result);
+      return optimized.cost;
+    }
+    else {
+      return SimpleCost(current, neighbor, max_range, speed);
+    }
   }
 } // end namespace supercharger::algorithm

@@ -31,12 +31,13 @@ namespace supercharger::algorithm
   double AStar::ComputeCost(
     const Node& current,
     const Node& neighbor,
+    double max_Range,
     double speed) const 
   {
     return 0;
   }
 
-  std::vector<Node> AStar::ConstructFinalRoute_(const Node& final)
+  std::vector<Node> AStar::ConstructRoute_(const Node& final)
   {
     return {};
   }

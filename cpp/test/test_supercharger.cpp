@@ -24,7 +24,10 @@ class SuperchargerTestFixture : public testing::Test
       auto old_buffer = std::cout.rdbuf(nullptr);
     }
 
-    Supercharger supercharger{algorithm::SimpleCost, OptimizerType::NLOPT};
+    Supercharger supercharger {
+      Planner::CostFunctionType::DIJKSTRAS_SIMPLE,
+      OptimizerType::NLOPT
+    };
 
     // Define the origin and destination charger names
       const std::string initial_charger_name{"Council_Bluffs_IA"};

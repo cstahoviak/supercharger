@@ -14,13 +14,18 @@ from pysupercharger import (
 )
 
 
-def optimized_cost(current: Node, neighbor: Node, speed: float) -> float:
+def optimized_cost(
+        current: Node,
+        neighbor: Node,
+        max_range: float,
+        speed: float) -> float:
     """
     An optimized cost function for Dijkstra's algorithm.
 
     Args:
         current: The current node.
         neighbor: The neighbor node.
+        max_range: [km] The maximum range of the vehicle.
         speed: [km/hr] The vehicle's constant velocity.
 
     Returns:
@@ -55,7 +60,7 @@ def optimized_cost(current: Node, neighbor: Node, speed: float) -> float:
         current_result = PlannerResult(
             route=route,
             cost=0.0,
-            max_range=320.0,
+            max_range=max_range,
             speed=speed
         )
 
@@ -65,6 +70,6 @@ def optimized_cost(current: Node, neighbor: Node, speed: float) -> float:
         optimized = optimizer.optimize(current_result)
         cost = optimized.cost
     else:
-        cost = dijkstras_simple_cost(current, neighbor, speed)
+        cost = dijkstras_simple_cost(current, neighbor, max_range, speed)
 
     return cost

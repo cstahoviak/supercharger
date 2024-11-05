@@ -42,11 +42,16 @@ namespace supercharger::algorithm
         const std::string&,
         double,
         double) override;
-      double ComputeCost(const Node&, const Node&, double) const override;
+
+      double ComputeCost(
+        const Node&,
+        const Node&,
+        double,
+        double) const override;
 
     protected:
       // NOTE: I might not be able to bind proctected (and private) members?
-      std::vector<Node> ConstructFinalRoute_(const Node&) override;
+      std::vector<Node> ConstructRoute_(const Node&) override;
   };
 
   PlannerResult PyPlanner::PlanRoute(
@@ -60,29 +65,36 @@ namespace supercharger::algorithm
       Planner,            // Parent class
       PlanRoute,          // Name of C++ function (must match python name)
       origin,             // Argument(s)
-      destination
+      destination,
+      max_range,
+      speed
     );
   }
 
   double PyPlanner::ComputeCost(
-    const Node& current, const Node& neighbor, double max_range) const
+    const Node& current,
+    const Node& neighbor,
+    double max_range,
+    double speed) const
   {
     PYBIND11_OVERRIDE_PURE(
       double,             // Return type
       Planner,            // Parent class
       ComputeCost,        // Name of C++ function (must match python name)
       current,            // Arguments(s)
-      neighbor
+      neighbor,
+      max_range,
+      speed
     );
   }
 
-  std::vector<Node> PyPlanner::ConstructFinalRoute_(
+  std::vector<Node> PyPlanner::ConstructRoute_(
     const Node& final)
   {
     PYBIND11_OVERRIDE_PURE(
       std::vector<Node>,    // Return type
       Planner,              // Parent class
-      ConstructFinalRoute_, // Name of C++ function (must match python name)
+      ConstructRoute_,      // Name of C++ function (must match python name)
       final                 // Arguments(s)
     );
   }
@@ -93,7 +105,7 @@ using namespace supercharger;
 using namespace supercharger::algorithm;
 
 using AlgoType = Planner::AlgorithmType;
-using NaiveCostType = Planner::NaiveCostType;
+using CostFcnType = Planner::CostFunctionType;
 
 std::string to_string(const PlannerResult& result) {
   std::ostringstream os;
@@ -143,22 +155,26 @@ void initPlanningAlgorithm(py::module_& m)
     .export_values()
   ;
 
-  py::enum_<NaiveCostType>(m, "NaiveCostType")
-    .value("MINIMIZE_DIST_TO_NEXT", NaiveCostType::MINIMIZE_DIST_TO_NEXT)
-    .value("MINIMIZE_DIST_REMAINING", NaiveCostType::MINIMIZE_DIST_REMAINING)
-    .value("MINIMIZE_TIME_REMAINING", NaiveCostType::MINIMIZE_TIME_REMAINING)
-    .value("NONE", NaiveCostType::NONE)
+  py::enum_<CostFcnType>(m, "CostFunctionType")
+    .value("NAIVE_MINIMIZE_DIST_TO_NEXT", CostFcnType::NAIVE_MINIMIZE_DIST_TO_NEXT)
+    .value("NAIVE_MINIMIZE_DIST_REMAINING", CostFcnType::NAIVE_MINIMIZE_DIST_REMAINING)
+    .value("NAIVE_MINIMIZE_TIME_REMAINING", CostFcnType::NAIVE_MINIMIZE_TIME_REMAINING)
+    .value("DIJKSTRAS_SIMPLE", CostFcnType::DIJKSTRAS_SIMPLE)
+    .value("DIJKSTRAS_OPTIMIZED", CostFcnType::DIJKSTRAS_OPTIMIZED)
     .export_values()
   ;
   
   py::class_<Planner, PyPlanner>(m, "Planner")
     .def(py::init<>())
-    .def_static("get_planner", &Planner::GetPlanner,
-      py::arg("algo_type"), py::arg("naive_cost_type"), py::arg("cost_f"))
+    .def_static("get_planner",
+      py::overload_cast<CostFcnType>(&Planner::GetPlanner), py::arg("cost_type"))
+    .def_static("get_planner",
+      py::overload_cast<AlgoType, DijkstrasCostFcnType>(&Planner::GetPlanner),
+      py::arg("algo_type"), py::arg("cost_fcn"))
     .def("plan_route", &Planner::PlanRoute, 
       py::arg("origin"), py::arg("destination"), py::arg("max_range"), py::arg("speed"))
     .def("compute_cost", &Planner::ComputeCost,
-      py::arg("current"), py::arg("neighbor"), py::arg("speed"))
+      py::arg("current"), py::arg("neighbor"), py::arg("max_range"), py::arg("speed"))
     .def("reset", &Planner::Reset)
 
     // NOTE: Cannot bind protected or private members.
@@ -166,17 +182,19 @@ void initPlanningAlgorithm(py::module_& m)
   ;
 
   py::class_<NaivePlanner, Planner>(m, "NaivePlanner")
-    .def(py::init<NaiveCostType>(), py::arg("cost_type"))
+    .def(py::init<CostFcnType>(), py::arg("cost_type"))
   ;
 
-    py::class_<Dijkstras, Planner>(m, "DijkstrasPlanner")
+  py::class_<Dijkstras, Planner>(m, "DijkstrasPlanner")
+    .def(py::init<CostFcnType>(), py::arg("cost_type"))
     .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"))
     // TODO: Make the Dijkstras planner pickleable for multiprocessing. See
     // https://pybind11.readthedocs.io/en/stable/advanced/classes.html#pickling-support
-    ;
+  ;
 
+  m.def("ConstructRoute", &algorithm::ConstructRoute, py::arg("final"));
   m.def("dijkstras_simple_cost", &algorithm::SimpleCost,
-    py::arg("current"), py::arg("neighbor"), py::arg("speed"));
+    py::arg("current"), py::arg("neighbor"), py::arg("max_range"), py::arg("speed"));
   m.def("dijkstras_optimized_cost", &algorithm::OptimizedCost,
-    py::arg("current"), py::arg("neighbor"), py::arg("speed"));
+    py::arg("current"), py::arg("neighbor"), py::arg("max_range"), py::arg("speed"));
 }

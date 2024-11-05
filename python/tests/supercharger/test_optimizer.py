@@ -22,31 +22,26 @@ from supercharger.optimize._constraints import (
 )
 
 from pysupercharger import (
+    CostFunctionType,
     distance,
-    dijkstras_simple_cost,
-    Supercharger
+    DijkstrasPlanner
 )
 
 
 @pytest.fixture
 def planner_result():
     """
-    The test_optimizer test fixture generates a PlannerResult using Dijkstra's
-    algorithm.
+    Generates a PlannerResult using Dijkstra's algorithm.
     """
     # Define the route's endpoints
     origin = "Council_Bluffs_IA"
     destination = "Cadillac_MI"
 
     # Create the supercharger app using Dijkstra's algorithm
-    supercharger = Supercharger(cost_f=dijkstras_simple_cost)
-
-    # Set the vehicle's speed and max range
-    supercharger.max_range = 320
-    supercharger.speed = 105
+    supercharger = DijkstrasPlanner(cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
 
     # Plan the route with Dijkstra's algorithm
-    return supercharger.plan_route(origin, destination)
+    return supercharger.plan_route(origin, destination, 320, 105)
 
 
 @pytest.fixture
@@ -92,7 +87,7 @@ def test_get_arrival_range(planner_result, constraint_data):
 
 def test_objective_fcn_grad(planner_result, eval_point):
     """
-    Validates the analytically derived cost function gradient against a
+    Validates the analytically derived objective function gradient against a
     (forward) finite-difference approximation of the gradient.
     """
     residual = optimize.check_grad(objective, objective_grad, eval_point)

@@ -68,7 +68,6 @@ namespace supercharger
 
   // Overload the string stream operator to output a Node.
   std::ostream& operator<<(std::ostream&, const Node&);
-  std::ostream& operator<<(std::ostream&, const Node* const);
 
   /**
    * @brief Formats the final route output to comply with the format expected

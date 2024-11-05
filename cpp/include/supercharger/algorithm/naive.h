@@ -19,10 +19,10 @@ namespace supercharger::algorithm
   class NaivePlanner : public Planner
   {
     public:
-      NaivePlanner(NaiveCostType type) : type_(type) {};
+      NaivePlanner(CostFunctionType type) : type_(type) {};
 
       /**
-       * @brief The "naive" route planner.
+       * @brief Plans a route using the "naive" plannign algorithm.
        * 
        * TODO: Consider using std::unordered_set to store the "reachable"
        * (chargers that are within the current range of the vehicle post-
@@ -50,11 +50,16 @@ namespace supercharger::algorithm
        * 
        * @param current The current node.
        * @param candidate The candidate "next" node.
-       * @param speed The vehicle's constant velocity.
+       * @param max_range [km] The vehicle's max range.
+       * @param speed [km/hr] The vehicle's constant velocity.
        * @return double The cost to reach the candidate node from the current
        * node.
        */
-      double ComputeCost(const Node&, const Node&, double) const override;
+      double ComputeCost(
+        const Node&,
+        const Node&,
+        double,
+        double) const override;
 
     protected:
       /**
@@ -62,11 +67,11 @@ namespace supercharger::algorithm
        * 
        * @return std::vector<Node> 
        */
-      std::vector<Node> ConstructFinalRoute_(const Node&) override;
+      std::vector<Node> ConstructRoute_(const Node&) override;
 
     private:
       Charger destination_;
-      NaiveCostType type_;
+      CostFunctionType type_;
 
       // Store the planned route.
       std::vector<std::shared_ptr<Node>> route_;

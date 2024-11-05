@@ -7,7 +7,6 @@
  * @date 2024-08-13
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/math/math.h"
 #include "supercharger/node.h"
@@ -22,7 +21,7 @@
 namespace supercharger::algorithm
 {
   using DijkstrasCostFcnType = 
-    std::function<double(const Node&, const Node&, double)>;
+    std::function<double(const Node&, const Node&, double, double)>;
 
   /**
    * @brief Stores the resulting output of a path planning algorithm. The
@@ -68,11 +67,12 @@ namespace supercharger::algorithm
         NAIVE
       };
 
-     enum class NaiveCostType {
-        MINIMIZE_DIST_TO_NEXT,
-        MINIMIZE_DIST_REMAINING,
-        MINIMIZE_TIME_REMAINING,
-        NONE
+     enum class CostFunctionType {
+        NAIVE_MINIMIZE_DIST_TO_NEXT,
+        NAIVE_MINIMIZE_DIST_REMAINING,
+        NAIVE_MINIMIZE_TIME_REMAINING,
+        DIJKSTRAS_SIMPLE,
+        DIJKSTRAS_OPTIMIZED
       };
 
       /**
@@ -83,16 +83,38 @@ namespace supercharger::algorithm
        */
       Planner();
 
+      static std::unique_ptr<Planner> GetPlanner(CostFunctionType);
+
       static std::unique_ptr<Planner> GetPlanner(
-        AlgorithmType, NaiveCostType, DijkstrasCostFcnType);
+        AlgorithmType, DijkstrasCostFcnType);
       
+      /**
+       * @brief Plans a route.
+       * 
+       * @param origin The origin node.
+       * @param destination The destination node.
+       * @param max_range [km] The vehicle's max range.
+       * @param speed [km/hr] The vehicle's constant velocity.
+       * @return PlannerResult The planner result.
+       */
       virtual PlannerResult PlanRoute(
         const std::string&,
         const std::string&,
         double,
         double) = 0;
 
-      virtual double ComputeCost(const Node&, const Node&, double) const = 0;
+      /**
+       * @brief The planner's cost function.
+       * 
+       * @param current The current node.
+       * @param candidate The candidate "next" node.
+       * @param max_range [km] The vehicle's max range.
+       * @param speed [km/hr] The vehicle's constant velocity.
+       * @return double The cost to reach the candidate node from the current
+       * node.
+       */
+      virtual double ComputeCost(
+        const Node&, const Node&, double, double) const = 0;
       
       /**
        * @brief Resets all nodes in the graph.
@@ -114,11 +136,15 @@ namespace supercharger::algorithm
        * 
        * @return std::vector<Node> 
        */
-      virtual std::vector<Node> ConstructFinalRoute_(const Node&) = 0;
+      virtual std::vector<Node> ConstructRoute_(const Node&) = 0;
 
       // Store all of the nodes in the network.
       std::unordered_map<std::string, std::shared_ptr<Node>> nodes_;
   };
+
+  // Overload the string stream operator for the AlgorithmType and CostFunctionType
+  std::ostream& operator<<(std::ostream&, const Planner::AlgorithmType&);
+  std::ostream& operator<<(std::ostream&, const Planner::CostFunctionType&);
 
   /**
    * @brief Computes the charge time at the current node required to make it to

@@ -35,8 +35,8 @@ namespace supercharger::algorithm
 
     // Plan the route via recursion.
     PlanRouteRecursive_(origin, destination, max_range, speed);
-    return { ConstructFinalRoute_(*nodes_.at(destination)),
-      total_cost_, max_range, speed };
+    return { 
+      ConstructRoute_(*nodes_.at(destination)), total_cost_, max_range, speed };
   }
 
   void NaivePlanner::PlanRouteRecursive_(
@@ -93,7 +93,7 @@ namespace supercharger::algorithm
       // the current node, add it to the map of candidate nodes.
       if ( is_reachable && is_closer ) {
         // Compute the cost for the candidate charger.
-        double cost = ComputeCost(*current, *node, speed);
+        double cost = ComputeCost(*current, *node, max_range, speed);
 
         // Add the charger to the map of candidate chargers.
         const auto& pair = candidates.try_emplace(cost, node);
@@ -179,20 +179,23 @@ namespace supercharger::algorithm
   }
 
   double NaivePlanner::ComputeCost(
-    const Node& current, const Node& candidate, double speed) const
+    const Node& current,
+    const Node& candidate,
+    double max_range,
+    double speed) const
   {
     // Define the cost
     double cost{0};
     
     switch ( type_ )
     {
-      case NaiveCostType::MINIMIZE_DIST_TO_NEXT:
+      case CostFunctionType::NAIVE_MINIMIZE_DIST_TO_NEXT:
       {
         cost = math::distance(current, candidate);
         break;
       }
 
-      case NaiveCostType::MINIMIZE_DIST_REMAINING:
+      case CostFunctionType::NAIVE_MINIMIZE_DIST_REMAINING:
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
@@ -201,7 +204,7 @@ namespace supercharger::algorithm
         break;
       }
       
-      case NaiveCostType::MINIMIZE_TIME_REMAINING:
+      case CostFunctionType::NAIVE_MINIMIZE_TIME_REMAINING:
       {
         // Compute distances
         double candidate_to_destination = 
@@ -227,7 +230,7 @@ namespace supercharger::algorithm
     return cost;
   }
 
-  std::vector<Node> NaivePlanner::ConstructFinalRoute_(const Node& final) {
+  std::vector<Node> NaivePlanner::ConstructRoute_(const Node& final) {
     // Construct the route.
     std::vector<Node> route;
     for ( const std::shared_ptr<const Node>& node : route_ ) {

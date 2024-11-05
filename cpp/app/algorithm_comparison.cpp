@@ -63,7 +63,7 @@ int main(int argc, char** argv)
   std::map<std::string, double> algorithms;
 
   // Create the Supercharger
-  Supercharger app(NaiveCostFcnType::MINIMIZE_TIME_REMAINING);
+  Supercharger app(CostFcnType::NAIVE_MINIMIZE_TIME_REMAINING);
 
   // Set the vehicle's speed and max range
   app.max_range() = 320;
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
   algorithms["NAIVE\t\t\t\t"] = result1.cost;
 
   // Plan the route via Dijkstra's algorithm.
-  app.SetPlanner(algorithm::SimpleCost);
+  app.SetPlanner(CostFcnType::DIJKSTRAS_SIMPLE);
   PlannerResult result2 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
@@ -95,13 +95,22 @@ int main(int argc, char** argv)
   );
   algorithms["DIJKTRA'S + NAIVE OPTIMIZER\t"] = result3.cost;
 
-  // Improve on Dijkstra's via the "NLOPT" optimizer.
+  // Improve on Dijkstra's via post-optimization
   app.SetOptimizer(OptimizerType::NLOPT);
   PlannerResult result4 = app.PlanRoute(
     initial_charger_name,
     goal_charger_name
   );
-  algorithms["DIJKTRA'S + NLOPT\t\t"] = result4.cost;
+  algorithms["DIJKTRA'S + POST OPTIMIZATION\t"] = result4.cost;
+
+  // Improve on post-optimization via an "optimized" cost function
+  app.SetPlanner(CostFcnType::DIJKSTRAS_OPTIMIZED);
+  app.SetOptimizer(OptimizerType::NONE);
+  PlannerResult result5 = app.PlanRoute(
+    initial_charger_name,
+    goal_charger_name
+  );
+  algorithms["DIJKTRA'S + OPTIMIZED COST\t"] = result5.cost;
 
   // Now sorted by cost.
   std::multimap<double, std::string, std::greater<double>> algs_by_cost = 

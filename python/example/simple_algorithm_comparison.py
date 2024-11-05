@@ -4,12 +4,10 @@ Recreates the cpp/app/algorithm_comparison.cpp" app on the python side.
 from collections import OrderedDict, namedtuple
 from time import perf_counter
 
-from supercharger.optimize import optimized_cost
 from supercharger.types import AlgoStats
 
 from pysupercharger import (
-    dijkstras_simple_cost,
-    NaiveCostType,
+    CostFunctionType,
     OptimizerType,
     Supercharger
 )
@@ -17,8 +15,8 @@ from pysupercharger import (
 
 if __name__ == "__main__":
     # Define the route's endpoints
-    origin = "Council_Bluffs_IA"
-    destination = "Cadillac_MI"
+    origin = "Marathon_FL"
+    destination = "Superior_MT"
 
     # These endpoints will show a cost difference between the final two algos.
     # origin = "Burlington_WA"
@@ -29,7 +27,7 @@ if __name__ == "__main__":
 
     # Create the supercharger using Dijkstra's algorithm
     supercharger = Supercharger(
-        naive_cost_type=NaiveCostType.MINIMIZE_TIME_REMAINING)
+        cost_type=CostFunctionType.NAIVE_MINIMIZE_TIME_REMAINING)
 
     # Set the vehicle's speed and max range
     supercharger.max_range = 320
@@ -43,7 +41,7 @@ if __name__ == "__main__":
         AlgoStats(time=stop - start, cost=result1.cost)
 
     # Plan the route via Dijkstra's algorithm.
-    supercharger.set_planner(cost_f=dijkstras_simple_cost)
+    supercharger.set_planner(cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
     start = perf_counter()
     result2 = supercharger.plan_route(origin, destination)
     stop = perf_counter()
@@ -59,7 +57,7 @@ if __name__ == "__main__":
         AlgoStats(time=stop - start, cost=result3.cost)
 
     # Use Dijkstra's algorithm with an optimized cost function
-    supercharger.set_planner(cost_f=optimized_cost)
+    supercharger.set_planner(cost_type=CostFunctionType.DIJKSTRAS_OPTIMIZED)
     supercharger.set_optimizer(type=OptimizerType.NONE)
     start = perf_counter()
     result4 = supercharger.plan_route(origin, destination)

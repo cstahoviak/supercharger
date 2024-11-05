@@ -24,13 +24,9 @@ namespace supercharger
   }
 
   std::ostream& operator<<(std::ostream& stream, const Node& node) {
-    return stream << std::addressof(node);
-  }
-
-  std::ostream& operator<<(std::ostream& stream, const Node* const node) {
-    stream << node->name();
-    if ( node->duration > 0 ) {
-      stream << ", " << std::setprecision(7) << node->duration;
+    stream << node.name();
+    if ( node.duration > 0 ) {
+      stream << ", " << std::setprecision(7) << node.duration;
     }
     return stream;
   }
@@ -55,7 +51,7 @@ namespace supercharger
     size_t sz = route.size();
     size_t idx = 0;
     for ( const std::shared_ptr<Node>& node : route ) {
-      stream << *node;
+      stream << *node.get();
       if ( idx < sz - 1 ) {
         stream << ", ";
       }
