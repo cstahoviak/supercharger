@@ -68,11 +68,12 @@ namespace supercharger::algorithm
         NAIVE
       };
 
-     enum class NaiveCostType {
-        MINIMIZE_DIST_TO_NEXT,
-        MINIMIZE_DIST_REMAINING,
-        MINIMIZE_TIME_REMAINING,
-        NONE
+     enum class CostFunctionType {
+        NAIVE_MINIMIZE_DIST_TO_NEXT,
+        NAIVE_MINIMIZE_DIST_REMAINING,
+        NAIVE_MINIMIZE_TIME_REMAINING,
+        DIJKSTRAS_SIMPLE,
+        DIJKSTRAS_OPTIMIZED
       };
 
       /**
@@ -83,8 +84,10 @@ namespace supercharger::algorithm
        */
       Planner();
 
+      static std::unique_ptr<Planner> GetPlanner(CostFunctionType);
+
       static std::unique_ptr<Planner> GetPlanner(
-        AlgorithmType, NaiveCostType, DijkstrasCostFcnType);
+        AlgorithmType, DijkstrasCostFcnType);
       
       virtual PlannerResult PlanRoute(
         const std::string&,
@@ -119,6 +122,10 @@ namespace supercharger::algorithm
       // Store all of the nodes in the network.
       std::unordered_map<std::string, std::shared_ptr<Node>> nodes_;
   };
+
+  // Overload the string stream operator for the AlgorithmType and CostFunctionType
+  std::ostream& operator<<(std::ostream&, const Planner::AlgorithmType&);
+  std::ostream& operator<<(std::ostream&, const Planner::CostFunctionType&);
 
   /**
    * @brief Computes the charge time at the current node required to make it to

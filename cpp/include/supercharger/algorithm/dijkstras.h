@@ -24,6 +24,7 @@ namespace supercharger::algorithm
       using DijkstrasCostFcnType =
         std::function<double(const Node&, const Node&, double)>;
 
+      Dijkstras(CostFunctionType cost_type);
       Dijkstras(DijkstrasCostFcnType cost_f) : cost_f(std::move(cost_f)) {};
 
       /**

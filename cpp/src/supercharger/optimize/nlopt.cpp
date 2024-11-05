@@ -202,7 +202,7 @@ namespace supercharger::optimize
 
     // Add the inequality constraints on the arrival ranges, [3, N-1].
     unsigned m = dim - 1;
-    double tol = 1e-9;
+    double tol = 1e-4;
     const std::vector<double> mtol = std::vector<double>(m, tol);
     opt.add_inequality_mconstraint(ineq_constraint_lhs, &constr_data, mtol);
     opt.add_inequality_mconstraint(ineq_constraint_rhs, &constr_data, mtol);
@@ -211,7 +211,7 @@ namespace supercharger::optimize
     opt.add_equality_constraint(eq_constraint, &constr_data, tol);
 
     // Set a relative tolerance for the optimization parameters.
-    opt.set_xtol_rel(1e-8);
+    opt.set_xtol_rel(1e-4);
 
     // Set the initial guess, i.e. the charging duration at all nodes not
     // including the first and last nodes.

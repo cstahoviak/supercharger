@@ -16,6 +16,7 @@
 #include "supercharger/supercharger.h"
 
 #include <algorithm>
+#include <sstream>
 
 
 namespace supercharger::algorithm
@@ -38,10 +39,19 @@ namespace supercharger::algorithm
   // I get a "not declared in this scope error" related to the derived planner
   // types (Naive, Dijkstra's, etc.). 
   std::unique_ptr<Planner> Planner::GetPlanner(
-    AlgorithmType algo_type,
-    NaiveCostType naive_cost_type,
-    DijkstrasCostFcnType cost_f)
+    CostFunctionType cost_type)
   {
+    static const std::unordered_map<CostFunctionType, AlgorithmType> 
+      cost_type_to_algo_type
+    {
+      {CostFunctionType::NAIVE_MINIMIZE_DIST_TO_NEXT, AlgorithmType::NAIVE},
+      {CostFunctionType::NAIVE_MINIMIZE_DIST_REMAINING, AlgorithmType::NAIVE},
+      {CostFunctionType::NAIVE_MINIMIZE_TIME_REMAINING, AlgorithmType::NAIVE},
+      {CostFunctionType::DIJKSTRAS_SIMPLE, AlgorithmType::DIJKSTRAS},
+      {CostFunctionType::DIJKSTRAS_OPTIMIZED, AlgorithmType::DIJKSTRAS},
+    };
+
+    AlgorithmType algo_type = cost_type_to_algo_type.at(cost_type);
     switch ( algo_type )
     {
       case AlgorithmType::NAIVE:
@@ -50,16 +60,39 @@ namespace supercharger::algorithm
         // unique_ptr of the base class (the return type of this function) can
         // be initialized from a unique_ptr of the derived class: public
         // inheritance allows this, but protected inheritance does not. But why?
-        return std::make_unique<NaivePlanner>(naive_cost_type);
+        return std::make_unique<NaivePlanner>(cost_type);
 
       case AlgorithmType::DIJKSTRAS:
-        return std::make_unique<Dijkstras>(cost_f);
+        return std::make_unique<Dijkstras>(cost_type);
 
       case AlgorithmType::ASTAR:
-        return std::make_unique<AStar>(cost_f);
+        return std::make_unique<AStar>(cost_type);
       
       default:
-        return std::unique_ptr<Planner>(nullptr);
+        std::ostringstream os;
+        os << "The cost function type '" << cost_type << "' is not " <<
+          "associated with any Planner types.";
+        throw std::invalid_argument(os.str());
+    }
+  }
+
+  std::unique_ptr<Planner> Planner::GetPlanner(
+    AlgorithmType algo_type,
+    DijkstrasCostFcnType cost_fcn)
+  {
+    switch ( algo_type )
+    {
+      case AlgorithmType::DIJKSTRAS:
+        return std::make_unique<Dijkstras>(cost_fcn);
+
+      case AlgorithmType::ASTAR:
+        return std::make_unique<AStar>(cost_fcn);
+      
+      default:
+        std::ostringstream os;
+        os << "The '" << algo_type << "' Planner (AlgorithmType: " << 
+        algo_type << ") cannot be created with a custom cost function.";
+        throw std::invalid_argument(os.str());
     }
   }
 
@@ -77,6 +110,32 @@ namespace supercharger::algorithm
         break;
       }
     }
+  }
+
+  std::ostream& operator<<(std::ostream& stream, const Planner::AlgorithmType& type)
+  {
+    using AlgoType = Planner::AlgorithmType;
+
+    static const std::unordered_map<AlgoType, std::string> map {
+      {AlgoType::ASTAR, "ASTAR"},
+      {AlgoType::DIJKSTRAS, "DIJKSTRAS"},
+      {AlgoType::NAIVE, "NAIVE"},
+    };
+
+    return stream << map.at(type);
+  }
+
+  std::ostream& operator<<(std::ostream& stream, const Planner::CostFunctionType& type)
+  {
+    using CostFcnType = Planner::CostFunctionType;
+
+    static const std::unordered_map<CostFcnType, std::string> map {
+      {CostFcnType::NAIVE_MINIMIZE_DIST_TO_NEXT, "NAIVE_MINIMIZE_DIST_TO_NEXT"},
+      {CostFcnType::NAIVE_MINIMIZE_DIST_REMAINING, "NAIVE_MINIMIZE_DIST_REMAINING"},
+      {CostFcnType::NAIVE_MINIMIZE_TIME_REMAINING, "NAIVE_MINIMIZE_TIME_REMAINING"},
+    };
+
+    return stream << map.at(type);
   }
 
   double GetChargeTime(const Node& current, const Node& next)

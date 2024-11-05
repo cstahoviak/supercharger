@@ -186,13 +186,13 @@ namespace supercharger::algorithm
     
     switch ( type_ )
     {
-      case NaiveCostType::MINIMIZE_DIST_TO_NEXT:
+      case CostFunctionType::NAIVE_MINIMIZE_DIST_TO_NEXT:
       {
         cost = math::distance(current, candidate);
         break;
       }
 
-      case NaiveCostType::MINIMIZE_DIST_REMAINING:
+      case CostFunctionType::NAIVE_MINIMIZE_DIST_REMAINING:
       {
         // The "cost" is the distance from the candidate charger to the
         // destination charger.
@@ -201,7 +201,7 @@ namespace supercharger::algorithm
         break;
       }
       
-      case NaiveCostType::MINIMIZE_TIME_REMAINING:
+      case CostFunctionType::NAIVE_MINIMIZE_TIME_REMAINING:
       {
         // Compute distances
         double candidate_to_destination = 

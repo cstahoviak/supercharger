@@ -22,23 +22,29 @@
 namespace supercharger
 {
   Supercharger::Supercharger(
+    CostFcnType cost_type,
+    OptimizerType optimizer_type)
+  {
+    // Initialize the network.
+    InitializeNetwork_();
+
+    // Create the planner.
+    planner_ = Planner::GetPlanner(cost_type);
+
+    // Create the optimizer.
+    optimizer_ = Optimizer::GetOptimizer(optimizer_type);
+  }
+
+  Supercharger::Supercharger(
     AlgoType algo_type,
-    NaiveCostFcnType naive_cost_type,
     DijkstrasCostFcnType cost_f,
     OptimizerType optimizer_type)
   {
-    // Create the network map (must do this before creating the planner).
-    for ( const Charger& charger : supercharger::network ) {
-      // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
-      const auto& pair = network_.try_emplace(charger.name, &charger);
-      if ( !pair.second ) {
-        DEBUG("Charger '" << charger.name << "' already exists in the network. "
-          << "Skipping.");
-      }
-    }
+    // Initialize the network.
+    InitializeNetwork_();
 
     // Create the planner.
-    planner_ = Planner::GetPlanner(algo_type, naive_cost_type, cost_f);
+    planner_ = Planner::GetPlanner(algo_type, cost_f);
 
     // Create the optimizer.
     optimizer_ = Optimizer::GetOptimizer(optimizer_type);
@@ -48,7 +54,7 @@ namespace supercharger
     const std::string& origin, const std::string& destination)
   {
     // Initialize the route.
-    Initialize_(origin, destination);
+    InitializeRoute_(origin, destination);
 
     // Plan the route.
     DEBUG("Planning route between '" << origin << "' and '" << destination 
@@ -72,16 +78,36 @@ namespace supercharger
     optimizer_.swap(new_optimizer);
   }
 
-  void Supercharger::SetPlanner_(
-    AlgoType algo_type, NaiveCostFcnType cost_type, DijkstrasCostFcnType cost_f)
+  void Supercharger::SetPlanner(CostFcnType cost_type)
   {
     // Swap the planner.
     std::unique_ptr<Planner> new_algo = 
-      Planner::GetPlanner(algo_type, cost_type, cost_f);
+      Planner::GetPlanner(cost_type);
     planner_.swap(new_algo);
   }
 
-  void Supercharger::Initialize_(
+    void Supercharger::SetPlanner(AlgoType algo_type, DijkstrasCostFcnType cost_f)
+  {
+    // Swap the planner.
+    std::unique_ptr<Planner> new_algo = 
+      Planner::GetPlanner(algo_type, cost_f);
+    planner_.swap(new_algo);
+  }
+
+  void Supercharger::InitializeNetwork_()
+  {
+    // Create the network map (must do this before creating the planner).
+    for ( const Charger& charger : supercharger::network ) {
+      // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
+      const auto& pair = network_.try_emplace(charger.name, &charger);
+      if ( !pair.second ) {
+        DEBUG("Charger '" << charger.name << "' already exists in the network. "
+          << "Skipping.");
+      }
+    }
+  }
+
+  void Supercharger::InitializeRoute_(
     const std::string& origin, const std::string& destination)
   {
     // Store the origin and destination chargers.

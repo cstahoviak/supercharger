@@ -19,7 +19,7 @@ namespace supercharger::algorithm
   class NaivePlanner : public Planner
   {
     public:
-      NaivePlanner(NaiveCostType type) : type_(type) {};
+      NaivePlanner(CostFunctionType type) : type_(type) {};
 
       /**
        * @brief The "naive" route planner.
@@ -66,7 +66,7 @@ namespace supercharger::algorithm
 
     private:
       Charger destination_;
-      NaiveCostType type_;
+      CostFunctionType type_;
 
       // Store the planned route.
       std::vector<std::shared_ptr<Node>> route_;

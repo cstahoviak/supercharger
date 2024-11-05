@@ -14,10 +14,31 @@
 
 #include <algorithm>
 #include <queue>
+#include <sstream>
 
 
 namespace supercharger::algorithm
 {
+  Dijkstras::Dijkstras(CostFunctionType cost_type) {
+    switch ( cost_type )
+    {
+      case CostFunctionType::DIJKSTRAS_SIMPLE:
+        cost_f = SimpleCost;
+        break;
+
+      case CostFunctionType::DIJKSTRAS_OPTIMIZED:
+        cost_f = OptimizedCost;
+        break;
+
+      default:
+        std::ostringstream os;
+        os << "The cost function type '" << cost_type << "' is not " <<
+        "compatible with the Dijkstras or A* Planners.";
+        throw std::invalid_argument(os.str());
+        break;
+    }
+  }
+
   PlannerResult Dijkstras::PlanRoute(
     const std::string& origin,
     const std::string& destination,
