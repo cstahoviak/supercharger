@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   const std::string goal_charger_name = argv[2];
 
   // Create the Route Planner
-  Supercharger app(algorithm::SimpleCost, OptimizerType::NLOPT);
+  Supercharger app(CostFcnType::DIJKSTRAS_SIMPLE, OptimizerType::NLOPT);
 
   // Set the vehicle's speed and max range
   app.max_range() = 320;
