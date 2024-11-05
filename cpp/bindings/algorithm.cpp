@@ -93,7 +93,7 @@ using namespace supercharger;
 using namespace supercharger::algorithm;
 
 using AlgoType = Planner::AlgorithmType;
-using NaiveCostType = Planner::NaiveCostType;
+using CostFcnType = Planner::CostFunctionType;
 
 std::string to_string(const PlannerResult& result) {
   std::ostringstream os;
@@ -143,18 +143,22 @@ void initPlanningAlgorithm(py::module_& m)
     .export_values()
   ;
 
-  py::enum_<NaiveCostType>(m, "NaiveCostType")
-    .value("MINIMIZE_DIST_TO_NEXT", NaiveCostType::MINIMIZE_DIST_TO_NEXT)
-    .value("MINIMIZE_DIST_REMAINING", NaiveCostType::MINIMIZE_DIST_REMAINING)
-    .value("MINIMIZE_TIME_REMAINING", NaiveCostType::MINIMIZE_TIME_REMAINING)
-    .value("NONE", NaiveCostType::NONE)
+  py::enum_<CostFcnType>(m, "CostFunctionType")
+    .value("MINIMIZE_DIST_TO_NEXT", CostFcnType::NAIVE_MINIMIZE_DIST_TO_NEXT)
+    .value("MINIMIZE_DIST_REMAINING", CostFcnType::NAIVE_MINIMIZE_DIST_REMAINING)
+    .value("MINIMIZE_TIME_REMAINING", CostFcnType::NAIVE_MINIMIZE_TIME_REMAINING)
+    .value("DIJKSTRAS_SIMPLE", CostFcnType::DIJKSTRAS_SIMPLE)
+    .value("DIJKSTRAS_OPTIMIZED", CostFcnType::DIJKSTRAS_OPTIMIZED)
     .export_values()
   ;
   
   py::class_<Planner, PyPlanner>(m, "Planner")
     .def(py::init<>())
-    .def_static("get_planner", &Planner::GetPlanner,
-      py::arg("algo_type"), py::arg("naive_cost_type"), py::arg("cost_f"))
+    .def_static("get_planner",
+      py::overload_cast<CostFcnType>(&Planner::GetPlanner), py::arg("cost_type"))
+    .def_static("get_planner",
+      py::overload_cast<AlgoType, DijkstrasCostFcnType>(&Planner::GetPlanner),
+      py::arg("algo_type"), py::arg("cost_fcn"))
     .def("plan_route", &Planner::PlanRoute, 
       py::arg("origin"), py::arg("destination"), py::arg("max_range"), py::arg("speed"))
     .def("compute_cost", &Planner::ComputeCost,
@@ -166,14 +170,15 @@ void initPlanningAlgorithm(py::module_& m)
   ;
 
   py::class_<NaivePlanner, Planner>(m, "NaivePlanner")
-    .def(py::init<NaiveCostType>(), py::arg("cost_type"))
+    .def(py::init<CostFcnType>(), py::arg("cost_type"))
   ;
 
-    py::class_<Dijkstras, Planner>(m, "DijkstrasPlanner")
+  py::class_<Dijkstras, Planner>(m, "DijkstrasPlanner")
+    .def(py::init<CostFcnType>(), py::arg("cost_type"))
     .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"))
     // TODO: Make the Dijkstras planner pickleable for multiprocessing. See
     // https://pybind11.readthedocs.io/en/stable/advanced/classes.html#pickling-support
-    ;
+  ;
 
   m.def("ConstructRoute", &algorithm::ConstructRoute, py::arg("final"));
   m.def("dijkstras_simple_cost", &algorithm::SimpleCost,

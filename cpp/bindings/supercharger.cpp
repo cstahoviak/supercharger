@@ -30,22 +30,23 @@ void initSupercharger(py::module_& m)
 
   py::class_<Supercharger>(m, "Supercharger")
     // Bindings for "top-level" Supercharger ctor intentionally omitted.
-    .def(py::init<NaiveCostFcnType>(), py::arg("naive_cost_type"))
-    .def(py::init<NaiveCostFcnType, OptimizerType>(),
-      py::arg("naive_cost_type"), py::arg("optim_type"))
-    .def(py::init<DijkstrasCostFcnType>(), py::arg("cost_f"))
-    .def(py::init<DijkstrasCostFcnType, OptimizerType>(),
-      py::arg("cost_f"), py::arg("optim_type"))
+    .def(py::init<CostFcnType>(), py::arg("cost_type"))
+    .def(py::init<CostFcnType, OptimizerType>(),
+      py::arg("cost_type"), py::arg("optim_type"))
+    .def(py::init<AlgoType, DijkstrasCostFcnType>(),
+      py::arg("algo_type"), py::arg("cost_f"))
+    .def(py::init<AlgoType, DijkstrasCostFcnType, OptimizerType>(),
+      py::arg("algo_type"), py::arg("cost_f"), py::arg("optim_type"))
 
     .def("plan_route", &Supercharger::PlanRoute,
       py::arg("origin"), py::arg("destination"))
 
     .def("set_planner",
-      py::overload_cast<NaiveCostFcnType>(&Supercharger::SetPlanner),
-      py::arg("naive_cost_type"))
+      py::overload_cast<CostFcnType>(&Supercharger::SetPlanner),
+      py::arg("cost_type"))
     .def("set_planner",
-      py::overload_cast<DijkstrasCostFcnType>(&Supercharger::SetPlanner),
-      py::arg("cost_f"))
+      py::overload_cast<AlgoType, DijkstrasCostFcnType>(&Supercharger::SetPlanner),
+      py::arg("algo_type"), py::arg("cost_f"))
     .def("set_optimizer", &Supercharger::SetOptimizer, py::arg("type"))
 
     .def_property_readonly("network", &Supercharger::network)
