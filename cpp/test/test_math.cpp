@@ -14,6 +14,7 @@
 
 using namespace supercharger::math;
 
+
 TEST(TestMath, TestGreatCircleDistance) {
   // Define the lat/lon of the locations being tested
   double worthington_mn_lat = 43.63385;

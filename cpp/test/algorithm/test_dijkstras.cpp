@@ -13,6 +13,7 @@
 
 using namespace supercharger::algorithm;
 
+
 class DijkstrasPlannerTestFixture : public testing::Test
 {
   protected:

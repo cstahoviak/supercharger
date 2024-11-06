@@ -20,7 +20,7 @@ This repository implements a solution to the Tesla Supercharger coding challenge
 	- Incorporating the optimization step into the cost function evaluation comes with a runtime penalty, but is able to acheive an average improvement of over [37.5 minutes](#results) over the _reference result_ (and a 5 minute improvement over Algorithm (5)).
 - The constrained optimization problem that both Algorithms (5) and (6) solve can be expressed as  follows
 
-	![Optimization Problem](/figs/optimization1.png "Charging Durations")
+	![Optimization Problem](/figs/optimization.png "Charging Durations")
 
 	where the objective function is the sum of charging durations at nodes `[2, n-1]` (not including the origin and the destination), and the constraint function ensures that the arrival range at each node `[3, n]` is greater than zero, i.e. the vehicle does not run out of charge at any point along the route. The matrix `A` is a function of the charging rates, and the vectors `r` and `d` are the charging rates and distances between adjacent nodes, respectively.
 
@@ -228,7 +228,7 @@ A ✅ in the "Gradient" column indicates that a user-supplied gradient function 
 
 ## Future Work
 
-1. Imporove the Dijkstra's cost function via NLOpt.
+1. Add support for asynchronous planning of multi-stop routes.
 2. Add Valgrind to the C++ unit tests.
 3. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
 4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
