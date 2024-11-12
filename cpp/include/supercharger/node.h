@@ -18,32 +18,13 @@
 namespace supercharger
 {
   /**
-   * @brief An abstract base class for representing a single node in the
-   * network.
+   * @brief A simple represenation of a single node in the network.
    */
   class Node
   {
     public:
-      /**
-       * @brief Resets the Node's attributes to their original values.
-       */
-      void Reset() { ResetNode(); }
-
-    protected:
-      /**
-       * @brief Each derived Node class must implement its own reset function.
-       */
-      virtual void ResetNode() = 0;
-  };
-
-  /**
-   * @brief A simple represenation of a single node in the network.
-   */
-  class SimpleNode : public Node
-  {
-    public:
       // NOTE: Must define a ctor to make use of "emplace_back"-like functions.
-      SimpleNode(Charger charger) : charger_(std::move(charger)) {};
+      Node(Charger charger) : charger_(std::move(charger)) {};
 
       // The length of time charging at this node (hrs).
       double duration{0};
@@ -59,7 +40,13 @@ namespace supercharger
       /**
        * @brief Resets the Node's attributes to their original values.
        */
-      void ResetNode() override;
+      void Reset() { ResetNode(); }
+
+    protected:
+      /**
+       * @brief A derived Node class may implement its own ResetNode() function.
+       */
+      virtual void ResetNode();
 
     private:
       // Store the charger associated with this node.
@@ -67,14 +54,14 @@ namespace supercharger
   };
 
   // Overload the string stream operator to output a Node.
-  std::ostream& operator<<(std::ostream&, const SimpleNode&);
+  std::ostream& operator<<(std::ostream&, const Node&);
 
   /**
    * @brief Formats the final route output to comply with the format expected
    * by the provided "checker" executables.
    */
-  std::ostream& operator<<(std::ostream&, const std::vector<SimpleNode>&);
-  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<SimpleNode>>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
+  std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
 
   /**
    * @brief Dijkstra's Node adds a parent which it uses to traverse a linked
@@ -86,7 +73,7 @@ namespace supercharger
    * https://stackoverflow.com/questions/61723200/returning-a-weak-ptr-member-variable
    */
   class DijkstrasNode : 
-    public SimpleNode, public std::enable_shared_from_this<DijkstrasNode>
+    public Node, public std::enable_shared_from_this<DijkstrasNode>
   {
     public:
       // True if the node has been visited.

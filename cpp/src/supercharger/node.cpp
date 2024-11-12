@@ -14,7 +14,7 @@
 
 namespace supercharger
 {
-  void SimpleNode::ResetNode() {
+  void Node::ResetNode() {
     duration = 0.0;
     arrival_range = 0.0;
     departure_range = 0.0;
@@ -29,7 +29,7 @@ namespace supercharger
     parent_.reset();
   }
 
-  std::ostream& operator<<(std::ostream& stream, const SimpleNode& node) {
+  std::ostream& operator<<(std::ostream& stream, const Node& node) {
     stream << node.name();
     if ( node.duration > 0 ) {
       stream << ", " << std::setprecision(7) << node.duration;
@@ -38,11 +38,11 @@ namespace supercharger
   }
 
   std::ostream& operator<<(
-    std::ostream& stream, const std::vector<SimpleNode>& route)
+    std::ostream& stream, const std::vector<Node>& route)
   {
     size_t sz = route.size();
     size_t idx = 0;
-    for ( const SimpleNode& node : route ) {
+    for ( const Node& node : route ) {
       stream << node;
       if ( idx < sz - 1 ) {
         stream << ", ";
@@ -53,11 +53,11 @@ namespace supercharger
   }
 
   std::ostream& operator<<(
-    std::ostream& stream, const std::vector<std::shared_ptr<SimpleNode>>& route)
+    std::ostream& stream, const std::vector<std::shared_ptr<Node>>& route)
   {
     size_t sz = route.size();
     size_t idx = 0;
-    for ( const std::shared_ptr<SimpleNode>& node : route ) {
+    for ( const std::shared_ptr<Node>& node : route ) {
       stream << *node.get();
       if ( idx < sz - 1 ) {
         stream << ", ";
