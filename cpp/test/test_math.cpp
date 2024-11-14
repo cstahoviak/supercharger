@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "supercharger/math/math.h"
+#include "supercharger/math.h"
 
 #include <gtest/gtest.h>
 

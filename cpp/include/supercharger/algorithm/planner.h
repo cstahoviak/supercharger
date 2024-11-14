@@ -8,7 +8,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/math/math.h"
+#include "supercharger/math.h"
 #include "supercharger/node.h"
 
 #include <memory>
@@ -139,6 +139,6 @@ namespace supercharger::algorithm
   // Overload the string stream operator for the AlgorithmType and CostFunctionType
   std::ostream& operator<<(std::ostream&, const Planner::AlgorithmType&);
   std::ostream& operator<<(std::ostream&, const Planner::CostFunctionType&);
-  
+
 } // end namespace supercharger::algorithm
 
