@@ -20,19 +20,23 @@
 
 
 namespace supercharger::algorithm
-{
+{  
   PlannerResult::PlannerResult(
-    std::vector<Node> route, double cost, double max_range, double speed) :
-    route(std::move(route)), cost(cost), max_range(max_range), speed(speed) {}
+    std::vector<std::shared_ptr<Node>> route,
+    double cost,
+    double max_range,
+    double speed) :
+      route(std::move(route)), cost(cost), max_range(max_range), speed(speed) {}
 
-  Planner::Planner() {
-    // Create a set of nodes from the charger network.
-    for ( const Charger& charger : supercharger::network ) {
-      // TODO: I should be able to use try_emplace to construct the shared_ptr
-      // in place rather than moving it, but I haven't gotten it to work.
-      std::shared_ptr<Node> node = std::make_shared<Node>(charger);
-      nodes_.try_emplace(charger.name, std::move(node));
-    }
+  PlannerResult Planner::Plan(
+    const std::string& origin,
+    const std::string& destination,
+    double max_range,
+    double speed)
+  {
+    // Initialize the node graph and plan the route.
+    InitializeNodeGraph_();
+    return PlanRoute_(origin, destination, max_range, speed);
   }
 
   // NOTE: I think this must be defined at the cpp file level because otherwise
@@ -96,19 +100,9 @@ namespace supercharger::algorithm
     }
   }
 
-  void Planner::Reset() {
+  void Planner::InitializeNodeGraph_() {
     for ( auto [name, node] : nodes_ ) {
       node.get()->Reset();
-    }
-  }
-
-  void Planner::InitializeNodeGraph_() {
-    for (const auto& [name, node] : nodes_ ) {
-      if ( node.get()->visited ) {
-        // If even a single node is marked 'visited', the graph must be reset.
-        Reset();
-        break;
-      }
     }
   }
 
@@ -136,34 +130,5 @@ namespace supercharger::algorithm
     };
 
     return stream << map.at(type);
-  }
-
-  double GetChargeTime(const Node& current, const Node& next)
-  {
-    // Compute the distance to the next charger.
-    double current_to_next = math::distance(current, next);
-
-    // Compute the charge time required to make it to the next charger.
-    // NOTE: we're charging the car only enough to make it to the next node.
-    double charge_time = 
-      (current_to_next - current.arrival_range) / current.charger().rate;
-
-    // If the charge time is negative, we have sufficient range without
-    // additional charging to reach the next node.
-    return std::max(0.0, charge_time);
-  }
-
-  double GetArrivalRange(const Node& current, const Node& next)
-  {
-    // The range remaining after arriving at the next node is the departure
-    // range at the current node - the distance to the next charger.
-    return current.departure_range - math::distance(current, next);
-  }
-
-  double GetDepartureRange(const Node& current)
-  {
-    // The departure range at the current node is the arrival range at the
-    // current node + range added by charging.
-    return current.arrival_range + current.duration * current.charger().rate;
   }
 } // end namespace supercharger::algorithm
