@@ -37,39 +37,47 @@ namespace supercharger::algorithm
         throw std::invalid_argument(os.str());
         break;
     }
+
+    // Create the node graph.
+    CreateNodeGraph_();
   }
 
-  PlannerResult Dijkstras::PlanRoute(
+  Dijkstras::Dijkstras(DijkstrasCostFcnType cost_f) : cost_f(std::move(cost_f))
+  {
+    // Create the node graph.
+    CreateNodeGraph_();
+  };
+
+  PlannerResult Dijkstras::PlanRoute_(
     const std::string& origin,
     const std::string& destination,
     double max_range,
     double speed)
   {
-    // Each Planner must call this at the start of its PlanRoute function.
-    InitializeNodeGraph_();
-
     // Define a lambda function for priority queue comparison.
     auto compare = [](
-      const std::shared_ptr<Node>& lhs, const std::shared_ptr<Node>& rhs)
+      const std::shared_ptr<const DijkstrasNode>& lhs,
+      const std::shared_ptr<const DijkstrasNode>& rhs)
     {
       return lhs->cost > rhs->cost;
     };
 
     // Create the unvisited set as a priority queue.
     std::priority_queue<
-      std::shared_ptr<Node>,
-      std::vector<std::shared_ptr<Node>>,
+      std::shared_ptr<DijkstrasNode>,
+      std::vector<std::shared_ptr<DijkstrasNode>>,
       decltype(compare)> unvisited(compare);
 
     // Update the origin node's data and add it to the unvisited set.
-    std::shared_ptr<Node>& origin_node = nodes_.at(origin);
+    const std::shared_ptr<DijkstrasNode> origin_node = 
+      std::static_pointer_cast<DijkstrasNode>(nodes_.at(origin));
     origin_node->arrival_range = max_range;
     origin_node->cost = 0;
     unvisited.push(origin_node);
 
     while ( !unvisited.empty() ) {
       // Get the next node (it has the smallest known distance from the origin)
-      std::shared_ptr<Node> current_node = unvisited.top();
+      const std::shared_ptr<DijkstrasNode> current_node = unvisited.top();
       unvisited.pop();
 
       // Skip the current node if it's already been visited.
@@ -91,14 +99,14 @@ namespace supercharger::algorithm
       // For the current node, consider all of its unvisited neighbors and
       // update their cost through the current node.
       double cost{0};
-      for ( std::shared_ptr<Node>& neighbor : 
-        GetNeighbors_(*current_node, max_range) )
+      for ( const std::shared_ptr<DijkstrasNode>& neighbor : 
+        GetNeighbors_(current_node, max_range) )
       {
         // Compute the cost to get to the neighbor through the current node.
         // TODO: Is dereferencing here the right choice? Would it be better to
         // pass the shared pointer itself? Or a reference to the shared pointer
         // so as to not increase the reference count?
-        cost = ComputeCost(*current_node, *neighbor, max_range, speed);
+        cost = ComputeCost_(*current_node, *neighbor, max_range, speed);
 
         if ( cost < neighbor->cost ) {
           // If the cost to the neighbor node through the current node is less
@@ -141,51 +149,75 @@ namespace supercharger::algorithm
     return {};
   }
 
-  double Dijkstras::ComputeCost(
+  double Dijkstras::ComputeCost_(
     const Node& current,
     const Node& neighbor,
     double max_range,
     double speed) const
   {
-    return cost_f(current, neighbor, max_range, speed);
+    return cost_f(
+      static_cast<const DijkstrasNode&>(current),
+      static_cast<const DijkstrasNode&>(neighbor),
+      max_range,
+      speed);
+  }
+  
+  void Dijkstras::CreateNodeGraph_() {
+    // Create a set of nodes from the charger network.
+    for ( const Charger& charger : supercharger::NETWORK ) {
+      const auto pair = nodes_.try_emplace(
+        charger.name, std::make_shared<DijkstrasNode>(charger));
+        if ( !pair.second ) {
+          INFO("Charger with name '" << charger.name << "' already added to " <<
+            "the node graph. Skipping.");
+        }
+    }
   }
 
-  std::vector<std::shared_ptr<Node>> Dijkstras::GetNeighbors_(
-    const Node& current, double max_range)
+  std::vector<std::shared_ptr<DijkstrasNode>> Dijkstras::GetNeighbors_(
+    const std::shared_ptr<const DijkstrasNode>& current, double max_range)
   {
-    std::vector<std::shared_ptr<Node>> neighbors;
+    std::vector<std::shared_ptr<DijkstrasNode>> neighbors;
     double current_to_neighbor{0};
 
     for ( const auto& [name, node] : nodes_ ) {
-      current_to_neighbor = math::distance(current, *node);
-      if ( current_to_neighbor <= max_range && !node->visited )
+      // Treat the node as a DijkstrasNode.
+      const std::shared_ptr<DijkstrasNode>& dijkstras_node =
+        std::static_pointer_cast<DijkstrasNode>(node);
+
+      current_to_neighbor = math::distance(current, dijkstras_node);
+      if ( current_to_neighbor <= max_range && !dijkstras_node->visited )
       {
-        neighbors.push_back(node);
+        neighbors.push_back(dijkstras_node);
       }
     }
 
     return neighbors;
   }
 
-  std::vector<Node> Dijkstras::ConstructRoute_(const Node& final) {
-    return ConstructRoute(final);
+  std::vector<std::shared_ptr<Node>> Dijkstras::ConstructRoute_(
+    const Node& final)
+  {
+    return ConstructRoute(static_cast<const DijkstrasNode&>(final));
   }
 
-  std::vector<Node> ConstructRoute(const Node& final) {
+  std::vector<std::shared_ptr<Node>> ConstructRoute(const DijkstrasNode& final)
+  {
     // Create the route and add the final node.
-    std::vector<Node> route;
-    route.push_back(final);
+    std::vector<std::shared_ptr<Node>> route;
+    route.emplace_back(std::make_shared<DijkstrasNode>(final));
 
     // Iterate over the parents of each node to construct the complete path.
-    std::shared_ptr<const Node> current_node = final.shared_from_this();
-    while ( std::shared_ptr<const Node> parent = current_node->parent().lock() )
+    std::shared_ptr<const DijkstrasNode> current_node = final.shared_from_this();
+    while ( std::shared_ptr<const DijkstrasNode> parent = 
+      current_node->parent().lock() )
     {      
       // Add the parent to the route.
       // NOTE: Below we will update the charging durations for each node, but 
       // the cost previously computed for this node will not change because it
       // represents the minimum time required to reach this node, and thus we
       // can copy the cost when making a copy of the Node.
-      route.push_back(*parent.get());
+      route.emplace_back(std::make_shared<DijkstrasNode>(*parent));
       current_node.swap(parent);
     }
 
@@ -198,33 +230,39 @@ namespace supercharger::algorithm
     // a given node... (I need to think more about what's actually happening
     // during the Dijkstra's route planning process).
     for ( auto iter = route.begin(); iter != route.end() - 1; ++iter ) {
-      Node& current = *iter;
-      Node& next = *(iter + 1);
+      const std::shared_ptr<Node>& current = *iter;
+      const std::shared_ptr<Node>& next = *(iter + 1);
 
       // Compute the charge time at the current node to reach the neighbor.
-      current.duration = GetChargeTime(current, next);
-      DEBUG(current.name() << " updated charge time: " << current.duration << 
+      current->duration = GetChargeTime(current, next);
+      DEBUG(current->name() << " updated charge time: " << current->duration <<
         " hrs");
 
       // Compute the departure range at the current node.
-      current.departure_range = GetDepartureRange(current);
+      current->departure_range = GetDepartureRange(current);
 
       // Compute the arrival range at the neighbor node.
-      next.arrival_range = GetArrivalRange(current, next);
+      next->arrival_range = GetArrivalRange(current, next);
     }
 
     return route;
   }
 
   double SimpleCost(
-    const Node& current, const Node& neighbor, double max_range, double speed)
+    const DijkstrasNode& current,
+    const DijkstrasNode& neighbor,
+    double max_range,
+    double speed)
   {
     return current.cost + GetChargeTime(current, neighbor) +
       math::distance(current, neighbor) / speed;
   }
 
   double OptimizedCost(
-    const Node& current, const Node& neighbor, double max_range, double speed)
+    const DijkstrasNode& current,
+    const DijkstrasNode& neighbor,
+    double max_range,
+    double speed)
   {
     // Create the optimizer as a local static variable.
     using namespace supercharger::optimize;
@@ -233,20 +271,21 @@ namespace supercharger::algorithm
 
     // Store the neighbor's current parent and substitute the current node as
     // the neighbor's parent.
-    const std::shared_ptr<Node> original_parent = neighbor.parent().lock();
-    const_cast<Node&>(neighbor).parent(
-      const_cast<Node&>(current).shared_from_this());
+    const std::shared_ptr<DijkstrasNode> original_parent = 
+      neighbor.parent().lock();
+    const_cast<DijkstrasNode&>(neighbor).parent(
+      const_cast<DijkstrasNode&>(current).shared_from_this());
 
     // Create the route as if the neighbor node were the destination.
-    std::vector<Node> route = ConstructRoute(neighbor);
+    std::vector<std::shared_ptr<Node>> route = ConstructRoute(neighbor);
 
-    // Reset the neighbor's parent.
-    const_cast<Node&>(neighbor).parent(original_parent);
+    // Restore the neighbor's original parent.
+    const_cast<DijkstrasNode&>(neighbor).parent(original_parent);
 
     if ( route.size() > 3 ) {
       // Optimize the route
-      const PlannerResult result{ route, 0.0, max_range, speed };
-      const PlannerResult optimized = optimizer.get()->Optimize(result);
+      const PlannerResult result(route, 0.0, max_range, speed);
+      const PlannerResult optimized = optimizer->Optimize(result);
       return optimized.cost;
     }
     else {
