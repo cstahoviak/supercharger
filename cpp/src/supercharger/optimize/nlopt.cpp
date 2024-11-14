@@ -154,14 +154,16 @@ namespace supercharger::optimize
   {
     // Define the optimization constraint data and the initial guess.
     ConstraintData constr_data;
-    for ( auto iter = result.route.cbegin() + 1; iter != result.route.cend(); ++iter )
+    for ( auto iter = result.route.cbegin() + 1;
+      iter != result.route.cend();
+      ++iter )
     {
-      const Node& current = *iter;
-      const Node& previous = *(iter - 1);
+      const std::shared_ptr<const Node>& current = *iter;
+      const std::shared_ptr<const Node>& previous = *(iter - 1);
       constr_data.distances.push_back(math::distance(previous, current));
-      constr_data.rates.push_back(current.charger().rate);
+      constr_data.rates.push_back(current->charger().rate);
     }
-    constr_data.init_arrival_range = result.route.at(1).arrival_range;
+    constr_data.init_arrival_range = result.route.at(1)->arrival_range;
     constr_data.max_range = result.max_range;
 
     // Remove values that do not affect the optimization, i.e. the distance 
@@ -191,8 +193,8 @@ namespace supercharger::optimize
     std::vector<double> ub = std::vector<double>(dim, HUGE_VAL);
     size_t idx{0};
     for (const double& rate : constr_data.rates ) {
-      ub[idx] = 
-        (result.max_range - result.route.at(idx + 1).arrival_range) / rate;
+      ub[idx] =
+        (result.max_range - result.route.at(idx + 1)->arrival_range) / rate;
       idx++;
     }
     opt.set_upper_bounds(ub);
@@ -244,7 +246,7 @@ namespace supercharger::optimize
 
     // Update the charging duration for all nodes between the start and end.
     for ( size_t idx = 0; idx < new_durations.size(); idx++ ) {
-      optimized.route[idx + 1].duration = new_durations[idx];
+      optimized.route[idx + 1]->duration = new_durations[idx];
     }
 
     // Update the arrival and departure ranges and the cost at each node.
@@ -252,24 +254,27 @@ namespace supercharger::optimize
           iter != optimized.route.end();
           ++iter )
     {
-      const Node& previous = *(iter - 1);
-      Node& current = *iter;
+      const std::shared_ptr<const DijkstrasNode>& previous = 
+        std::static_pointer_cast<DijkstrasNode>(*(iter - 1));
+      const std::shared_ptr<DijkstrasNode>& current = 
+        std::static_pointer_cast<DijkstrasNode>(*iter);
 
       // Update the arrival range at the current node.
-      current.arrival_range = GetArrivalRange(previous, current);
+      current->arrival_range = GetArrivalRange(previous, current);
 
       // Update the cost at the current node.
-      current.cost = previous.cost + previous.duration + \
+      current->cost = previous->cost + previous->duration + \
         math::distance(previous, current) / result.speed;
 
       // For all nodes but the final node, update the departure range.
       if ( iter != optimized.route.end() - 1 ) {
-        current.departure_range = GetDepartureRange(current);
+        current->departure_range = GetDepartureRange(current);
       }
     }
 
     // Finally, update the total cost of the route.
-    optimized.cost = optimized.route.back().cost;
+    optimized.cost = std::static_pointer_cast<DijkstrasNode>(
+      optimized.route.back())->cost;
     return optimized;
   }
 } // end namespace supercharger::optimize
