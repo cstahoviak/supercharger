@@ -26,19 +26,19 @@ namespace supercharger::algorithm
       AStar(CostFunctionType cost_type) : Dijkstras(cost_type) {};
       AStar(DijkstrasCostFcnType cost_f) : Dijkstras(cost_f) {};
 
-      PlannerResult PlanRoute(
+    protected:
+      PlannerResult PlanRoute_(
         const std::string&,
         const std::string&,
         double,
         double) override;
-
-      double ComputeCost(
+      
+      double ComputeCost_(
         const Node&,
         const Node&,
         double,
         double) const override;
-
-    protected:
-      std::vector<Node> ConstructRoute_(const Node&) override;
+      
+      std::vector<std::shared_ptr<Node>> ConstructRoute_(const Node&) override;
   };
 } // end namespace supercharger
