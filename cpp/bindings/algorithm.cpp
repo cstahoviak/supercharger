@@ -27,34 +27,35 @@
 namespace supercharger::algorithm
 {
   /**
-   * @brief The PyPlanner "trampline" class allows the Optimizer class
+   * @brief The PyPlanner "trampoline" class allows the Optimizer class
    * to be extensible on the python side.
    */
   class PyPlanner : Planner
   {
     public:
-      // Inherit the constructor(s)
-      using Planner::Planner;
+      // Inherit the constructor(s) (no ctor to inherit from in this case).
+
+    protected:
+      // NOTE: I might not be able to bind proctected (and private) members?
 
       // "Trampoline" function(s) (required for each virtual function)
-      PlannerResult PlanRoute(
+      PlannerResult PlanRoute_(
         const std::string&,
         const std::string&,
         double,
         double) override;
-
-      double ComputeCost(
+      
+      double ComputeCost_(
         const Node&,
         const Node&,
         double,
         double) const override;
 
-    protected:
-      // NOTE: I might not be able to bind proctected (and private) members?
-      std::vector<Node> ConstructRoute_(const Node&) override;
+      
+      std::vector<std::shared_ptr<Node>> ConstructRoute_(const Node&) override;
   };
 
-  PlannerResult PyPlanner::PlanRoute(
+  PlannerResult PyPlanner::PlanRoute_(
     const std::string& origin,
     const std::string& destination,
     double max_range,
@@ -63,7 +64,7 @@ namespace supercharger::algorithm
     PYBIND11_OVERRIDE_PURE(
       PlannerResult,      // Return type
       Planner,            // Parent class
-      PlanRoute,          // Name of C++ function (must match python name)
+      PlanRoute_,         // Name of C++ function (must match python name)
       origin,             // Argument(s)
       destination,
       max_range,
@@ -71,7 +72,7 @@ namespace supercharger::algorithm
     );
   }
 
-  double PyPlanner::ComputeCost(
+  double PyPlanner::ComputeCost_(
     const Node& current,
     const Node& neighbor,
     double max_range,
@@ -80,7 +81,7 @@ namespace supercharger::algorithm
     PYBIND11_OVERRIDE_PURE(
       double,             // Return type
       Planner,            // Parent class
-      ComputeCost,        // Name of C++ function (must match python name)
+      ComputeCost_,       // Name of C++ function (must match python name)
       current,            // Arguments(s)
       neighbor,
       max_range,
@@ -88,14 +89,14 @@ namespace supercharger::algorithm
     );
   }
 
-  std::vector<Node> PyPlanner::ConstructRoute_(
+  std::vector<std::shared_ptr<Node>> PyPlanner::ConstructRoute_(
     const Node& final)
   {
     PYBIND11_OVERRIDE_PURE(
-      std::vector<Node>,    // Return type
-      Planner,              // Parent class
-      ConstructRoute_,      // Name of C++ function (must match python name)
-      final                 // Arguments(s)
+      std::vector<std::shared_ptr<Node>>,    // Return type
+      Planner,            // Parent class
+      ConstructRoute_,    // Name of C++ function (must match python name)
+      final               // Arguments(s)
     );
   }
 } // end namespace supercharger::algorithm
@@ -110,7 +111,7 @@ using CostFcnType = Planner::CostFunctionType;
 std::string to_string(const PlannerResult& result) {
   std::ostringstream os;
   size_t idx = 0;
-  for ( const Node& node : result.route ) {
+  for ( const std::shared_ptr<const Node>& node : result.route ) {
     os << node;
     if ( idx < result.route.size() - 1 ) {
         os << ", ";
@@ -122,13 +123,9 @@ std::string to_string(const PlannerResult& result) {
 
 void initPlanningAlgorithm(py::module_& m)
 {
-  m.def("get_charge_time", &GetChargeTime, py::arg("current"), py::arg("next"));
-  m.def("get_arrival_range", &GetArrivalRange, py::arg("current"), py::arg("next"));
-  m.def("get_departure_range", &GetDepartureRange, py::arg("current"));
-
   py::class_<PlannerResult>(m, "PlannerResult")
     .def(py::init<>())
-    .def(py::init<std::vector<Node>, double, double, double>(),
+    .def(py::init<std::vector<std::shared_ptr<Node>>, double, double, double>(),
       py::arg("route"), py::arg("cost"), py::arg("max_range"), py::arg("speed"))
     .def_readwrite("route", &PlannerResult::route)
     .def_readwrite("cost", &PlannerResult::cost)
@@ -171,14 +168,10 @@ void initPlanningAlgorithm(py::module_& m)
     .def_static("get_planner",
       py::overload_cast<AlgoType, DijkstrasCostFcnType>(&Planner::GetPlanner),
       py::arg("algo_type"), py::arg("cost_fcn"))
-    .def("plan_route", &Planner::PlanRoute, 
+    .def("plan", &Planner::Plan, 
       py::arg("origin"), py::arg("destination"), py::arg("max_range"), py::arg("speed"))
-    .def("compute_cost", &Planner::ComputeCost,
-      py::arg("current"), py::arg("neighbor"), py::arg("max_range"), py::arg("speed"))
-    .def("reset", &Planner::Reset)
 
     // NOTE: Cannot bind protected or private members.
-    // .def("_construct_final_route", &Planner::ConstructFinalRoute_)
   ;
 
   py::class_<NaivePlanner, Planner>(m, "NaivePlanner")

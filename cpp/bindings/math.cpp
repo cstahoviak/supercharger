@@ -7,7 +7,7 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/math/math.h"
+#include "supercharger/math.h"
 
 #include <pybind11/pybind11.h>
 
@@ -22,6 +22,7 @@ void initMath(py::module_& m)
   m.def("distance",
     py::overload_cast<const Charger&, const Charger&>(&math::distance),
     py::arg("charger1"), py::arg("charger2"));
+    
   m.def("distance",
     py::overload_cast<const Node&, const Node&>(&math::distance),
     py::arg("node1"), py::arg("node2"));
