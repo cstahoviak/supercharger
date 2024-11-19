@@ -76,7 +76,7 @@ TEST_F(SuperchargerTestFixture, TestPlanRoute)
   // Verify that each stop along the route is correct
   EXPECT_EQ(stops.size(), result.route.size());
   for( size_t idx = 0; idx < stops.size(); idx++ ) {
-    EXPECT_EQ(result.route[idx].name(), stops[idx]);
+    EXPECT_EQ(result.route[idx]->name(), stops[idx]);
   }
 
   // Verify that the total route cost is correct.

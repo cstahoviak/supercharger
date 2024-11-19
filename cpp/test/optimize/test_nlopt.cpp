@@ -36,7 +36,7 @@ class NLOptimizerTestFixture : public testing::Test
       auto planner = algorithm::Dijkstras(algorithm::SimpleCost);
 
       // Plan the route
-      planner_result = planner.PlanRoute(
+      planner_result = planner.Plan(
         initial_charger_name, goal_charger_name, max_range, speed);
 
       // Define the optimization problem dimensionality and create the
@@ -57,6 +57,17 @@ class NLOptimizerTestFixture : public testing::Test
     unsigned n;
     ConstraintData constr_data;
     std::vector<double> x0;
+
+    // The expected charging durations for the optimized route.
+    std::vector<double> durations {
+      0.0,
+      2.4854182205752964,
+      0.3780665153428539,
+      0.6986804715671957,
+      2.3188405797101415,
+      0.52965134512121326,
+      0.0
+    };
 };
 
 TEST_F(NLOptimizerTestFixture, TestGetArrivalRanges)
@@ -70,7 +81,7 @@ TEST_F(NLOptimizerTestFixture, TestGetArrivalRanges)
   constexpr int offset{2};
   for (size_t idx = 0; idx < arrival_ranges.size(); idx++) {
     EXPECT_DOUBLE_EQ(arrival_ranges.at(idx),
-      planner_result.route.at(idx + offset).arrival_range);
+      planner_result.route.at(idx + offset)->arrival_range);
   }
 }
 
@@ -78,9 +89,9 @@ TEST_F(NLOptimizerTestFixture, TestCostFcn)
 {
   std::vector<double> charging_times;
   double total_charging_time{0};
-  for ( const Node& node : planner_result.route ) {
-    charging_times.push_back(node.duration);
-    total_charging_time += node.duration;
+  for ( const std::shared_ptr<const Node>& node : planner_result.route ) {
+    charging_times.push_back(node->duration);
+    total_charging_time += node->duration;
   }
 
   std::vector<double> grad;
@@ -158,4 +169,29 @@ TEST_F(NLOptimizerTestFixture, TestIneqConstraintRHS)
 
   // Clean up
   delete[] x, grad, result;
+}
+
+TEST_F(NLOptimizerTestFixture, TestOptimizeRoute)
+{
+  // Create the optimizer.
+  const auto optimizer =
+    Optimizer::GetOptimizer(Optimizer::OptimizerType::NLOPT);
+
+  // Optimize the route.
+  PlannerResult optimized_result = optimizer->Optimize(planner_result);
+
+  // Verify that some result information has remained unchanged.
+  EXPECT_EQ(optimized_result.route.size(), planner_result.route.size());
+  EXPECT_DOUBLE_EQ(optimized_result.max_range, planner_result.max_range);
+  EXPECT_DOUBLE_EQ(optimized_result.speed, planner_result.speed);
+
+  // Verify that the route cost has either improved or remained the same.
+  EXPECT_LE(optimized_result.cost, planner_result.cost);
+
+  // Verify that the nodes and charging durations are correct. 
+  for ( size_t idx = 0; idx < optimized_result.route.size(); idx++ ) {
+    EXPECT_EQ(optimized_result.route[idx]->name(),
+      planner_result.route[idx]->name());
+    EXPECT_DOUBLE_EQ(optimized_result.route[idx]->duration, durations[idx]);
+  }
 }
