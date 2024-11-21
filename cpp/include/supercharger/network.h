@@ -18,7 +18,7 @@ namespace supercharger
     double rate;
   };
 
-  extern std::array<Charger, 303> network;
+  extern std::array<Charger, 303> NETWORK;
 
   std::ostream& operator<<(std::ostream& stream, const Charger& charger);
 }   

@@ -18,56 +18,77 @@
 namespace supercharger
 {
   /**
-   * @brief Represents a single node along the route.
+   * @brief A simple represenation of a single node in the network.
+   */
+  class Node
+  {
+    public:
+      Node(Charger charger) : charger_(std::move(charger)) {};
+
+      double duration{0};         // [hrs] charging time at this node 
+      double arrival_range{0};    // [km] Vehicle range upon arrival at this node.
+      double departure_range{0};  // [km] Post-charging range of vehicle.
+      
+      // "identity-oriented" getters
+      const Charger& charger() const { return charger_; }
+      const std::string& name() const { return charger_.name; }
+
+      /**
+       * @brief Resets the Node's attributes to their original values.
+       */
+      void Reset() { ResetNode_(); }
+
+    protected:
+      /**
+       * @brief A derived Node class may implement its own ResetNode() function.
+       */
+      virtual void ResetNode_();
+
+    private:
+      // Store the charger associated with this node.
+      Charger charger_;
+  };
+
+
+  /**
+   * @brief Dijkstra's Node adds a parent which it uses to traverse a linked
+   * list of parents from the destination node back to the origin.
    * 
    * See the following StackOverflow page on info related to implementing a
    * graph node using a weak_ptr to store the parent node:
    * 
    * https://stackoverflow.com/questions/61723200/returning-a-weak-ptr-member-variable
    */
-  struct Node : public std::enable_shared_from_this<Node>
+  class DijkstrasNode : 
+    public Node, public std::enable_shared_from_this<DijkstrasNode>
   {
-    // NOTE: Must define a ctor to make use of "emplace_back"-like functions.
-    Node(Charger charger) : charger_(std::move(charger)) {};
+    public:
+      DijkstrasNode(Charger charger) : Node(charger) {}
 
-    // The length of time charging at this node (hrs).
-    double duration{0};
-    // The range of the vehicle upon arriving at this node.
-    double arrival_range{0};
-    // The post-charging range of the vehicle when departing this node.
-    double departure_range{0}; 
+      // True if the node has been visited.
+      bool visited{false};
 
-    // The following were added for Dijkstra's implementation.
-    // True if the node has been visited.
-    bool visited{false};
-    // The cost from this Node to the route origin. For Dijkstra's algorithm,
-    // the cost is the total driving time plus total charging time upon arriving
-    // at this node. It does NOT include the charging time at this node.
-    double cost{std::numeric_limits<double>::max()};
-    
-    // "identity-oriented" getters
-    const Charger& charger() const { return charger_; }
-    const std::string& name() const { return charger_.name; }
+      // The cost from this Node to the route origin.
+      double cost{std::numeric_limits<double>::max()};
 
-    // "value-oriented" getter and setter
-    std::weak_ptr<Node> parent() const { return parent_; }
-    void parent(std::shared_ptr<Node> parent) { parent_ = std::move(parent); }
+      // "value-oriented" getter and setter
+      std::weak_ptr<DijkstrasNode> parent() const { return parent_; }
+      void parent(std::shared_ptr<DijkstrasNode> parent) { 
+        parent_ = std::move(parent);
+      }
 
-    /**
-     * @brief Resets the Node's attributes to their original values.
-     */
-    void Reset();
+    protected:
+      void ResetNode_() override;
 
     private:
-      // Store the charger associated with this node.
-      Charger charger_;
-      
       // Store the previous node on the route.
-      std::weak_ptr<Node> parent_;
+      std::weak_ptr<DijkstrasNode> parent_;
   };
+
 
   // Overload the string stream operator to output a Node.
   std::ostream& operator<<(std::ostream&, const Node&);
+
 
   /**
    * @brief Formats the final route output to comply with the format expected
@@ -75,4 +96,43 @@ namespace supercharger
    */
   std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
   std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
+
+  /**
+   * @brief Computes the charge time at the current node required to make it to
+   * the next node.
+   * 
+   * @param current The current Node.
+   * @param next The next node.
+   * @return double The charge time required to make it to the next node.
+   * Assumes that the arrival range at the 'next' node will be zero.
+   */
+  double GetChargeTime(const Node&, const Node&);
+  double GetChargeTime(
+    const std::shared_ptr<const Node>&,
+    const std::shared_ptr<const Node>&
+  );
+
+  /**
+   * @brief Computes the arrival range at the 'next' node after departing the
+   * 'current' node.
+   * 
+   * @param current The current node.
+   * @param next The next node.
+   * @return double The arrival range at the 'next' node.
+   */
+  double GetArrivalRange(const Node&, const Node&);
+  double GetArrivalRange(
+    const std::shared_ptr<const Node>&,
+    const std::shared_ptr<const Node>&
+  );
+
+  /**
+   * @brief Computes the departure range at the current node given the current
+   * node's arrival range and charging duration.
+   * 
+   * @param current The current node.
+   * @return double The departure range after charging at the current node.
+   */
+  double GetDepartureRange(const Node&);
+  double GetDepartureRange(const std::shared_ptr<const Node>&);
 } // end namespace supercharger

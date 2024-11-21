@@ -16,7 +16,7 @@
 
 namespace supercharger::algorithm
 {
-  PlannerResult AStar::PlanRoute(
+  PlannerResult AStar::PlanRoute_(
     const std::string& origin,
     const std::string& destination,
     double max_range,
@@ -28,7 +28,7 @@ namespace supercharger::algorithm
     throw std::runtime_error(os.str());
   }
 
-  double AStar::ComputeCost(
+  double AStar::ComputeCost_(
     const Node& current,
     const Node& neighbor,
     double max_Range,
@@ -37,7 +37,7 @@ namespace supercharger::algorithm
     return 0;
   }
 
-  std::vector<Node> AStar::ConstructRoute_(const Node& final)
+  std::vector<std::shared_ptr<Node>> AStar::ConstructRoute_(const Node& final)
   {
     return {};
   }

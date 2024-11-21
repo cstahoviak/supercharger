@@ -5,7 +5,7 @@ from supercharger.optimize._optimizer import NonlinearOptimizer
 
 from pysupercharger import (
     dijkstras_simple_cost,
-    Node,
+    DijkstrasNode,
     get_charge_time,
     get_departure_range,
     get_arrival_range,
@@ -15,8 +15,8 @@ from pysupercharger import (
 
 
 def optimized_cost(
-        current: Node,
-        neighbor: Node,
+        current: DijkstrasNode,
+        neighbor: DijkstrasNode,
         max_range: float,
         speed: float) -> float:
     """

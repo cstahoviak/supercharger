@@ -41,7 +41,7 @@ TEST_F(AStarPlannerTestFixture, TestPlanRoute)
 {
   // Verify that a runtime exception is thrown
   EXPECT_THROW(
-    planner.PlanRoute(initial_charger_name, goal_charger_name, max_range, speed),
+    planner.Plan(initial_charger_name, goal_charger_name, max_range, speed),
     std::runtime_error
   );
 }

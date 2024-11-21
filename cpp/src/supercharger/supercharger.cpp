@@ -9,7 +9,7 @@
  */
 #include "supercharger/algorithm/planner.h"
 #include "supercharger/logging.h"
-#include "supercharger/math/math.h"
+#include "supercharger/math.h"
 #include "supercharger/supercharger.h"
 
 #include <algorithm>
@@ -60,15 +60,15 @@ namespace supercharger
     DEBUG("Planning route between '" << origin << "' and '" << destination 
       << "'.");
     PlannerResult result = 
-      planner_.get()->PlanRoute(origin, destination, max_range_, speed_);
+      planner_->Plan(origin, destination, max_range_, speed_);
 
-    if ( result.route.back().name() != destination_.name ) {
+    if ( result.route.back()->name() != destination_.name ) {
       INFO("Search terminated. Solution not found.");
       return {};
     }
 
     DEBUG("Solution found!");
-    return ( optimizer_ ) ? optimizer_.get()->Optimize(result) : result;    
+    return ( optimizer_ ) ? optimizer_->Optimize(result) : result;    
   }
 
   void Supercharger::SetOptimizer(OptimizerType type) {
@@ -97,7 +97,7 @@ namespace supercharger
   void Supercharger::InitializeNetwork_()
   {
     // Create the network map (must do this before creating the planner).
-    for ( const Charger& charger : supercharger::network ) {
+    for ( const Charger& charger : supercharger::NETWORK ) {
       // const std::pair<std::unordered_map<std::string, Charger>::iterator, bool> pair =
       const auto& pair = network_.try_emplace(charger.name, &charger);
       if ( !pair.second ) {

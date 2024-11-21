@@ -13,7 +13,7 @@
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
-#define M_EARTH_RADIUS_KM 6356.752       // [km]
+#define M_EARTH_RADIUS_KM 6356.752    // [km]
 
 namespace supercharger::math
 {
@@ -77,5 +77,20 @@ namespace supercharger::math
   inline double distance(const Node& node1, const Node& node2)
   {
     return distance(node1.charger(), node2.charger());
+  }
+
+  /**
+   * @brief Effectively a wrapper around the great_circle_distance() function
+   * for use with the std:shared_ptr<Node> type.
+   * 
+   * @param node1
+   * @param node2
+   * @return double The "great circle distance" between node1 and node2.
+   */
+  inline double distance(
+    const std::shared_ptr<const Node>& node1,
+    const std::shared_ptr<const Node>& node2)
+  {
+    return distance(node1->charger(), node2->charger());
   }
 } //end namespace supercharger

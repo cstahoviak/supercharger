@@ -22,13 +22,13 @@ if __name__ == "__main__":
         cost_type=CostFunctionType.NAIVE_MINIMIZE_TIME_REMAINING)
 
     # Plan the route with the "naive" route planner
-    result = naive_planner.plan_route(origin, destination, max_range, speed)
+    result = naive_planner.plan(origin, destination, max_range, speed)
     print(f"Naive Planner Final Route (Cost: {result.cost:.4f} hrs)")
     print(result)
 
     # Plan the route with Dijkstra's algorithm
     dijkstras_planner = DijkstrasPlanner(
         cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
-    result2 = dijkstras_planner.plan_route(origin, destination, max_range, speed)
+    result2 = dijkstras_planner.plan(origin, destination, max_range, speed)
     print(f"\nDijkstra's Planner Final Route (Cost: {result2.cost:.4f} hrs)")
     print(result2)

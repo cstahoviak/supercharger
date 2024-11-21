@@ -17,7 +17,7 @@ This repository implements a solution to the Tesla Supercharger coding challenge
   - Next, the solution is refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
   - This approach achieves an average improvement of over [32.5 minutes](#results) over the _reference result_.
 - Algorithm (6) borrows the same optimization scheme as described in the second part of Algorithm (5), but rather than applying a single post-optimization step to the route, the optimization step is built into the cost function used by Dijkstra's algorithm to guarantee that the cost computed for each node in the graph is truly optimal.
-	- Incorporating the optimization step into the cost function evaluation comes with a runtime penalty, but is able to acheive an average improvement of over [37.5 minutes](#results) over the _reference result_ (and a 5 minute improvement over Algorithm (5)).
+	- Incorporating the optimization step into the cost function evaluation comes with a runtime penalty, but is able to achieve an average improvement of over [37.5 minutes](#results) over the _reference result_ (and a 5 minute improvement over Algorithm (5)).
 - The constrained optimization problem that both Algorithms (5) and (6) solve can be expressed as  follows
 
 	![Optimization Problem](/figs/optimization.png "Charging Durations")
