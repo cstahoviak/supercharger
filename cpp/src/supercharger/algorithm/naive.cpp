@@ -148,9 +148,6 @@ namespace supercharger::algorithm
       DEBUG("Charge duration at " << current->name() << ": " << 
         current->duration);
 
-      // Update the departure range for the current node.
-      current->departure_range = GetDepartureRange(current);
-
       // Update the total cost at the current node.
       UpdateRouteCost_(speed);
     }

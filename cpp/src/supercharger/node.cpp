@@ -18,13 +18,11 @@ namespace supercharger
   void Node::ResetNode_() {
     duration = 0.0;
     arrival_range = 0.0;
-    departure_range = 0.0;
   }
 
   void DijkstrasNode::ResetNode_() {
     duration = 0.0;
     arrival_range = 0.0;
-    departure_range = 0.0;
     visited = false;
     cost = std::numeric_limits<double>::max();
     parent_.reset();
@@ -98,7 +96,7 @@ namespace supercharger
   {
     // The range remaining after arriving at the next node is the departure
     // range at the current node - the distance to the next charger.
-    return current.departure_range - math::distance(current, next);
+    return current.departure_range() - math::distance(current, next);
   }
 
   double GetArrivalRange(
@@ -106,17 +104,5 @@ namespace supercharger
     const std::shared_ptr<const Node>& next)
   {
     return GetArrivalRange(*current, *next);
-  }
-
-  double GetDepartureRange(const Node& current)
-  {
-    // The departure range at the current node is the arrival range at the
-    // current node + range added by charging.
-    return current.arrival_range + current.duration * current.charger().rate;
-  }
-
-  double GetDepartureRange(const std::shared_ptr<const Node>& current)
-  {
-    return GetDepartureRange(*current);
   }
 } // end namespace supercharger
