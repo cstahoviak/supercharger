@@ -14,8 +14,6 @@
 
 namespace supercharger
 {
-  using PlannerResult = algorithm::PlannerResult;
-
   namespace optimize
   {
     /**

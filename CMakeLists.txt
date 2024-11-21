@@ -30,6 +30,7 @@ set(LIB_SOURCES
   "cpp/src/supercharger/network.cpp"
   "cpp/src/supercharger/node.cpp"
   "cpp/src/supercharger/supercharger.cpp"
+  "cpp/src/supercharger/types.cpp"
 )
 
 set(LIB_HEADERS
@@ -45,6 +46,7 @@ set(LIB_HEADERS
   "cpp/include/supercharger/network.h"
   "cpp/include/supercharger/node.h"
   "cpp/include/supercharger/supercharger.h"
+  "cpp/include/supercharger/types.h"
   "cpp/include/supercharger/utils.h"
 )
 

@@ -12,7 +12,7 @@
 #include "supercharger/optimize/optimizer.h"
 #include "supercharger/network.h"
 #include "supercharger/node.h"
-#include "supercharger/utils.h"
+#include "supercharger/types.h"
 
 #include <memory>
 #include <ostream>
@@ -28,7 +28,6 @@ namespace supercharger
   using DijkstrasCostFcnType = algorithm::DijkstrasCostFcnType;
   using OptimizerType = optimize::Optimizer::OptimizerType;
 
-  using PlannerResult = algorithm::PlannerResult;
   using Planner = algorithm::Planner;
   using Optimizer = optimize::Optimizer;
 
