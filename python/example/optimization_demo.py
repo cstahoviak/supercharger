@@ -21,7 +21,7 @@ if __name__ == "__main__":
     destination = "Cadillac_MI"
 
     # Create the supercharger using Dijkstra's algorithm
-    supercharger = DijkstrasPlanner(cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
+    planner = DijkstrasPlanner(cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
 
     # Set the vehicle's speed and max range
     max_range = 320
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     # Plan the route with Dijkstra's algorithm
     start = perf_counter()
-    result = supercharger.plan_route(origin, destination, max_range, speed)
+    result = planner.plan(origin, destination, max_range, speed)
     stop = perf_counter()
     print(f"Route Planning time: {(stop - start) * 1e3:.2f} ms")
     print(f"Dijkstra's Planner Final Route (Cost: {result.cost:.4f} hrs)")
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     print(optimized)
 
     # Plot the results
-    plot_durations(result, optimized)
+    # plot_durations(result, optimized)
     plot_stacked_durations(result, optimized)
     # plot_ranges(result, optimized)
 

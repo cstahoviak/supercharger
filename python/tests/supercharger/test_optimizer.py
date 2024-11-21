@@ -41,7 +41,7 @@ def planner_result():
     supercharger = DijkstrasPlanner(cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
 
     # Plan the route with Dijkstra's algorithm
-    return supercharger.plan_route(origin, destination, 320, 105)
+    return supercharger.plan(origin, destination, 320, 105)
 
 
 @pytest.fixture

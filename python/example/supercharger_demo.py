@@ -10,6 +10,7 @@ format looks like:
 """
 from pysupercharger import (
     CostFunctionType,
+    OptimizerType,
     Supercharger
 )
 
@@ -19,7 +20,10 @@ if __name__ == "__main__":
     destination = "Cadillac_MI"
 
     # Create the supercharger using Dijkstra's algorithm
-    supercharger = Supercharger(cost_type=CostFunctionType.DIJKSTRAS_OPTIMIZED)
+    supercharger = Supercharger(
+        cost_type=CostFunctionType.DIJKSTRAS_OPTIMIZED,
+        optim_type=OptimizerType.NLOPT
+    )
 
     # Set the vehicle's speed and max range
     supercharger.max_range = 320
