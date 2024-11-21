@@ -77,8 +77,6 @@ namespace supercharger
     for ( std::shared_ptr<Node>& node : other.route ) {
       // Acquire owndership of the shared_ptr from the moved-from object.
       route.push_back(std::move(node));
-      // Release ownership of the managed node.
-      node.reset();
     }
 
     return *this;
