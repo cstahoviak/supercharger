@@ -15,7 +15,7 @@
 // NOTE: When you include any of the optional casters (pybind11/eigen.h, 
 // pybind11/stl.h, etc.), you need to include them consistently in every 
 // translation unit.
-// #include <pybind11/stl.h>
+#include <pybind11/stl.h>
 
 #include <sstream>
 
@@ -43,6 +43,9 @@ void initTypes(py::module_& m)
     .def(py::init<>())
     .def(py::init<std::vector<std::shared_ptr<Node>>, double, double, double>(),
       py::arg("route"), py::arg("cost"), py::arg("max_range"), py::arg("speed"))
+    // Bind the copy constructor via a lambda.
+    // Note that pybind11 does not directly support binding the copy assignment operator.
+    .def(py::init([](const PlannerResult& other) { return PlannerResult(other); }))
     .def_readwrite("route", &PlannerResult::route)
     .def_readwrite("cost", &PlannerResult::cost)
     .def_readwrite("max_range", &PlannerResult::max_range)

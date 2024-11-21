@@ -19,8 +19,6 @@ def test_dijkstras_optimized_cost():
     # Define the route's endpoints
     origin = "Marathon_FL"
     destination = "Superior_MT"
-    # origin = "Council_Bluffs_IA"
-    # destination = "Cadillac_MI"
 
     # Define some vehicle constants
     max_range = 320
@@ -34,10 +32,6 @@ def test_dijkstras_optimized_cost():
     # Plan the routes
     py_result = py_planner.plan(origin, destination, max_range, speed)
     cpp_result = cpp_planner.plan(origin, destination, max_range, speed)
-
-    py_costs = np.array([node.cost for node in py_result.route])
-    cpp_costs = np.array([node.cost for node in cpp_result.route])
-    costs = np.column_stack((cpp_costs, py_costs))
 
     # Validate that all nodes along the route are the same
     for py_node, cpp_node in zip(py_result.route, cpp_result.route):

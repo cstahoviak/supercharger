@@ -1,6 +1,7 @@
 """
 The Python supercharger optimization module.
 """
+import copy
 from functools import partial
 from typing import List
 from warnings import warn
@@ -242,15 +243,9 @@ class NonlinearOptimizer(Optimizer):
                 f"less than len(PlannerResult.route) ({len(result.route) - 2}). "
                 f"Actual length is {len(new_durations)}.")
 
-        # TODO: Creating a copy of the route doesn't work (updated ends up
-        #  becoming an alias of result. Do I need to implement a copy
-        #  constructor for the PlannerResult class to fix this or is this
-        #  just how python works?
-        # updated = result
-        updated = PlannerResult()
-        updated.route = result.route
-        updated.max_range = result.max_range
-        updated.speed = result.speed
+        # Create the updated result as a copy of the provided result (this
+        # required binding the PlannerResult's copy constructor).
+        updated = PlannerResult(result)
 
         # Update the charging duration for all nodes between the start and end.
         for node, duration in zip(updated.route[1:-1], new_durations):
