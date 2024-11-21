@@ -88,7 +88,6 @@ namespace supercharger
 
   // Overload the string stream operator to output a Node.
   std::ostream& operator<<(std::ostream&, const Node&);
-  // std::ostream& operator<<(std::ostream&, const DijkstrasNode&);
 
 
   /**
@@ -96,9 +95,7 @@ namespace supercharger
    * by the provided "checker" executables.
    */
   std::ostream& operator<<(std::ostream&, const std::vector<Node>&);
-  // std::ostream& operator<<(std::ostream&, const std::vector<DijkstrasNode>&);
   std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<Node>>&);
-  // std::ostream& operator<<(std::ostream&, const std::vector<std::shared_ptr<DijkstrasNode>>&);
 
   /**
    * @brief Computes the charge time at the current node required to make it to

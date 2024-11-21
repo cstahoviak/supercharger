@@ -112,7 +112,7 @@ std::string to_string(const PlannerResult& result) {
   std::ostringstream os;
   size_t idx = 0;
   for ( const std::shared_ptr<const Node>& node : result.route ) {
-    os << node;
+    os << *node;
     if ( idx < result.route.size() - 1 ) {
         os << ", ";
       }

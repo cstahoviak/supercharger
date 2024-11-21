@@ -6,6 +6,24 @@
  * @date 2024-09-05
  * 
  * @copyright Copyright (c) 2024
+ * 
+ * Some notes on inheriting from std::enable_shared_from_this and what that
+ * requires of the python bindings.
+ * 
+ * - Pybind11 uses holder types to manage the lifetime of C++ objects exposed to
+ * Python. By default, it uses std::unique_ptr for this purpose.
+ * - The following python error occurs if you have a holder-type mismatch
+ * between a base class (Node) and a derived class (DijkstrasNode).
+ *    "ImportError: generic_type: type "DijkstrasNode" has a non-default holder
+ *    type while its base "supercharger::Node" does not."
+ * - The error above occurs when you have a base class with a default holder
+ * type (usually std::unique_ptr) and a derived class that requires a different
+ * holder type (e.g., std::shared_ptr).
+ * - Pybind11 doesn't allow this mismatch in holder types between a base class
+ * and its derived classes.
+ * 
+ * Because of this requirement, both Node and DijkstrasNode must inherit from
+ * std::shared_ptr<node-type>.
  */
 #include "supercharger/node.h"
 
@@ -31,7 +49,7 @@ std::optional<std::shared_ptr<DijkstrasNode>> get_parent(const DijkstrasNode& no
 
 void initNode(py::module_& m)
 {
-  py::class_<Node>(m, "Node")
+  py::class_<Node, std::shared_ptr<Node>>(m, "Node")
     .def(py::init<Charger>(), py::arg("charger"))
     .def_readwrite("duration", &Node::duration)
     .def_readwrite("arrival_range", &Node::arrival_range)
@@ -56,7 +74,7 @@ void initNode(py::module_& m)
     })
   ;
 
-  py::class_<DijkstrasNode, std::shared_ptr<DijkstrasNode>>(m, "DijkstrasNode")
+  py::class_<DijkstrasNode, Node, std::shared_ptr<DijkstrasNode>>(m, "DijkstrasNode")
     .def(py::init<Charger>(), py::arg("charger"))
     .def_readwrite("visited", &DijkstrasNode::visited)
     .def_readwrite("cost", &DijkstrasNode::cost)
@@ -67,6 +85,11 @@ void initNode(py::module_& m)
         self.parent(parent);
       }
     )
+    .def("__str__", [](const DijkstrasNode& self) { 
+      std::ostringstream os;
+      os << self;
+      return os.str();
+    })
     .def("__repr__", [](const DijkstrasNode& self) {
       std::string parent_name{"NULL"};
       if ( std::shared_ptr<Node> parent = self.parent().lock() ) {
@@ -74,7 +97,7 @@ void initNode(py::module_& m)
       }
 
       std::ostringstream os;
-      os << "Node(name: '" << self.name() << "', ";
+      os << "DijkstrasNode(name: '" << self.name() << "', ";
       os << "rate: " << self.charger().rate << ", ";
       os << "duration: " << self.duration << ", ";
       os << "arrival_range: " << self.arrival_range << ", ";
