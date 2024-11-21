@@ -8,13 +8,11 @@
  * 
  * @copyright Copyright (c) 2024
  */
-#include "supercharger/algorithm/planner.h"
+#include "supercharger/types.h"
 
 
 namespace supercharger::optimize
 {
-  using PlannerResult = algorithm::PlannerResult;
-
   /**
    * @brief Defines the public interface for all optimization classes.
    */

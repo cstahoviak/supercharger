@@ -9,6 +9,7 @@ set(TEST_SOURCES
   "optimize/test_nlopt.cpp"
   "test_math.cpp"
   "test_supercharger.cpp"
+  "test_types.cpp"
 )
 
 # Create the test executable

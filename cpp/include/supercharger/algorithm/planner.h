@@ -10,6 +10,7 @@
  */
 #include "supercharger/math.h"
 #include "supercharger/node.h"
+#include "supercharger/types.h"
 
 #include <memory>
 #include <functional>
@@ -22,38 +23,6 @@ namespace supercharger::algorithm
 {
   using DijkstrasCostFcnType = 
     std::function<double(const DijkstrasNode&, const DijkstrasNode&, double, double)>;
-
-  /**
-   * @brief Stores the resulting output of a path planning algorithm. The
-   * result contains both a path and a total cost (duration in hours) of the
-   * planned route.
-   * 
-   * TODO: Think of a way to distinguish the output of a Planner from the
-   * output of an Optimizer.
-   */
-  struct PlannerResult
-  {
-    std::vector<std::shared_ptr<Node>> route;
-    double cost{0};
-    double max_range{0};
-    double speed{0};
-
-    PlannerResult() = default;
-    PlannerResult(std::vector<std::shared_ptr<Node>>, double, double, double);
-
-    const std::vector<double>& durations() {
-      if ( durations_.size() != route.size() ) {
-        durations_.clear();
-        for ( const std::shared_ptr<const Node>& node : route ) {
-          durations_.push_back(node->duration);
-        }
-      }
-      return durations_;
-    }
-
-    private:
-      std::vector<double> durations_;
-  };
 
   /**
    * @brief Defines the public interface for all planning algorithm classes.

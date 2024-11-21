@@ -9,6 +9,7 @@
  */
 #include "supercharger/optimize/naive.h"
 #include "supercharger/logging.h"
+#include "supercharger/math.h"
 
 namespace supercharger::optimize
 {

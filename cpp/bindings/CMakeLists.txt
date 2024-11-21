@@ -12,6 +12,7 @@ set(SOURCES
   "node.cpp"
   "optimize.cpp"
   "supercharger.cpp"
+  "types.cpp"
 
   "module.cpp"
 )

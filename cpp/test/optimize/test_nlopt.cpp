@@ -51,7 +51,7 @@ class NLOptimizerTestFixture : public testing::Test
     }
 
     // Store the result of Dijkstra's planning algorithm.
-    algorithm::PlannerResult planner_result;
+    PlannerResult planner_result;
 
     // Store data related to the optimization problem.
     unsigned n;

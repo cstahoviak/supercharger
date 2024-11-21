@@ -20,14 +20,7 @@
 
 
 namespace supercharger::algorithm
-{  
-  PlannerResult::PlannerResult(
-    std::vector<std::shared_ptr<Node>> route,
-    double cost,
-    double max_range,
-    double speed) :
-      route(std::move(route)), cost(cost), max_range(max_range), speed(speed) {}
-
+{
   PlannerResult Planner::Plan(
     const std::string& origin,
     const std::string& destination,

@@ -17,8 +17,8 @@ using namespace supercharger::algorithm;
 
 TEST(TestPlanner, TestGetInvalidPlanner)
 {
-  // Ensure that attempting to create a "Naive" planner with a custom
-  // cost function fails.
+  // Ensure that attempting to create a "Naive" planner with a custom cost
+  // function fails.
   EXPECT_THROW(
     Planner::GetPlanner(Planner::AlgorithmType::NAIVE, SimpleCost),
     std::invalid_argument

@@ -45,7 +45,7 @@ if __name__ == "__main__":
     print(optimized)
 
     # Plot the results
-    # plot_durations(result, optimized)
+    plot_durations(result, optimized)
     plot_stacked_durations(result, optimized)
     # plot_ranges(result, optimized)
 

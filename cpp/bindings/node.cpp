@@ -19,7 +19,7 @@
  * - The error above occurs when you have a base class with a default holder
  * type (usually std::unique_ptr) and a derived class that requires a different
  * holder type (e.g., std::shared_ptr).
- * - Pybind11 doesn't allow this mismatch in holder types between a base class
+ * - Pybind11 doesn't allow for a mismatch in holder types between a base class
  * and its derived classes.
  * 
  * Because of this requirement, both Node and DijkstrasNode must inherit from
