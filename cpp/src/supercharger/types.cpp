@@ -35,35 +35,52 @@ namespace supercharger
     }
   }
 
+  // Prior to writing the Move Assignment operator, code duplication within the
+  // Copy Assignment operator (from the Copy Constructor) was required to make
+  // the Copy Assignment operator work.
+  // PlannerResult& PlannerResult::operator=(const PlannerResult& other) {
+  //   // Directly copy the data stored via primitive types.
+  //   cost = other.cost;
+  //   max_range = other.max_range;
+  //   speed = other.speed;
+
+  //   // Create a new node, managed by a new shared_ptr.
+  //   for ( const std::shared_ptr<Node>& node : other.route ) {
+  //     if ( auto dijkstras_node = std::dynamic_pointer_cast<DijkstrasNode>(node) )
+  //     {
+  //       route.emplace_back(std::make_shared<DijkstrasNode>(*dijkstras_node));
+  //     }
+  //     else {
+  //       route.emplace_back(std::make_shared<Node>(*node));
+  //     }
+  //   }
+  //   return *this;
+  // }
+
   PlannerResult& PlannerResult::operator=(const PlannerResult& other) {
+    // Implement the copy assignment operator via the copy-and-swap idiom.
+    // 1. Use the copy contructor to create a temporary object.
+    // 2. Swap the data members of this object with the tempory object. Using
+    // std::move requires implementing the move assignment operator.
+
+    PlannerResult temp(other);
+    std::swap(*this, temp);
+    return *this;
+  }
+
+  PlannerResult& PlannerResult::operator=(PlannerResult&& other) {
     // Directly copy the data stored via primitive types.
     cost = other.cost;
     max_range = other.max_range;
     speed = other.speed;
 
-    // Create a new node, managed by a new shared_ptr.
-    for ( const std::shared_ptr<Node>& node : other.route ) {
-      if ( auto dijkstras_node = std::dynamic_pointer_cast<DijkstrasNode>(node) )
-      {
-        route.emplace_back(std::make_shared<DijkstrasNode>(*dijkstras_node));
-      }
-      else {
-        route.emplace_back(std::make_shared<Node>(*node));
-      }
+    for ( std::shared_ptr<Node>& node : other.route ) {
+      // Acquire owndership of the shared_ptr from the moved-from object.
+      route.push_back(std::move(node));
+      // Release ownership of the managed node.
+      node.reset();
     }
+
     return *this;
   }
-
-  // PlannerResult& PlannerResult::operator=(const PlannerResult& other) {
-  //   // Implement the copy assignment operator via the copy-and-swap idiom.
-  //   // 1. Use the copy contructor to create a temporary object.
-  //   // 2. Swap the data members of this object with the tempory object.
-
-  //   // TODO: This implementation segfaults. Must be related to storing the route
-  //   // as a vector of shared_ptrs, or the fact that DijkstrasNode has a
-  //   // weak_ptr member?
-  //   PlannerResult temp(other);
-  //   std::swap(*this, temp);
-  //   return *this;
-  // }
 }

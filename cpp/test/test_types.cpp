@@ -38,7 +38,11 @@ TEST(TestTypes, TestCopyPlannerResult)
   }
 
   // Copy the PlannerResult (uses the PlannerResult's copy ctor).
-  PlannerResult copy(result);
+  // PlannerResult copy(result);
+  
+  // Copy the PlannerResult (uses the PlannerResult's copy assignment operator).
+  PlannerResult copy;
+  copy = result;
 
   // Verify that top-level data was copied correctly.
   EXPECT_EQ(copy.cost, result.cost);

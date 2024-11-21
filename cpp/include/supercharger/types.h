@@ -36,6 +36,9 @@ namespace supercharger
     PlannerResult(const PlannerResult&);
     PlannerResult& operator=(const PlannerResult&);
 
+    // Move assignment operator.
+    PlannerResult& operator=(PlannerResult&&);
+
     const std::vector<double>& durations() {
       if ( durations_.size() != route.size() ) {
         durations_.clear();
