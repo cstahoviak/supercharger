@@ -54,8 +54,8 @@ namespace supercharger
    * @brief Dijkstra's Node adds a parent which it uses to traverse a linked
    * list of parents from the destination node back to the origin.
    * 
-   * See the following StackOverflow page on info related to implementing a
-   * graph node using a weak_ptr to store the parent node:
+   * See the following Stackoverflow page for info related to implementing a
+   * graph node using a std::weak_ptr to store the parent node:
    * 
    * https://stackoverflow.com/questions/61723200/returning-a-weak-ptr-member-variable
    */

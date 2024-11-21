@@ -41,6 +41,10 @@ namespace supercharger::algorithm
     PlannerResult() = default;
     PlannerResult(std::vector<std::shared_ptr<Node>>, double, double, double);
 
+    // Copy constructor and copy assignment operator.
+    PlannerResult(const PlannerResult&);
+    PlannerResult& operator=(const PlannerResult&);
+
     const std::vector<double>& durations() {
       if ( durations_.size() != route.size() ) {
         durations_.clear();
