@@ -264,11 +264,6 @@ class NonlinearOptimizer(Optimizer):
             node.cost = previous.cost + previous.duration + \
                         distance(previous, node) / result.speed
 
-            # For all nodes but the final node, update the departure range
-            if idx < len(result.route) - 1:
-                node.departure_range = node.arrival_range + \
-                                       node.duration * node.charger.rate
-
         # Finally, update the total cost of the route
         updated.cost = updated.route[-1].cost
         return updated

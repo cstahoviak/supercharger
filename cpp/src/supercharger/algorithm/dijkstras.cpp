@@ -69,7 +69,7 @@ namespace supercharger::algorithm
       decltype(compare)> unvisited(compare);
 
     // Update the origin node's data and add it to the unvisited set.
-    const std::shared_ptr<DijkstrasNode> origin_node = 
+    const auto origin_node = 
       std::static_pointer_cast<DijkstrasNode>(nodes_.at(origin));
     origin_node->arrival_range = max_range;
     origin_node->cost = 0;
@@ -121,7 +121,7 @@ namespace supercharger::algorithm
           // these values during ConstructFinalRoute_().
 
           // Compute the charge time at the current node to reach the neighbor.
-          double duration = GetChargeTime(*current_node, *neighbor);
+          double duration = GetChargeTime(current_node, neighbor);
 
           // Compute the departure range at the current node.
           double departure_range = current_node->arrival_range + 
@@ -131,7 +131,7 @@ namespace supercharger::algorithm
           // the charge duration is calculated properly when the neighbor node
           // is considered as the "current" node.
           neighbor->arrival_range = departure_range - 
-            math::distance(*current_node, *neighbor);
+            math::distance(current_node, neighbor);
 
           // Add the neighbor to the unvisited set.
           // NOTE: It's likely that nodes that are already in the queue will be
@@ -182,7 +182,7 @@ namespace supercharger::algorithm
 
     for ( const auto& [name, node] : nodes_ ) {
       // Treat the node as a DijkstrasNode.
-      const std::shared_ptr<DijkstrasNode>& dijkstras_node =
+      const auto& dijkstras_node = 
         std::static_pointer_cast<DijkstrasNode>(node);
 
       current_to_neighbor = math::distance(current, dijkstras_node);
@@ -237,9 +237,6 @@ namespace supercharger::algorithm
       current->duration = GetChargeTime(current, next);
       DEBUG(current->name() << " updated charge time: " << current->duration <<
         " hrs");
-
-      // Compute the departure range at the current node.
-      current->departure_range = GetDepartureRange(current);
 
       // Compute the arrival range at the neighbor node.
       next->arrival_range = GetArrivalRange(current, next);

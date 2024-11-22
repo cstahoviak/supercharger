@@ -18,6 +18,8 @@ if __name__ == "__main__":
     origin = "Marathon_FL"
     destination = "Superior_MT"
 
+    print(f"\nPlanning a route between '{origin}' and '{destination}'.")
+
     # These endpoints will show a cost difference between the final two algos.
     # origin = "Burlington_WA"
     # destination = "Marathon_FL"

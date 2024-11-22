@@ -25,13 +25,17 @@ namespace supercharger
     public:
       Node(Charger charger) : charger_(std::move(charger)) {};
 
-      double duration{0};         // [hrs] charging time at this node 
-      double arrival_range{0};    // [km] Vehicle range upon arrival at this node.
-      double departure_range{0};  // [km] Post-charging range of vehicle.
+      double duration{0};         // [hrs] Charging time at this node 
+      double arrival_range{0};    // [km] Vehicle range upon arrival at this node
       
       // "identity-oriented" getters
       const Charger& charger() const { return charger_; }
       const std::string& name() const { return charger_.name; }
+
+      // The post-charging range of vehicle [km].
+      const double departure_range() const {
+        return arrival_range + duration * charger_.rate;
+      }
 
       /**
        * @brief Resets the Node's attributes to their original values.
@@ -125,14 +129,4 @@ namespace supercharger
     const std::shared_ptr<const Node>&,
     const std::shared_ptr<const Node>&
   );
-
-  /**
-   * @brief Computes the departure range at the current node given the current
-   * node's arrival range and charging duration.
-   * 
-   * @param current The current node.
-   * @return double The departure range after charging at the current node.
-   */
-  double GetDepartureRange(const Node&);
-  double GetDepartureRange(const std::shared_ptr<const Node>&);
 } // end namespace supercharger

@@ -7,7 +7,6 @@
  * @date 2024-11-21
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/node.h"
 
@@ -39,15 +38,7 @@ namespace supercharger
     // Move assignment operator.
     PlannerResult& operator=(PlannerResult&&);
 
-    const std::vector<double>& durations() {
-      if ( durations_.size() != route.size() ) {
-        durations_.clear();
-        for ( const std::shared_ptr<const Node>& node : route ) {
-          durations_.push_back(node->duration);
-        }
-      }
-      return durations_;
-    }
+    const std::vector<double>& durations();
 
     private:
       std::vector<double> durations_;

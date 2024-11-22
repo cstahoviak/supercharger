@@ -70,7 +70,6 @@ TEST_F(TypesTestFixture, TestPlannerResultCopyConstructor)
     EXPECT_EQ(copy.route[idx]->name(), result.route[idx]->name());
     EXPECT_EQ(copy.route[idx]->duration, result.route[idx]->duration);
     EXPECT_EQ(copy.route[idx]->arrival_range, result.route[idx]->arrival_range);
-    EXPECT_EQ(copy.route[idx]->departure_range, result.route[idx]->departure_range);
   }
 
   // Verify that the use count for each node is still 1.
@@ -101,7 +100,6 @@ TEST_F(TypesTestFixture, TestPlannerResultCopyAssignment)
     EXPECT_EQ(copy.route[idx]->name(), result.route[idx]->name());
     EXPECT_EQ(copy.route[idx]->duration, result.route[idx]->duration);
     EXPECT_EQ(copy.route[idx]->arrival_range, result.route[idx]->arrival_range);
-    EXPECT_EQ(copy.route[idx]->departure_range, result.route[idx]->departure_range);
   }
 
   // Verify that the use count for each node is still 1.

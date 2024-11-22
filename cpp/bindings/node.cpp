@@ -53,7 +53,7 @@ void initNode(py::module_& m)
     .def(py::init<Charger>(), py::arg("charger"))
     .def_readwrite("duration", &Node::duration)
     .def_readwrite("arrival_range", &Node::arrival_range)
-    .def_readwrite("departure_range", &Node::departure_range)
+    .def_property_readonly("departure_range", &Node::departure_range)
     .def_property_readonly("charger", &Node::charger)
     .def_property_readonly("name", &Node::name)
     .def("reset", &Node::Reset)
@@ -69,7 +69,7 @@ void initNode(py::module_& m)
       os << "rate: " << self.charger().rate << ", ";
       os << "duration: " << self.duration << ", ";
       os << "arrival_range: " << self.arrival_range << ", ";
-      os << "departure_range: " << self.departure_range << ")";
+      os << "departure_range: " << self.departure_range() << ")";
       return os.str();
     })
   ;
@@ -101,7 +101,7 @@ void initNode(py::module_& m)
       os << "rate: " << self.charger().rate << ", ";
       os << "duration: " << self.duration << ", ";
       os << "arrival_range: " << self.arrival_range << ", ";
-      os << "departure_range: " << self.departure_range << ", ";
+      os << "departure_range: " << self.departure_range() << ", ";
       os << "cost: " << self.cost << ", ";
       os << "visited: " << (self.visited) ? "True" : "False";
       os << ", parent: '" << parent_name << "')";
@@ -115,8 +115,6 @@ void initNode(py::module_& m)
   m.def("get_arrival_range",
     py::overload_cast<const Node&, const Node&>(&GetArrivalRange),
     py::arg("current"), py::arg("next"));
-  m.def("get_departure_range",
-    py::overload_cast<const Node&>(&GetDepartureRange), py::arg("current"));
     
   // TODO: It might be cleaner if could bind __str__ and __repr__ to operator<<,
   // but I haven't been able to make that work yet.

@@ -7,7 +7,6 @@ from pysupercharger import (
     dijkstras_simple_cost,
     DijkstrasNode,
     get_charge_time,
-    get_departure_range,
     get_arrival_range,
     NLOptimizer,
     PlannerResult
@@ -49,9 +48,6 @@ def optimized_cost(
         for current_node, next_node in zip(route[:-1], route[1:]):
             # Compute the charge time at the current node to reach the neighbor.
             current_node.duration = get_charge_time(current_node, next_node)
-
-            # Compute the departure range at the current node.
-            current_node.departure_range = get_departure_range(current_node)
 
             # Compute the arrival range at the neighbor node.
             next_node.arrival_range = get_arrival_range(current_node, next_node)

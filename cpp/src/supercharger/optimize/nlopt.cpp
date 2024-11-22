@@ -265,11 +265,6 @@ namespace supercharger::optimize
       // Update the cost at the current node.
       current->cost = previous->cost + previous->duration + \
         math::distance(previous, current) / result.speed;
-
-      // For all nodes but the final node, update the departure range.
-      if ( iter != optimized.route.end() - 1 ) {
-        current->departure_range = GetDepartureRange(current);
-      }
     }
 
     // Finally, update the total cost of the route.

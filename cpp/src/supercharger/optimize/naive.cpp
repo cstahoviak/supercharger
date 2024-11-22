@@ -54,18 +54,18 @@ namespace supercharger::optimize
     // charge the vehicle enough at the max-rate node to make it to the
     // destination. Otherwise, the distance remaining is greater than the 
     // maximum range of the vehicle, so we can charge the vehicle fully. 
-    max_node->departure_range = ( dist_remaining <= result.max_range ) ? 
-      dist_remaining - max_node->departure_range : result.max_range;
+    double departure_range = ( dist_remaining <= result.max_range ) ? 
+      dist_remaining - max_node->departure_range() : result.max_range;
 
     // Compute the charging duration at the max-rate node.
-    max_node->duration = (max_node->departure_range - max_node->arrival_range) / 
+    max_node->duration = (departure_range - max_node->arrival_range) / 
       max_node->charger().rate;
 
     // For the max-rate node, update the newly calculated charge duration.
     DEBUG("Charging for " << max_node->duration << " hrs at " <<
       max_node->name() << ".");
     DEBUG("Leaving " << max_node->name() << " with a range of " <<
-      max_node->departure_range << " km.");
+      max_node->departure_range() << " km.");
 
     // True if using DijkstrasNodes.
     bool is_dijkstras{false};
@@ -78,7 +78,7 @@ namespace supercharger::optimize
       // For all remaining nodes on the route, update the range remaining
       // after arriving at the node.
       current->arrival_range =
-        prev->departure_range - math::distance(prev, current);
+        prev->departure_range() - math::distance(prev, current);
 
       // If using DijkstrasNodes, update the node cost.
       if ( auto current_ptr = std::dynamic_pointer_cast<DijkstrasNode>(current) )
@@ -105,10 +105,6 @@ namespace supercharger::optimize
 
         DEBUG("Updating charge duration at " << current->name() << " from " <<
           route.at(idx)->duration << " hrs to " << current->duration << " hrs.");
-
-        // Update the departure range.
-        current->departure_range = current->arrival_range +
-          current->duration * current->charger().rate;
       }
     }
 
