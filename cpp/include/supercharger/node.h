@@ -25,14 +25,14 @@ namespace supercharger
     public:
       Node(Charger charger) : charger_(std::move(charger)) {};
 
-      double duration{0};         // [hrs] charging time at this node 
+      double duration{0};         // [hrs] Charging time at this node 
       double arrival_range{0};    // [km] Vehicle range upon arrival at this node
       
       // "identity-oriented" getters
       const Charger& charger() const { return charger_; }
       const std::string& name() const { return charger_.name; }
 
-      // [km] the post-charging range of vehicle.
+      // The post-charging range of vehicle [km].
       const double departure_range() const {
         return arrival_range + duration * charger_.rate;
       }

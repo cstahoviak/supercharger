@@ -35,6 +35,7 @@ from pysupercharger import (
     AlgorithmType,
     CostFunctionType,
     distance,
+    DijkstrasPlanner,
     Planner,
     OptimizerType,
     Supercharger
@@ -42,6 +43,12 @@ from pysupercharger import (
 
 # Get the logger
 logger = get_logger(os.path.basename(__file__))
+
+# Set some module-level variables.
+_planner = DijkstrasPlanner(cost_type=CostFunctionType.DIJKSTRAS_SIMPLE)
+_max_range = 320
+_speed = 105
+
 
 def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
     """
@@ -51,9 +58,11 @@ def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
     Returns:
         An AlgoStats instance containing the 'reference' cost of the route.
     """
+    # Plan the route via Dijkstra's algorithm
+    result = _planner.plan(endpoints[0], endpoints[1], _max_range, _speed)
+
     # Capture the "reference result" cost
-    route = run_executable(str(supercharger_path), endpoints[0], endpoints[1])
-    output = run_executable(str(checker_path), route)
+    output = run_executable(str(checker_path), str(result))
     reference_cost = float(output.split('\n')[1].split()[-1])
     return AlgoStats(time=np.nan, cost=reference_cost)
 
@@ -61,10 +70,6 @@ def get_reference_result(endpoints: tuple[str, str]) -> AlgoStats:
 if __name__ == "__main__":
     # Define some statistical variables
     n_samples = 2000
-
-    # Set some vehicle parameters
-    max_range = 320
-    speed = 105
 
     planner_descriptions = {
         "reference": "Reference",
@@ -88,18 +93,22 @@ if __name__ == "__main__":
 
     # Set the max range and speed for each planner
     for planner in planners.values():
-        planner.max_range = max_range
-        planner.speed = speed
+        planner.max_range = _max_range
+        planner.speed = _speed
 
     # Choose a collection of random destinations from the network.
+    start = perf_counter()
     network = planners["planner_1"].network
     cities = list(network.keys())
     endpoints = set()
     while len(endpoints) < n_samples:
         choice = np.random.choice(cities, size=2)
-        if distance(network[choice[0]], network[choice[1]]) > 3 * max_range:
+        if distance(network[choice[0]], network[choice[1]]) > 3 * _max_range:
             endpoints.add(tuple(choice))
     endpoints = list(endpoints)
+    end = perf_counter()
+    logger.info(f"{n_samples} unique routes selected in "
+                f"{(end - start) * 1e3:.2f} ms.")
 
     # Define the application paths
     supercharger_path = supercharger_build() / 'supercharger'
@@ -111,10 +120,14 @@ if __name__ == "__main__":
         results[name] = []
 
     # Process the reference results in batch via parallel processing.
+    start = perf_counter()
     with ProcessPoolExecutor() as executor:
         reference_result = executor.map(get_reference_result, endpoints)
         results["reference"] = [result for result in reference_result]
     results.move_to_end("reference", last=False)
+    end = perf_counter()
+    logger.info(f"Reference result for all {n_samples} routes computed in "
+          f"{(end - start):.2f} secs.\n")
 
     for m, (origin, destination) in enumerate(endpoints):
         logger.info(f"({m}) Planning route between '{origin}' and "
