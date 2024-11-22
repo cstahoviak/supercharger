@@ -13,21 +13,21 @@ This repository implements a solution to the Tesla Supercharger coding challenge
 ### Solution Method
 
 - Algorithm (5) (see Tables 1, 2 and 3 in the [Rsesults](#results) section) approaches the route planning problem as a two-step process:
-  - First, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. In this implementation, Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the vehicle's arrival range at each charger will be zero.
-  - Next, the solution is refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
+  - Given an undirected, weighted graph that represents the Tesla Supercharger network, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. In this implementation, Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the vehicle's arrival range at each charger will be zero.
+  - To account for additional information (encoded by the network's varying charging rates) that is not represented by the edge weights, the solution is then refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
   - This approach achieves an average improvement of over [32.5 minutes](#results) over the _reference result_.
 - Algorithm (6) borrows the same optimization scheme as described in the second part of Algorithm (5), but rather than applying a single post-optimization step to the route, the optimization step is built into the cost function used by Dijkstra's algorithm to guarantee that the cost computed for each node in the graph is truly optimal.
 	- Incorporating the optimization step into the cost function evaluation comes with a runtime penalty, but is able to achieve an average improvement of over [37.5 minutes](#results) over the _reference result_ (and a 5 minute improvement over Algorithm (5)).
-- The constrained optimization problem that both Algorithms (5) and (6) solve can be expressed as  follows
+- The constrained optimization problem that both Algorithms (5) and (6) solve can be expressed as follows
 
 	![Optimization Problem](/figs/optimization.png "Charging Durations")
 
 	where the objective function is the sum of charging durations at nodes `[2, n-1]` (not including the origin and the destination), and the constraint function ensures that the arrival range at each node `[3, n]` is greater than zero, i.e. the vehicle does not run out of charge at any point along the route. The matrix `A` is a function of the charging rates, and the vectors `r` and `d` are the charging rates and distances between adjacent nodes, respectively.
 
 ### Features
-- The `pysupercharger` module is provided to support python development.
-  - The python bindings are written using the [`pybind11`](https://pybind11.readthedocs.io/en/stable/) library.
-  - Both the `Planner` and `Optimizer` classes are extensible on the python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimize` module) inherits from the bound `Optimizer` class.
+- The `pysupercharger` module is provided to support Python development.
+  - The Python bindings are written using the [`pybind11`](https://pybind11.readthedocs.io/en/stable/) library.
+  - Both the `Planner` and `Optimizer` classes are extensible on the Python side. For example, the pure-python `NonlinearOptimizer` class (from the `supercharger.optimize` module) inherits from the bound `Optimizer` class.
   - This workflow enabled rapid prototyping of the constrained optimization improvement by allowing me to experiment with Scipy `minimize` before implementing the optimization solution in C++ via NLOpt.
 
 
@@ -185,7 +185,7 @@ The following tables describe algorithm performance (in terms of both route cost
 | 5   | Dijkstra's + Post Optimization            | -32:33  | -21:34  | -01:41:56  | -00:16  |
 | 6   | Dijkstra's with _Optimized_ Cost Function | -37:49  | -23:35  | -02:05:01  | -00:16  |
 
-Table 2: Algorithm performance (in terms of route cost in hours) relative to the _reference_ result. Algorithm (6) has an average improvement 37:49 over the _reference_ result, and an average improvement of 5:16 over algorithm (5).
+Table 2: Algorithm performance (in terms of route cost in hours) relative to the _reference_ result. Algorithm (6) has an average improvement of 37:49 over the _reference_ result, and an average improvement of 5:16 over algorithm (5).
 
 | Num | Algorithm                                  | mean    | std     | max      | min   |
 |:---:|:-------------------------------------------|:-------:|:-------:|:--------:|:-----:|
@@ -196,11 +196,11 @@ Table 2: Algorithm performance (in terms of route cost in hours) relative to the
 
 Table 3: Planning Algorithm profiling (in milliseconds).
 
-*The A-Star algorithm might be able to improve on this runtime performance by being more efficient in directing the exploration of nodes along the route.
+*The A-Star algorithm should be able to improve on this runtime performance by being more efficient in directing the exploration of nodes along the route.
 
 
 ### Constrained Nonlinear Optimization with SciPy `minimize`
-Adding python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limitations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
+Adding Python bindings to the project via the `pybind11` package has enabled experimentation with various types of optimization algorithms, and has given me additional insight about the use cases and limitations of specific methods. The table below details the types of problems that each optimization algorithm is (and isn't) suitable for.
 
 Based on the information in the table, there are only three optimization algorithms suitable for __constrained optimization__: `COBYQA`, `SLSQP` and the Trust-Region Constrained (`trust-constr`) method.
 
@@ -232,4 +232,4 @@ A ✅ in the "Gradient" column indicates that a user-supplied gradient function 
 2. Add Valgrind to the C++ unit tests.
 3. Add the [A* algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) for route planning.
 4. Use [Optuna](https://optuna.org/) python package to tune the two parameters of the "Naive" planning algorithm cost function.
-5. Add benchmarking to `Planner::PlanRoute` to compare the three different route planners: my _naive_ planner, Dijkstra's and A*. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c). 
+5. Add benchmarking to `Planner::PlanRoute_` to compare runtime performance of the route planners. Possibly achieve this via function ["decoration"](https://stackoverflow.com/questions/40392672/whats-the-equivalent-of-python-function-decorators-in-c). 
