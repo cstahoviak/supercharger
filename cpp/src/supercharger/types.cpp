@@ -82,4 +82,15 @@ namespace supercharger
 
     return *this;
   }
+
+  const std::vector<double>& PlannerResult::durations(){
+    if ( durations_.size() != route.size() ) {
+      durations_.clear();
+      for ( const std::shared_ptr<const Node>& node : route ) {
+        durations_.push_back(node->duration);
+      }
+    }
+    
+    return durations_;
+  }
 }
