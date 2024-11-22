@@ -12,8 +12,6 @@
 
 #include <cmath>
 
-#define M_PI 3.14159265358979323846
-#define M_EARTH_RADIUS_KM 6356.752    // [km]
 
 namespace supercharger::math
 {
@@ -35,6 +33,9 @@ namespace supercharger::math
   inline double great_circle_distance(
     const double lat1, const double lon1, const double lat2, const double lon2)
   {
+    // The radius of the earth in km.
+    static constexpr double M_EARTH_RADIUS_KM = 6356.752;
+
     // Convert lat/long to radians
     const double phi1 = lat1 * M_PI / 180;
     const double phi2 = lat2 * M_PI / 180;
