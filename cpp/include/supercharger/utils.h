@@ -13,10 +13,13 @@
 #include <functional>
 
 namespace supercharger
-{
-  // TODO: Wanted to use this as a place-holder for a null cost function, but I
-  // wasn't able to get it to work.
-  // Source: https://stackoverflow.com/questions/57522428/make-the-compiler-generate-an-empty-default-function-for-an-stdfunction
+{  
+  /**
+   * @brief Wanted to use this as a place-holder for a null cost function, but I
+   * wasn't able to get it to work.
+   * 
+   * Source: https://stackoverflow.com/questions/57522428/make-the-compiler-generate-an-empty-default-function-for-an-stdfunction
+   */
   struct nullfunc_t
   {
     template<class F>
