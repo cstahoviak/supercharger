@@ -7,7 +7,6 @@
  * @date 2024-11-21
  * 
  * @copyright Copyright (c) 2024
- * 
  */
 #include "supercharger/node.h"
 

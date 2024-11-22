@@ -25,6 +25,8 @@ namespace supercharger
   {
     // Create a new node, managed by a new shared_ptr.
     for ( const std::shared_ptr<Node>& node : other.route ) {
+      // TODO: Can this the simplified (the if statement removed) and replaced
+      // by a single emplace_back() call that is "polymorphic aware"?
       if ( auto dijkstras_node = std::dynamic_pointer_cast<DijkstrasNode>(node) )
       {
         route.emplace_back(std::make_shared<DijkstrasNode>(*dijkstras_node));
@@ -74,7 +76,7 @@ namespace supercharger
     max_range = other.max_range;
     speed = other.speed;
 
-    for ( std::shared_ptr<Node>& node : other.route ) {
+    for ( const std::shared_ptr<Node>& node : other.route ) {
       // Acquire owndership of the shared_ptr from the moved-from object.
       route.push_back(std::move(node));
     }
