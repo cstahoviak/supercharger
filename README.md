@@ -49,11 +49,7 @@ __Input__: Your program should take as input two strings: `“start charger name
 __Output__: Your program’s only output should be a print to `std::out` of a
 string in the format:
 
-	initial charger name, first charger name, charge time in hrs, 
-	second charger name, charge time in hrs,
-	…,
-	…,
-	goal charger name
+	initial charger name, first charger name, charge time in hrs, second charger name, charge time in hrs, …, goal charger name
 
 This is the format required by the checker program as well, for example the
 command
