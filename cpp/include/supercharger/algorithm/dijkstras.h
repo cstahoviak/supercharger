@@ -116,7 +116,8 @@ namespace supercharger::algorithm
    * 
    * @param current The current Node.
    * @param neighbor  The neighbor Node.
-   * @param speed The vehicle's constant velocity.
+   * @param max_range The vehicle's maximum range [km].
+   * @param speed The vehicle's constant velocity [km/hr].
    * @return double The cost to the neighbor node through the current node.
    */
   double SimpleCost(const DijkstrasNode&, const DijkstrasNode&, double, double);
@@ -125,7 +126,11 @@ namespace supercharger::algorithm
    * @brief Implements an "optimized" cost function for Dijkstra's algorithm.
    * The optimized cost function uses a constrained optimization scheme to...
    * 
-   * @return double 
+   * @param current The current Node.
+   * @param neighbor  The neighbor Node.
+   * @param max_range The vehicle's maximum range [km].
+   * @param speed The vehicle's constant velocity [km/hr].
+   * @return double The cost to the neighbor node through the current node.
    */
   double OptimizedCost(const DijkstrasNode&, const DijkstrasNode&, double, double);
 } // end namespace supercharger::algorithm

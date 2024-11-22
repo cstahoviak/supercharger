@@ -236,9 +236,6 @@ namespace supercharger::algorithm
     return cost;
   }
 
-  // TODO: Is there a way that I can avoid the lines required to copy the
-  // attributes of the node? Maybe the Node needs to implement a copy
-  // constructor?
   std::vector<std::shared_ptr<Node>> NaivePlanner::ConstructRoute_(
     const Node& final)
   {
@@ -252,7 +249,6 @@ namespace supercharger::algorithm
     // Add the final Node.
     route.emplace_back(std::make_shared<Node>(final));
 
-    // TODO: The departure_range at Sheboygan_MI is not being set correctly.
     return route;
   }
 

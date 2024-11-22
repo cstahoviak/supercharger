@@ -69,7 +69,7 @@ namespace supercharger::algorithm
       decltype(compare)> unvisited(compare);
 
     // Update the origin node's data and add it to the unvisited set.
-    const std::shared_ptr<DijkstrasNode> origin_node = 
+    const auto origin_node = 
       std::static_pointer_cast<DijkstrasNode>(nodes_.at(origin));
     origin_node->arrival_range = max_range;
     origin_node->cost = 0;
@@ -182,7 +182,7 @@ namespace supercharger::algorithm
 
     for ( const auto& [name, node] : nodes_ ) {
       // Treat the node as a DijkstrasNode.
-      const std::shared_ptr<DijkstrasNode>& dijkstras_node =
+      const auto& dijkstras_node = 
         std::static_pointer_cast<DijkstrasNode>(node);
 
       current_to_neighbor = math::distance(current, dijkstras_node);
