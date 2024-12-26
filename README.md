@@ -29,7 +29,7 @@ The constrained optimization problem that both Algorithms (5) and (6) solve can 
 \end{cases}
 ```
 
-where the objective function is the sum of charging durations at nodes $[2, n-1]$ (not including the origin and the destination), and the constraint function ensures that the arrival range at each node $[3, n]$ is greater than zero, i.e. the vehicle does not run out of charge at any point along the route. The matrix $\mathbf{A}$ is a function of the charging rates, and the vectors $\mathbf{r}$ and $\mathbf{d}$ are the charging rates and distances between adjacent nodes, respectively.
+where the objective function is the sum of charging durations at nodes $[2, n-1]$ (not including the origin and the destination), and the constraint function ensures that the arrival range at each node $[3, n]$ is greater than zero, i.e. the vehicle does not run out of charge at any point along the route. The matrix $\mathbf{A}$ is a function of the charging rates, the vectors $\mathbf{r}$ and $\mathbf{d}$ are the charging rates and distances between adjacent nodes, respectively, and $a_2$ is the arrival range at node $2$.
 
 ### Features
 - The `pysupercharger` module is provided to support Python development.
