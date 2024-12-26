@@ -12,7 +12,7 @@ This repository implements a solution to the Tesla Supercharger coding challenge
 
 ### Solution Method
 
-- Algorithm (5) (see Tables 1, 2 and 3 in the [Rsesults](#results) section) approaches the route planning problem as a two-step process:
+- Algorithm (5) (see Tables 1, 2 and 3 in the [Results](#results) section) approaches the route planning problem as a two-step process:
   - Given an undirected, weighted graph that represents the Tesla Supercharger network, a _pseudo_ time-optimal path is found via Dijkstra's algorithm. In this implementation, Dijkstra's cost function makes the assumption that the car will charge only long enough at each charger to make it to the next charger, i.e. the vehicle's arrival range at each charger will be zero.
   - To account for additional information (encoded by the network's varying charging rates) that is not represented by the edge weights, the solution is then refined via constrained optimization (using the [NLOpt](https://nlopt.readthedocs.io/en/latest/) library). The optimization scheme minimizes the total charge time by increasing the charging time at nodes with relatively high charging rates, and decreasing the charging time for nodes with low charging rates.
   - This approach achieves an average improvement of over [32.5 minutes](#results) over the _reference result_.
