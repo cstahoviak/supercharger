@@ -18,17 +18,18 @@ This repository implements a solution to the Tesla Supercharger coding challenge
   - This approach achieves an average improvement of over [32.5 minutes](#results) over the _reference result_.
 - Algorithm (6) borrows the same optimization scheme as described in the second part of Algorithm (5), but rather than applying a single post-optimization step to the route, the optimization step is built into the cost function used by Dijkstra's algorithm to guarantee that the cost computed for each node in the graph is truly optimal.
 	- Incorporating the optimization step into the cost function evaluation comes with a runtime penalty, but is able to achieve an average improvement of over [37.5 minutes](#results) over the _reference result_ (and a 5 minute improvement over Algorithm (5)).
-- The constrained optimization problem that both Algorithms (5) and (6) solve can be expressed as follows:
 
-	```math
-	\min_{\mathbf{x}}\ \sum_{i=2}^{n-1} x_i \qquad \text{s.t.} \quad
-	\begin{cases}
-	\mathbf{Ax} - \mathbf{Ld} + a_2 \mathbf{1} \geq \mathbf{0} \\
-	\mathbf{r}^{\text{T}}\mathbf{x} - \mathbf{1}^{\text{T}}\mathbf{d} + a_2 = 0
-	\end{cases}
-	```
+The constrained optimization problem that both Algorithms (5) and (6) solve can be expressed as follows:
 
-	where the objective function is the sum of charging durations at nodes $[2, n-1]$ (not including the origin and the destination), and the constraint function ensures that the arrival range at each node $[3, n]$ is greater than zero, i.e. the vehicle does not run out of charge at any point along the route. The matrix $\mathbf{A}$ is a function of the charging rates, and the vectors $\mathbf{r}$ and $\mathbf{d}$ are the charging rates and distances between adjacent nodes, respectively.
+```math
+\min_{\mathbf{x}}\ \sum_{i=2}^{n-1} x_i \qquad \text{s.t.} \quad
+\begin{cases}
+\mathbf{Ax} - \mathbf{Ld} + a_2 \mathbf{1} \geq \mathbf{0} \\
+\mathbf{r}^{\text{T}}\mathbf{x} - \mathbf{1}^{\text{T}}\mathbf{d} + a_2 = 0
+\end{cases}
+```
+
+where the objective function is the sum of charging durations at nodes $[2, n-1]$ (not including the origin and the destination), and the constraint function ensures that the arrival range at each node $[3, n]$ is greater than zero, i.e. the vehicle does not run out of charge at any point along the route. The matrix $\mathbf{A}$ is a function of the charging rates, and the vectors $\mathbf{r}$ and $\mathbf{d}$ are the charging rates and distances between adjacent nodes, respectively.
 
 ### Features
 - The `pysupercharger` module is provided to support Python development.
